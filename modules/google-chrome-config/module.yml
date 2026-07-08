@@ -1,0 +1,8 @@
+type: script
+snippets:
+  - |
+    set -euo pipefail
+
+    echo "Installing Google Chrome enterprise policy"
+    install -Dm644 "${CONFIG_DIRECTORY}/modules/google-chrome-config/google-chrome-policies.json" \
+      /usr/etc/opt/chrome/policies/managed/google-chrome-policies.json

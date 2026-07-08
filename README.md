@@ -27,7 +27,8 @@ This project produces a locked-down, reproducible desktop operating system image
 
 ## Browser Policy Summary
 
-- **Trivalent** (`trivalent-config`): Enterprise Chromium profile. Forces dark mode, allows Google SSO/SAML cookies, enables enterprise reporting, and ships managed bookmarks.
+- **Trivalent** (`trivalent-config`): Hardened enterprise Chromium profile. Forces dark mode, allows Google/Microsoft/Okta/OneLogin SSO/SAML cookies, enables enterprise reporting, and ships managed bookmarks.
+- **Google Chrome** (`google-chrome-config`): Additional enterprise browser with the same SSO/dark-mode policy goals as Trivalent, managed via a separate Chrome policy path.
 - **Mullvad Browser** (`privacy-browser-config`): Isolated research browser with a dedicated profile and certificate store, hardened DNS/proxy settings, and no cross-contamination with the enterprise browser.
 
 See [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) for full details.
@@ -42,6 +43,8 @@ See [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) for full details.
 - [x] Libvirt/QEMU/KVM virtualization stack installed and enabled
 - [x] Flatpak applications sandboxed via system-wide overrides
 - [x] Enterprise and privacy browser profiles isolated
+- [x] Google Chrome (enterprise browser) and Yubico Authenticator (hardware token 2FA/TOTP) preinstalled as Flatpaks
+- [x] Mullvad VPN client preinstalled via RPM repository
 
 ## VFIO / Whonix Note
 

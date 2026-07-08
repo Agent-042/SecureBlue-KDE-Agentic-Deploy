@@ -1,0 +1,18 @@
+[Context]
+# Yubico Authenticator does not need network or background execution.
+shared=!network
+features=!background
+# Allow USB/YubiKey access and the PC/SC smartcard socket.
+devices=all
+sockets=pcsc
+# No broad host filesystem access required.
+filesystems=!home;!host
+
+[Session Bus Policy]
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
+
+[System Bus Policy]
+org.freedesktop.Avahi=none

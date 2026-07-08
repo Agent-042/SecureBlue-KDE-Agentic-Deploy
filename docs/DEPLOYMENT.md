@@ -104,6 +104,7 @@ systemd:
     - pcscd.service
     - libvirtd.service
     - virtlogd.service
+    - mullvad-daemon.service
 ```
 <!-- END SERVICES_SECTION -->
 
@@ -116,6 +117,8 @@ containers:
   - net.mullvad.MullvadBrowser
   - org.keepassxc.KeePassXC
   - com.dropbox.Dropbox
+  - com.google.Chrome
+  - com.yubico.yubioath
 ```
 <!-- END FLATPAK_SECTION -->
 
@@ -125,6 +128,8 @@ containers:
 - **`docs-readme`** — Custom BlueBuild module. (`modules/docs-readme/module.yml`)
 - **`emergency-rescue`** — Custom BlueBuild module. (`modules/emergency-rescue/module.yml`)
 - **`flatpak-overrides`** — Custom BlueBuild module. (`modules/flatpak-overrides/module.yml`)
+- **`google-chrome-config`** — Custom BlueBuild module. (`modules/google-chrome-config/module.yml`)
+- **`mullvad-vpn`** — Custom BlueBuild module. (`modules/mullvad-vpn/module.yml`)
 - **`privacy-browser-config`** — Custom BlueBuild module. (`modules/privacy-browser-config/module.yml`)
 - **`trivalent-config`** — Custom BlueBuild module. (`modules/trivalent-config/module.yml`)
 - **`trivalent-rpm`** — Custom BlueBuild module. (`modules/trivalent-rpm/module.yml`)
