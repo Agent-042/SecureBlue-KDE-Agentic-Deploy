@@ -23,7 +23,7 @@ This project produces a locked-down, reproducible desktop operating system image
    ```
 
 3. Reboot.
-4. After first boot, enable the systemd services listed in the recipe and configure Flatpak overrides as described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+4. After first boot, verify the pre-configured systemd services and Flatpak overrides described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Browser Policy Summary
 

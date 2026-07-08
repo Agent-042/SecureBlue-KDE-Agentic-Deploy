@@ -9,8 +9,10 @@ Trivalent (enterprise Chromium) is the default browser for Google Workspace, cor
 Profile path managed by the `trivalent-config` module:
 
 ```text
-/etc/chromium/policies/managed/trivalent-policies.json
+/usr/etc/chromium/policies/managed/trivalent-policies.json
 ```
+
+On the booted image this is available at `/etc/chromium/policies/managed/trivalent-policies.json`.
 
 ### Policy highlights
 
