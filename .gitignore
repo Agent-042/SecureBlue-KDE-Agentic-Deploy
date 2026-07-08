@@ -25,6 +25,9 @@ cosign.pub
 secrets/
 .pki/
 
+# Cosign public key is required for image verification; do not ignore it.
+!cosign.pub
+
 # Local script outputs / env derivatives (do not commit secrets)
 scripts/*.env
 scripts/*.secret

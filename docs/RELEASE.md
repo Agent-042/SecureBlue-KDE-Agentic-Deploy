@@ -13,11 +13,9 @@ This runbook covers how to trigger the first (and subsequent) BlueBuild GitHub A
 From the repo root:
 
 ```bash
-# Install cosign if it is not already available (Homebrew example)
-brew install cosign
-
-# Generate a keypair; the private key MUST NOT be committed.
-cosign generate-key-pair
+# On an immutable SecureBlue host, podman may not be usable for key generation.
+# Use the bundled openssl-based helper instead:
+scripts/generate-cosign-keys.sh
 ```
 
 This produces:
@@ -28,7 +26,8 @@ This produces:
 Add the private key as a GitHub Actions secret named `SIGNING_SECRET`:
 
 ```bash
-gh secret set SIGNING_SECRET --body "$(cat cosign.key)"
+source scripts/env-init.sh
+scripts/set-signing-secret.sh
 ```
 
 Then remove `cosign.key` from the local filesystem or store it in a password manager:
