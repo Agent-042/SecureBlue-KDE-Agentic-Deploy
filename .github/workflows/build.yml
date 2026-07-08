@@ -36,7 +36,8 @@ jobs:
       - name: Build and push image
         uses: blue-build/github-action@v1
         with:
-          recipe: recipes/recipe.yml
+          # Relative to the config/ or recipes/ directory; do not prepend recipes/.
+          recipe: recipe.yml
           registry_token: ${{ github.token }}
           # Signing placeholder: generate cosign keypair and store the
           # private key in SIGNING_SECRET, the public key in the repo root
