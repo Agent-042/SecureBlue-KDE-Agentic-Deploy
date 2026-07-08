@@ -1,0 +1,40 @@
+{
+  "_comment": "Enterprise policy bundle for Trivalent / Chromium. Set CloudManagementEnrollmentToken in a downstream secret module if cloud enrollment is required.",
+  "DefaultCookiesSetting": 1,
+  "ForceDarkModeEnabled": true,
+  "ForceDarkMode": true,
+  "PreferredColorScheme": 2,
+  "CookiesAllowedForUrls": [
+    "[*.]google.com",
+    "[*.]googleusercontent.com",
+    "[*.]gstatic.com",
+    "accounts.google.com",
+    "login.microsoftonline.com",
+    "[*.]okta.com",
+    "[*.]onelogin.com"
+  ],
+  "AuthServerAllowlist": "*.google.com,*.microsoftonline.com,*.okta.com,*.onelogin.com",
+  "CloudReportingEnabled": true,
+  "CloudManagementEnrollmentToken": "",
+  "ManagedBookmarks": [
+    {
+      "toplevel_name": "Enterprise"
+    },
+    {
+      "name": "Google Workspace Mail",
+      "url": "https://mail.google.com"
+    },
+    {
+      "name": "Google Drive",
+      "url": "https://drive.google.com"
+    },
+    {
+      "name": "Google Calendar",
+      "url": "https://calendar.google.com"
+    },
+    {
+      "name": "Google Admin",
+      "url": "https://admin.google.com"
+    }
+  ]
+}

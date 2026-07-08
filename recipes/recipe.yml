@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+name: secureblue-kde-agentic-deploy
+description: Hardened SecureBlue KDE atomic image for Intel Core Ultra 9 + RTX 5080 with agentic browser policy and rescue tooling.
+
+base-image: ghcr.io/secureblue/secureblue-kde
+image-version: nvidia-stable
+
+modules:
+  # Base package layering
+  - type: rpm-ostree
+    install:
+      # Smartcard / YubiKey support
+      - pcsc-lite
+      - pcsc-lite-ccid
+      # Virtualization stack
+      - libvirt
+      - qemu-kvm
+      - virt-manager
+      - virt-install
+      - edk2-ovmf
+      # Core networking / rescue diagnostics (consumed by g16-rescue.sh)
+      - NetworkManager
+      - iproute
+      - iputils
+      # Kernel module tooling and task runner
+      - akmods
+      - just
+
+  # Kernel arguments for VFIO/IOMMU, NVIDIA, and virtualization
+  - type: kargs
+    kargs:
+      - intel_iommu=on
+      - iommu=pt
+      - kvm.ignore_msrs=1
+      - nvidia-drm.modeset=1
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau
+
+  # System services
+  - type: systemd
+    system:
+      enabled:
+        - pcscd.service
+        - libvirtd.service
+        - virtlogd.service
+
+  # Default Flatpak applications
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        notify: false
+        install:
+          - net.mullvad.MullvadBrowser
+          - org.keepassxc.KeePassXC
+          - com.dropbox.Dropbox
+
+  # Hardened Trivalent browser (RPM-layered, not a Flatpak)
+  - from-file: ../modules/trivalent-rpm/module.yml
+
+  # Enterprise browser policy (system-level managed policy)
+  - from-file: ../modules/trivalent-config/module.yml
+
+  # Isolated privacy research browser configuration
+  - from-file: ../modules/privacy-browser-config/module.yml
+
+  # Flatpak permission lockdown
+  - from-file: ../modules/flatpak-overrides/module.yml
+
+  # G16 emergency rescue tooling
+  - from-file: ../modules/emergency-rescue/module.yml
+
+  # On-image documentation
+  - from-file: ../modules/docs-readme/module.yml
+
+  # Image signing support
+  - type: signing

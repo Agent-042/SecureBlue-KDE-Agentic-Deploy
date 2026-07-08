@@ -1,0 +1,43 @@
+# Python virtual environments
+venv/
+.env
+*.env
+
+# Build artifacts
+build/
+out/
+output/
+*.tar
+*.tar.*
+*.img
+*.iso
+*.raw
+
+# BlueBuild / Container outputs
+containers/
+cosign.key
+cosign.pub
+
+# Secrets
+*.key
+*.pem
+*.secret
+secrets/
+.pki/
+
+# Local script outputs / env derivatives (do not commit secrets)
+scripts/*.env
+scripts/*.secret
+scripts/env-init-output*
+__pycache__/
+*.pyc
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log

@@ -1,0 +1,7 @@
+type: script
+snippets:
+  - |
+    set -euo pipefail
+    echo "Installing emergency rescue helper"
+    install -Dm755 "${CONFIG_DIRECTORY}/modules/emergency-rescue/rescue.sh" \
+      /usr/bin/g16-rescue.sh

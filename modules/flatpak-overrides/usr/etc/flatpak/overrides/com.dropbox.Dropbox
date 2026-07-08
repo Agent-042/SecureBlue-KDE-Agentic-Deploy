@@ -1,0 +1,13 @@
+[Context]
+# Dropbox must retain broad home access for sync and background sync for
+# the daemon, so filesystem, network, and background are left untouched.
+# We only strip unnecessary device access.
+devices=!all
+
+[Session Bus Policy]
+# Dropbox does not need the host secret service or desktop notifications.
+org.freedesktop.secrets=none
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none

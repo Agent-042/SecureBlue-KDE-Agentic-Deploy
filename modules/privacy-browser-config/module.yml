@@ -1,0 +1,8 @@
+type: script
+snippets:
+  - |
+    set -euo pipefail
+    echo "Installing privacy browser configuration"
+    cd "${CONFIG_DIRECTORY}/modules/privacy-browser-config/usr"
+    find . -type f -exec install -Dm644 "{}" "/usr/{}" \;
+    chmod 755 /usr/bin/research-browser

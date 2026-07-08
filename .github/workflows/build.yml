@@ -1,0 +1,45 @@
+name: Build SecureBlue-KDE-Agentic-Deploy Image
+
+on:
+  schedule:
+    # Rebuild weekly on Sundays at 00:00 UTC
+    - cron: '0 0 * * 0'
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Push Custom Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push image
+        uses: blue-build/github-action@v1
+        with:
+          recipe: recipes/recipe.yml
+          registry_token: ${{ github.token }}
+          # Signing placeholder: generate cosign keypair and store the
+          # private key in SIGNING_SECRET, the public key in the repo root
+          # as cosign.pub, and update this secret name if needed.
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          pr_event_number: ${{ github.event.number }}

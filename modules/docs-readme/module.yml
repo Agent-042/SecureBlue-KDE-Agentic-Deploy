@@ -1,0 +1,6 @@
+type: script
+snippets:
+  - |
+    set -euo pipefail
+    echo "Installing project README as on-image documentation"
+    bash "${CONFIG_DIRECTORY}/modules/docs-readme/install-readme.sh"

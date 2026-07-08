@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Research Browser
+Comment=Isolated privacy browser for untrusted research
+Exec=/usr/bin/research-browser %U
+Type=Application
+Terminal=false
+Icon=net.mullvad.MullvadBrowser
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true
+StartupWMClass=Mullvad Browser
