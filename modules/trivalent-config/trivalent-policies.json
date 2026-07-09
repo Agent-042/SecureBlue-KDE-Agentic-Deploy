@@ -2,7 +2,6 @@
   "_comment": "Enterprise policy bundle for Trivalent / Chromium. Set CloudManagementEnrollmentToken in a downstream secret module if cloud enrollment is required.",
   "DefaultCookiesSetting": 1,
   "ForceDarkModeEnabled": true,
-  "ForceDarkMode": true,
   "PreferredColorScheme": 2,
   "CookiesAllowedForUrls": [
     "[*.]google.com",

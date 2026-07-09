@@ -19,14 +19,14 @@ The workflow in `.github/workflows/build.yml` builds and pushes the image on eve
 From a Fedora Atomic KDE installation, rebase to the built image:
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/OWNER/secureblue-kde-agentic:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest
 systemctl reboot
 ```
 
 If you have image signing configured, use the verified ref instead:
 
 ```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/OWNER/secureblue-kde-agentic:latest
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest
 ```
 
 ## 3. Post-install configuration

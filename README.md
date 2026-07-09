@@ -11,7 +11,7 @@ This project produces a locked-down, reproducible desktop operating system image
 - **CPU:** Intel Core Ultra 9 285H
 - **GPU:** NVIDIA GeForce RTX 5080
 - **RAM:** 32 GB
-- **Base image:** `ghcr.io/secureblue/secureblue-kde:nvidia-stable`
+- **Base image:** `ghcr.io/secureblue/kinoite-nvidia-open-hardened:latest`
 
 ## Install / Rebase
 
@@ -19,7 +19,7 @@ This project produces a locked-down, reproducible desktop operating system image
 2. Run the rebase command (replace `YOUR_IMAGE_REF` with the built image tag):
 
    ```bash
-   rpm-ostree rebase ostree-unverified-registry:ghcr.io/OWNER/secureblue-kde-agentic:latest
+   rpm-ostree rebase ostree-unverified-registry:ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest
    ```
 
 3. Reboot.
@@ -52,7 +52,7 @@ IOMMU and KVM are enabled for future VFIO pass-through and Whonix-on-KVM isolati
 
 ## Build Status
 
-![Build](https://github.com/OWNER/REPO/actions/workflows/build.yml/badge.svg)
+![Build](https://github.com/Agent-042/SecureBlue-KDE-Agentic-Deploy/actions/workflows/build.yml/badge.svg)
 
 ## Documentation
 

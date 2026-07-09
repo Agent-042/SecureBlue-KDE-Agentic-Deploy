@@ -21,7 +21,7 @@ On the booted image this is available at `/etc/chromium/policies/managed/trivale
 | `DefaultCookiesSetting` | Allow | Permit cookies for enterprise web apps |
 | `CookiesAllowedForUrls` | `[*.]google.com`, SSO IdP domains | Allow persistent Google/SSO session cookies |
 | `AuthServerAllowlist` | `*.google.com`, `*.microsoftonline.com`, `*.okta.com`, `*.onelogin.com` | Whitelist authentication servers for integrated SSO |
-| `ForceDarkMode` / `ForceDarkModeEnabled` | Enabled | Force dark mode across all sites |
+| `ForceDarkModeEnabled` | Enabled | Force dark mode across all sites |
 | `PreferredColorScheme` | Dark (`2`) | Report `prefers-color-scheme: dark` to sites |
 | `CloudReportingEnabled` | Enabled | Enterprise telemetry/reporting (if managed) |
 | Managed bookmarks | Google Workspace apps | Curated bookmarks bar |
@@ -49,7 +49,7 @@ On the booted image this is available at `/etc/opt/chrome/policies/managed/googl
 | `DefaultCookiesSetting` | Allow | Permit cookies for enterprise web apps |
 | `CookiesAllowedForUrls` | `[*.]google.com`, SSO IdP domains | Allow persistent Google/SSO session cookies |
 | `AuthServerAllowlist` | `*.google.com`, `*.microsoftonline.com`, `*.okta.com`, `*.onelogin.com` | Whitelist authentication servers for integrated SSO |
-| `ForceDarkMode` / `ForceDarkModeEnabled` | Enabled | Force dark mode across all sites |
+| `ForceDarkModeEnabled` | Enabled | Force dark mode across all sites |
 | `PreferredColorScheme` | Dark (`2`) | Report `prefers-color-scheme: dark` to sites |
 | `CloudReportingEnabled` | Enabled | Enterprise telemetry/reporting (if managed) |
 | Managed bookmarks | Google Workspace apps | Curated bookmarks bar |

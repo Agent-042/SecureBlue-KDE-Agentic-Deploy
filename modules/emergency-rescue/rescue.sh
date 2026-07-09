@@ -86,8 +86,8 @@ cmd_safe_mode() {
     echo "--- Restarting NetworkManager ---"
     if systemctl restart NetworkManager.service 2>/dev/null; then
         echo "NetworkManager restarted"
-    elif command -v sudo >/dev/null 2>&1 && sudo systemctl restart NetworkManager.service; then
-        echo "NetworkManager restarted (via sudo)"
+    elif command -v run0 >/dev/null 2>&1 && run0 systemctl restart NetworkManager.service; then
+        echo "NetworkManager restarted (via run0)"
     else
         echo "Failed to restart NetworkManager" >&2
         exit 1
