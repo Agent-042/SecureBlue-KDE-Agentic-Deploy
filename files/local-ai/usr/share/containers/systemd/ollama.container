@@ -1,0 +1,23 @@
+[Container]
+Image=docker.io/ollama/ollama:latest
+ContainerName=ollama
+# Persist downloaded models in a named Podman volume.
+Volume=ollama:/root/.ollama
+# Expose the Ollama API on localhost.
+PublishPort=127.0.0.1:11434:11434
+# GPU pass-through: Intel iGPU / NPU and NVIDIA RTX 5080.
+AddDevice=/dev/dri
+AddDevice=/dev/nvidia0
+AddDevice=/dev/nvidiactl
+AddDevice=/dev/nvidia-modeset
+AddDevice=/dev/nvidia-uvm
+AddDevice=/dev/nvidia-uvm-tools
+# Required for NVIDIA device access inside the container.
+SecurityLabelDisable=true
+
+[Service]
+Restart=always
+
+[Install]
+# Enable with: systemctl --user enable ollama.service
+WantedBy=default.target
