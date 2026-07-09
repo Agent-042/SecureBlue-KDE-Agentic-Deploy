@@ -1,10 +1,10 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-09T16:36:31Z
+Generated: 2026-07-09T18:27:23Z
 
 **Current turn:** kimi | **Status:** verified | **Last action by:** kimi
 
-**Target files:** recipes/recipe.yml,modules/vfio-sandbox/module.yml,scripts/push-live-status.sh
+**Target files:** modules/immutability/module.yml,modules/ephemeral-home/module.yml,modules/persist-workspace/module.yml,modules/kimi-resume/module.yml,recipes/recipe.yml
 
 ## Verification log
 
@@ -19,3 +19,5 @@ Generated: 2026-07-09T16:36:31Z
 | 2026-07-09T15:20:04Z | Kimi Code 2.7 | GitHub Actions build 29028176929 completed successfully; Phase 4 kde-theming image pushed and signed. Pushing Phase 0 env-init and Phase 5 local-ai (Ollama Quadlet) modules to main. | pending_verification |
 | 2026-07-09T15:38:36Z | Kimi Code 2.7 | GitHub Actions build 29029107005 completed successfully; Phase 0/5 image pushed and signed. | verified |
 | 2026-07-09T16:36:08Z | Kimi Code 2.7 | GitHub Actions build 29033418089 completed successfully; AMD Ryzen 7 7800X3D retarget image pushed and signed. | verified |
+| 2026-07-09T18:17:53Z | Kimi Code 2.7 | Removed tmpfs /var/home from immutability, moved it to optional modules/ephemeral-home, added persist-workspace and kimi-resume modules to keep /var/home persistent and provide a username-agnostic Agentic-OS workspace. | pending_verification |
+| 2026-07-09T18:27:02Z | Kimi Code 2.7 | GitHub Actions build 29040171373 completed successfully; persistent /var/home image pushed and signed. | verified |
