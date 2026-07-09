@@ -18,6 +18,10 @@ containers/
 cosign.key
 cosign.pub
 
+# Allow EasyEffects system-wide output presets despite generic output/ ignore.
+!files/audio-eq/usr/etc/easyeffects/output/
+!files/audio-eq/usr/etc/easyeffects/output/**
+
 # Secrets
 *.key
 *.sec1
