@@ -101,3 +101,6 @@ modules:
 
   # Audio equalizer: system-wide EasyEffects preset and login autoload for G16
   - from-file: ../modules/audio-eq/module.yml
+
+  # KDE theming: dark mode, 150% scale, macOS-style window controls
+  - from-file: ../modules/kde-theming/module.yml
