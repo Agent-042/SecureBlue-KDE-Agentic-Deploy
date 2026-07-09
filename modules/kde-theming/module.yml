@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: kde-theming/usr
+    destination: /usr
