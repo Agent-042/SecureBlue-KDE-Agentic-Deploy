@@ -1,10 +1,10 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-09T18:59:11Z
+Generated: 2026-07-09T23:44:14Z
 
 **Current turn:** kimi | **Status:** verified | **Last action by:** kimi
 
-**Target files:** docs/DEPLOYMENT.md,README.md,Agentic-OS workspace migration
+**Target files:** files/network-lockdown/usr/etc/mullvad-vpn/settings.json, recipes/recipe.yml, files/local-ai/usr/share/containers/systemd/ollama.container, files/flatpak-overrides/
 
 ## Verification log
 
@@ -23,3 +23,4 @@ Generated: 2026-07-09T18:59:11Z
 | 2026-07-09T18:27:02Z | Kimi Code 2.7 | GitHub Actions build 29040171373 completed successfully; persistent /var/home image pushed and signed. | verified |
 | 2026-07-09T18:58:09Z | Kimi Code 2.7 | Migrated local repo to ~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy (persistent /var/lib), updated docs/DEPLOYMENT.md and README.md to reflect AMD target and Agentic-OS workspace. | pending_verification |
 | 2026-07-09T18:58:46Z | Kimi Code 2.7 | BlueBuild validation passed; documentation-only push merged to main. No recipe changes, so no image rebuild required. | verified |
+| 2026-07-09T23:41:13Z | Kimi Code 2.7 | Verified Mullvad settings (lockdown_mode=true, selected_obfuscation=udp2tcp) on main and deleted stale fix-mullvad-udp2tcp branch. | verified |
