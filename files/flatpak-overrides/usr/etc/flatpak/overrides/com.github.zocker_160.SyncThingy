@@ -1,0 +1,21 @@
+[Context]
+# Syncthing tray wrapper: allow network; strip broad device/host access and background execution.
+shared=network
+# Sync only Documents and Downloads by default. Change this to a dedicated
+# folder (e.g., ~/Sync) if you prefer a single sync root.
+filesystems=!host;!home;xdg-documents;xdg-download
+# No arbitrary device access.
+devices=!all
+# Prevent background execution / autostart.
+features=!background
+
+[Session Bus Policy]
+# Keep sync credentials isolated from the host secret service.
+org.freedesktop.secrets=none
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
+
+[System Bus Policy]
+org.freedesktop.Avahi=none

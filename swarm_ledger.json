@@ -2,7 +2,7 @@
   "current_turn": "kimi",
   "last_action_by": "kimi",
   "status": "verified",
-  "target_file": "docs/DEPLOYMENT.md,README.md,Agentic-OS workspace migration",
+  "target_file": "files/network-lockdown/usr/etc/mullvad-vpn/settings.json, recipes/recipe.yml, files/local-ai/usr/share/containers/systemd/ollama.container, files/flatpak-overrides/",
   "verification_logs": [
     {
       "timestamp": "2026-07-09T07:15:00Z",
@@ -80,6 +80,12 @@
       "timestamp": "2026-07-09T18:58:46Z",
       "agent": "Kimi Code 2.7",
       "action": "BlueBuild validation passed; documentation-only push merged to main. No recipe changes, so no image rebuild required.",
+      "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-09T23:41:13Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Verified Mullvad settings (lockdown_mode=true, selected_obfuscation=udp2tcp) on main and deleted stale fix-mullvad-udp2tcp branch.",
       "result": "verified"
     }
   ]

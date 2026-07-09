@@ -32,6 +32,8 @@ modules:
       # Kernel module tooling and task runner
       - akmods
       - just
+      # macOS-style SVG theme engine for KDE Plasma
+      - kvantum
 
   # Kernel arguments for AMD VFIO/IOMMU and virtualization
   - type: kargs
@@ -64,6 +66,11 @@ modules:
           - com.yubico.yubioath
           # Audio equalizer / DSP for PipeWire (preset shipped in audio-eq module)
           - com.github.wwmm.easyeffects
+          # Productivity, communication, and development tools
+          - org.mozilla.Thunderbird
+          - im.riot.Riot
+          - com.vscodium.codium
+          - com.github.zocker_160.SyncThingy
 
   # Hardened Trivalent browser (RPM-layered, not a Flatpak)
   - from-file: ../modules/trivalent-rpm/module.yml
