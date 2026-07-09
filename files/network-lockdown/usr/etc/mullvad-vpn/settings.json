@@ -2,6 +2,7 @@
   "allow_lan": false,
   "auto_connect": true,
   "block_when_disconnected": true,
+  "lockdown_mode": true,
   "relay_settings": {
     "normal": {
       "location": "any",
@@ -15,7 +16,7 @@
     }
   },
   "obfuscation_settings": {
-    "selected_obfuscation": "quic",
+    "selected_obfuscation": "udp2tcp",
     "udp2tcp": {
       "port": "any"
     }
