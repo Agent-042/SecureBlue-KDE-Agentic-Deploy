@@ -8,10 +8,11 @@ This project produces a locked-down, reproducible desktop operating system image
 
 ## Target Hardware
 
-- **CPU:** Intel Core Ultra 9 285H
-- **GPU:** NVIDIA GeForce RTX 5080
+- **CPU:** AMD Ryzen 7 7800X3D
+- **Motherboard:** Gigabyte B650 AORUS ELITE AX
+- **iGPU:** AMD Radeon (Mesa/Radeon drivers)
 - **RAM:** 32 GB
-- **Base image:** `ghcr.io/secureblue/kinoite-nvidia-open-hardened:latest`
+- **Base image:** `ghcr.io/secureblue/kinoite-main-hardened:latest`
 
 ## Install / Rebase
 
@@ -36,9 +37,11 @@ See [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) for full details.
 ## Hardening Checklist
 
 - [x] SecureBlue KDE hardened base image
-- [x] Kernel IOMMU (`intel_iommu=on`, `iommu=pt`) for device isolation
+- [x] Kernel IOMMU (`amd_iommu=on`, `iommu=pt`) for device isolation
 - [x] MSRS ignored for KVM compatibility (`kvm.ignore_msrs=1`)
-- [x] NVIDIA modeset enabled, nouveau blacklisted
+- [x] AMD microcode updates and Radeon iGPU drivers layered
+- [x] VFIO modules loaded for virtual device sandboxing
+- [x] Persistent `~/Agentic-OS` workspace survives reboots/rebases
 - [x] `pcscd` enabled for hardware token/YubiKey support
 - [x] Libvirt/QEMU/KVM virtualization stack installed and enabled
 - [x] Flatpak applications sandboxed via system-wide overrides
