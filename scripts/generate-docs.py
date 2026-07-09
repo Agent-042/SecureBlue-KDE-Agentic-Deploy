@@ -33,7 +33,35 @@ def format_yaml_block(label: str, data: object) -> str:
 """
 
 
-def discover_modules(modules_dir: Path) -> list[dict]:
+def parse_existing_module_descriptions(deployment_path: Path) -> dict[str, str]:
+    """Extract module descriptions already present in DEPLOYMENT.md.
+
+    This lets `generate-docs` stay idempotent: manual descriptions are kept
+    when a module.yml does not declare its own `description` field.
+    """
+    descriptions: dict[str, str] = {}
+    if not deployment_path.exists():
+        return descriptions
+
+    content = deployment_path.read_text(encoding="utf-8")
+    begin = "<!-- BEGIN MODULES_SECTION -->"
+    end = "<!-- END MODULES_SECTION -->"
+    start = content.find(begin)
+    stop = content.find(end)
+    if start == -1 or stop == -1:
+        return descriptions
+
+    section = content[start:stop]
+    # Match lines like: - **`audio-eq`** — EasyEffects G16 ... (`modules/...`)
+    pattern = re.compile(r"^\s*-\s*\*\*`([^`]+)`\*\*\s*—\s*(.+?)\s*\(`", re.MULTILINE)
+    for name, desc in pattern.findall(section):
+        descriptions[name.strip()] = desc.strip()
+    return descriptions
+
+
+def discover_modules(
+    modules_dir: Path, existing_descriptions: dict[str, str]
+) -> list[dict]:
     if not modules_dir.exists():
         return []
 
@@ -49,10 +77,13 @@ def discover_modules(modules_dir: Path) -> list[dict]:
             data = {"_error": str(exc)}
 
         description = data.get("description") if isinstance(data, dict) else None
+        description = description or existing_descriptions.get(
+            entry.name, "Custom BlueBuild module."
+        )
         modules.append(
             {
                 "name": entry.name,
-                "description": description or "Custom BlueBuild module.",
+                "description": description,
                 "path": str(module_yml.relative_to(modules_dir.parent)),
             }
         )
@@ -138,7 +169,8 @@ def main() -> int:
         return 1
 
     recipe = load_recipe(RECIPE_PATH)
-    modules = discover_modules(MODULES_DIR)
+    existing_descriptions = parse_existing_module_descriptions(DEPLOYMENT_PATH)
+    modules = discover_modules(MODULES_DIR, existing_descriptions)
 
     if not DEPLOYMENT_PATH.exists():
         DEPLOYMENT_PATH.parent.mkdir(parents=True, exist_ok=True)

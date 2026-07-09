@@ -2,6 +2,11 @@
 # Kimi Code CLI workspace resume helper.
 # Run this after first login on a fresh deployment to restore the project repo
 # and verify that the persistent Agentic-OS workspace is linked.
+#
+# Why the source path is nested: this file is installed into the image by the
+# BlueBuild files module at modules/kimi-resume/module.yml. The files/<module>/
+# tree maps directly onto the image filesystem, so files/kimi-resume/usr/bin/
+# becomes /usr/bin/ in the deployed image.
 
 set -euo pipefail
 

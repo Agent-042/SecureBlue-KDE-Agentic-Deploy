@@ -7,6 +7,7 @@ This runbook covers how to trigger the first (and subsequent) BlueBuild GitHub A
 - `gh` CLI installed and authenticated, or `GITHUB_PAT` exported via `scripts/env-init.sh`.
 - A Cosign keypair for image signing (see section 2).
 - The GitHub repository `Agent-042/SecureBlue-KDE-Agentic-Deploy` exists and this repo is pushed to it.
+- You are working from the project root at `~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy`.
 
 ## 2. Generate signing keys
 

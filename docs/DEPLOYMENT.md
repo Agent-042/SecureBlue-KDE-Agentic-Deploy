@@ -43,11 +43,12 @@ virt-host-validate
 # Review installed Flatpaks
 flatpak list --app --columns=application
 
-# Restore the project workspace and Kimi Code CLI context
+# Restore the project workspace and Kimi Code CLI context.
+# This helper is installed at /usr/bin/kimi-resume.sh by the kimi-resume module.
 kimi-resume.sh
 ```
 
-The persistent workspace is at `~/Agentic-OS` (symlinked to `/var/lib/agentic-os/<user>`). Keep project repositories and cloud-sync targets there so they survive reboots and rebases.
+The persistent workspace is at `~/Agentic-OS`, which is symlinked to `/var/lib/agentic-os/<user>` by the persist-workspace module. The project repository is cloned or updated at `~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy`. Keep project repositories and cloud-sync targets under `~/Agentic-OS` so they survive reboots and rebases.
 
 ## 4. Hardware token setup
 
@@ -111,6 +112,9 @@ systemd:
     - libvirtd.service
     - virtlogd.service
     - mullvad-daemon.service
+  user:
+    enabled:
+    - agentic-workspace-init.service
 ```
 <!-- END SERVICES_SECTION -->
 
@@ -124,6 +128,7 @@ containers:
   - org.keepassxc.KeePassXC
   - com.google.Chrome
   - com.yubico.yubioath
+  - com.github.wwmm.easyeffects
 ```
 <!-- END FLATPAK_SECTION -->
 

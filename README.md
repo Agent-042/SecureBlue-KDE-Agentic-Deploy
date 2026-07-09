@@ -24,7 +24,18 @@ This project produces a locked-down, reproducible desktop operating system image
    ```
 
 3. Reboot.
-4. After first boot, verify the pre-configured systemd services and Flatpak overrides described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+4. After first boot, restore the persistent project workspace by running `kimi-resume.sh` (installed at `/usr/bin/kimi-resume.sh`).
+5. Verify the pre-configured systemd services and Flatpak overrides described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
+## Workspace Layout
+
+This project uses a single, persistent workspace that survives reboots and rebases:
+
+- `~/Agentic-OS` is a symlink to `/var/lib/agentic-os/<user>`.
+- The project repository lives at `~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy`.
+- `kimi-resume.sh` clones or updates this repository after a fresh deployment and confirms that the Kimi Code CLI is available.
+
+Use `~/Agentic-OS` for project repositories, cloud-sync targets, and any state that must persist across system updates.
 
 ## Browser Policy Summary
 

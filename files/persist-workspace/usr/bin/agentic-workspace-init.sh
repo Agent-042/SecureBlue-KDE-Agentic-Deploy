@@ -2,6 +2,8 @@
 # Username-agnostic persistent workspace bootstrap.
 # Creates a per-user workspace under /var/lib/agentic-os/<user> and symlinks
 # it as ~/Agentic-OS so project state survives reboots and rebases.
+#
+# Canonical project path: ~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy
 
 set -euo pipefail
 
