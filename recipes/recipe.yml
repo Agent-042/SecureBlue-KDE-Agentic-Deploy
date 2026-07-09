@@ -57,6 +57,8 @@ modules:
           - org.keepassxc.KeePassXC
           - com.google.Chrome
           - com.yubico.yubioath
+          # Audio equalizer / DSP for PipeWire (preset shipped in audio-eq module)
+          - com.github.wwmm.easyeffects
 
   # Hardened Trivalent browser (RPM-layered, not a Flatpak)
   - from-file: ../modules/trivalent-rpm/module.yml
@@ -96,3 +98,6 @@ modules:
 
   # Image signing support
   - type: signing
+
+  # Audio equalizer: system-wide EasyEffects preset and login autoload for G16
+  - from-file: ../modules/audio-eq/module.yml
