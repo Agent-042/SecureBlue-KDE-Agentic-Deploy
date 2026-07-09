@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: persist-workspace/usr
+    destination: /usr

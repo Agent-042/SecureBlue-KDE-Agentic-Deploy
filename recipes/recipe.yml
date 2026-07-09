@@ -95,14 +95,12 @@ modules:
   # On-image documentation
   - from-file: ../modules/docs-readme/module.yml
 
-  # Immutability layer: tmpfs /var/home, redacted SDDM, powerdevil policies
+  # Immutability layer: redacted SDDM, powerdevil policies
+  # (tmpfs /var/home moved to modules/ephemeral-home for optional future use)
   - from-file: ../modules/immutability/module.yml
 
   # Network lockdown: Mullvad daemon defaults and Chrome split-tunnel routing
   - from-file: ../modules/network-lockdown/module.yml
-
-  # Image signing support
-  - type: signing
 
   # Audio equalizer: system-wide EasyEffects preset and login autoload for G16
   - from-file: ../modules/audio-eq/module.yml
@@ -115,3 +113,20 @@ modules:
 
   # VFIO module loading for virtual device sandboxing / PCI passthrough
   - from-file: ../modules/vfio-sandbox/module.yml
+
+  # Persistent username-agnostic workspace that survives reboots/rebases
+  - from-file: ../modules/persist-workspace/module.yml
+
+  # Enable the workspace symlink service for every user at login
+  - type: systemd
+    user:
+      enabled:
+        - agentic-workspace-init.service
+
+  # Kimi Code CLI resume helper (clone repo, verify CLI)
+  - from-file: ../modules/kimi-resume/module.yml
+
+  # Image signing support
+  - type: signing
+
+

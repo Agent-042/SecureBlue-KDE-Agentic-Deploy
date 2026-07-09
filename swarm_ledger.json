@@ -1,8 +1,8 @@
 {
-  "current_turn": "kimi",
+  "current_turn": "antigravity",
   "last_action_by": "kimi",
-  "status": "verified",
-  "target_file": "recipes/recipe.yml,modules/vfio-sandbox/module.yml,scripts/push-live-status.sh",
+  "status": "pending_verification",
+  "target_file": "modules/immutability/module.yml,modules/ephemeral-home/module.yml,modules/persist-workspace/module.yml,modules/kimi-resume/module.yml,recipes/recipe.yml",
   "verification_logs": [
     {
       "timestamp": "2026-07-09T07:15:00Z",
@@ -57,6 +57,12 @@
       "agent": "Kimi Code 2.7",
       "action": "GitHub Actions build 29033418089 completed successfully; AMD Ryzen 7 7800X3D retarget image pushed and signed.",
       "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-09T18:17:53Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Removed tmpfs /var/home from immutability, moved it to optional modules/ephemeral-home, added persist-workspace and kimi-resume modules to keep /var/home persistent and provide a username-agnostic Agentic-OS workspace.",
+      "result": "pending_verification"
     }
   ]
 }
