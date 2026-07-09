@@ -1,8 +1,4 @@
-type: script
-snippets:
-  - |
-    set -euo pipefail
-
-    echo "Installing Trivalent enterprise policy"
-    install -Dm644 "${CONFIG_DIRECTORY}/modules/trivalent-config/trivalent-policies.json" \
-      /usr/etc/chromium/policies/managed/trivalent-policies.json
+type: files
+files:
+  - source: trivalent-config/usr
+    destination: /usr

@@ -1,7 +1,4 @@
-type: script
-snippets:
-  - |
-    set -euo pipefail
-    echo "Installing flatpak override files"
-    cd "${CONFIG_DIRECTORY}/modules/flatpak-overrides/usr"
-    find . -type f -exec install -Dm644 "{}" "/usr/{}" \;
+type: files
+files:
+  - source: flatpak-overrides/usr
+    destination: /usr
