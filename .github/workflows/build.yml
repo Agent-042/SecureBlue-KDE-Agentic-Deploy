@@ -29,6 +29,9 @@ jobs:
       contents: read
       packages: write
       id-token: write
+    env:
+      # Cosign key generated with an empty password.
+      COSIGN_PASSWORD: ""
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
