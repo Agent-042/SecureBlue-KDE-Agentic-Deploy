@@ -3,8 +3,10 @@
 name: secureblue-kde-agentic-deploy
 description: Hardened SecureBlue KDE atomic image for Intel Core Ultra 9 + RTX 5080 with agentic browser policy and rescue tooling.
 
-base-image: ghcr.io/secureblue/secureblue-kde
-image-version: nvidia-stable
+# SecureBlue KDE (Kinoite) with NVIDIA open drivers for Intel Core Ultra 9 / RTX 5080.
+# Current G16 deployment uses this exact image stream.
+base-image: ghcr.io/secureblue/kinoite-nvidia-open-hardened
+image-version: latest
 
 modules:
   # Base package layering
