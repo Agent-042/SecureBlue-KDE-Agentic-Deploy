@@ -1,7 +1,7 @@
 {
-  "current_turn": "antigravity",
+  "current_turn": "kimi",
   "last_action_by": "kimi",
-  "status": "pending_verification",
+  "status": "verified",
   "target_file": "modules/immutability/module.yml,modules/ephemeral-home/module.yml,modules/persist-workspace/module.yml,modules/kimi-resume/module.yml,recipes/recipe.yml",
   "verification_logs": [
     {
@@ -63,6 +63,12 @@
       "agent": "Kimi Code 2.7",
       "action": "Removed tmpfs /var/home from immutability, moved it to optional modules/ephemeral-home, added persist-workspace and kimi-resume modules to keep /var/home persistent and provide a username-agnostic Agentic-OS workspace.",
       "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-09T18:27:02Z",
+      "agent": "Kimi Code 2.7",
+      "action": "GitHub Actions build 29040171373 completed successfully; persistent /var/home image pushed and signed.",
+      "result": "verified"
     }
   ]
 }
