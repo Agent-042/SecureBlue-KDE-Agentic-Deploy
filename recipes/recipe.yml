@@ -1,11 +1,11 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
 name: secureblue-kde-agentic-deploy
-description: Hardened SecureBlue KDE atomic image for Intel Core Ultra 9 + RTX 5080 with agentic browser policy and rescue tooling.
+description: Hardened SecureBlue KDE atomic image for AMD Ryzen 7 7800X3D with agentic browser policy and rescue tooling.
 
-# SecureBlue KDE (Kinoite) with NVIDIA open drivers for Intel Core Ultra 9 / RTX 5080.
-# Current G16 deployment uses this exact image stream.
-base-image: ghcr.io/secureblue/kinoite-nvidia-open-hardened
+# SecureBlue KDE (Kinoite) with Mesa/Radeon drivers for AMD Ryzen 7 7800X3D.
+# For NVIDIA targets, switch back to ghcr.io/secureblue/kinoite-nvidia-open-hardened.
+base-image: ghcr.io/secureblue/kinoite-main-hardened
 image-version: latest
 
 modules:
@@ -15,6 +15,10 @@ modules:
       # Smartcard / YubiKey support
       - pcsc-lite
       - pcsc-lite-ccid
+      # AMD platform firmware and graphics
+      - amd-ucode-firmware
+      - mesa-dri-drivers
+      - xorg-x11-drv-amdgpu
       # Virtualization stack
       - libvirt
       - qemu-kvm
@@ -29,13 +33,14 @@ modules:
       - akmods
       - just
 
-  # Kernel arguments for VFIO/IOMMU, NVIDIA, and virtualization
+  # Kernel arguments for AMD VFIO/IOMMU and virtualization
   - type: kargs
     kargs:
-      - intel_iommu=on
+      - amd_iommu=on
       - iommu=pt
       - kvm.ignore_msrs=1
-      - nvidia-drm.modeset=1
+      - kvm_amd.npt=1
+      - kvm_amd.avic=1
       - rd.driver.blacklist=nouveau
       - modprobe.blacklist=nouveau
 
@@ -107,3 +112,6 @@ modules:
 
   # Local AI: Ollama Podman Quadlet (disabled by default; enable per-user)
   - from-file: ../modules/local-ai/module.yml
+
+  # VFIO module loading for virtual device sandboxing / PCI passthrough
+  - from-file: ../modules/vfio-sandbox/module.yml

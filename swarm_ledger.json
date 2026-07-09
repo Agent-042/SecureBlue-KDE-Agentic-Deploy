@@ -1,8 +1,8 @@
 {
-  "current_turn": "kimi",
+  "current_turn": "antigravity",
   "last_action_by": "kimi",
-  "status": "verified",
-  "target_file": "scripts/env-init.sh,modules/local-ai/module.yml,recipes/recipe.yml",
+  "status": "pending_verification",
+  "target_file": "recipes/recipe.yml,modules/vfio-sandbox/module.yml,scripts/push-live-status.sh",
   "verification_logs": [
     {
       "timestamp": "2026-07-09T07:15:00Z",
@@ -51,6 +51,12 @@
       "agent": "Kimi Code 2.7",
       "action": "GitHub Actions build 29029107005 completed successfully; Phase 0/5 image pushed and signed.",
       "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-09T16:26:09Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Retargeted recipe to AMD Ryzen 7 7800X3D (kinoite-main-hardened), added AMD microcode/Radeon drivers, AMD IOMMU kargs, VFIO sandbox module, and installed push-live-status.sh post-commit hook.",
+      "result": "pending_verification"
     }
   ]
 }
