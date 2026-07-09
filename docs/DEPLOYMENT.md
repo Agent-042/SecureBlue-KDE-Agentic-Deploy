@@ -116,7 +116,6 @@ containers:
   flatpaks:
   - net.mullvad.MullvadBrowser
   - org.keepassxc.KeePassXC
-  - com.dropbox.Dropbox
   - com.google.Chrome
   - com.yubico.yubioath
 ```
