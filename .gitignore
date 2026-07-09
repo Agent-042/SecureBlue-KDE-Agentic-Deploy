@@ -22,6 +22,10 @@ cosign.pub
 !files/audio-eq/usr/etc/easyeffects/output/
 !files/audio-eq/usr/etc/easyeffects/output/**
 
+# Allow Podman Quadlet files despite generic containers/ ignore.
+!files/local-ai/usr/share/containers/
+!files/local-ai/usr/share/containers/**
+
 # Secrets
 *.key
 *.sec1
