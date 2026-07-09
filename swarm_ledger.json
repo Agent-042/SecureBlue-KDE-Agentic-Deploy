@@ -2,7 +2,7 @@
   "current_turn": "antigravity",
   "last_action_by": "kimi",
   "status": "pending_verification",
-  "target_file": "files/network-lockdown/usr/etc/mullvad-vpn/settings.json",
+  "target_file": "modules/kde-theming/module.yml,recipes/recipe.yml",
   "verification_logs": [
     {
       "timestamp": "2026-07-09T07:15:00Z",
@@ -32,6 +32,12 @@
       "timestamp": "2026-07-09T14:51:01Z",
       "agent": "Kimi Code 2.7",
       "action": "GitHub Actions build 29026399136 completed successfully; Phase 3 audio-eq image pushed and signed. Prepared Mullvad udp2tcp + lockdown_mode alignment on branch fix-mullvad-udp2tcp, ready to merge.",
+      "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-09T15:06:34Z",
+      "agent": "Kimi Code 2.7",
+      "action": "GitHub Actions build 29027094875 completed successfully; Mullvad fix image pushed and signed. Merging phase-4-kde-theming (dark mode, 150% scale, macOS window controls).",
       "result": "pending_verification"
     }
   ]
