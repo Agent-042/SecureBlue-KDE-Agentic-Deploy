@@ -104,3 +104,6 @@ modules:
 
   # KDE theming: dark mode, 150% scale, macOS-style window controls
   - from-file: ../modules/kde-theming/module.yml
+
+  # Local AI: Ollama Podman Quadlet (disabled by default; enable per-user)
+  - from-file: ../modules/local-ai/module.yml
