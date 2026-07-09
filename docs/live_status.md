@@ -1,10 +1,10 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-09T18:27:23Z
+Generated: 2026-07-09T18:59:11Z
 
 **Current turn:** kimi | **Status:** verified | **Last action by:** kimi
 
-**Target files:** modules/immutability/module.yml,modules/ephemeral-home/module.yml,modules/persist-workspace/module.yml,modules/kimi-resume/module.yml,recipes/recipe.yml
+**Target files:** docs/DEPLOYMENT.md,README.md,Agentic-OS workspace migration
 
 ## Verification log
 
@@ -21,3 +21,5 @@ Generated: 2026-07-09T18:27:23Z
 | 2026-07-09T16:36:08Z | Kimi Code 2.7 | GitHub Actions build 29033418089 completed successfully; AMD Ryzen 7 7800X3D retarget image pushed and signed. | verified |
 | 2026-07-09T18:17:53Z | Kimi Code 2.7 | Removed tmpfs /var/home from immutability, moved it to optional modules/ephemeral-home, added persist-workspace and kimi-resume modules to keep /var/home persistent and provide a username-agnostic Agentic-OS workspace. | pending_verification |
 | 2026-07-09T18:27:02Z | Kimi Code 2.7 | GitHub Actions build 29040171373 completed successfully; persistent /var/home image pushed and signed. | verified |
+| 2026-07-09T18:58:09Z | Kimi Code 2.7 | Migrated local repo to ~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy (persistent /var/lib), updated docs/DEPLOYMENT.md and README.md to reflect AMD target and Agentic-OS workspace. | pending_verification |
+| 2026-07-09T18:58:46Z | Kimi Code 2.7 | BlueBuild validation passed; documentation-only push merged to main. No recipe changes, so no image rebuild required. | verified |
