@@ -88,5 +88,11 @@ modules:
   # On-image documentation
   - from-file: ../modules/docs-readme/module.yml
 
+  # Immutability layer: tmpfs /var/home, redacted SDDM, powerdevil policies
+  - from-file: ../modules/immutability/module.yml
+
+  # Network lockdown: Mullvad daemon defaults and Chrome split-tunnel routing
+  - from-file: ../modules/network-lockdown/module.yml
+
   # Image signing support
   - type: signing
