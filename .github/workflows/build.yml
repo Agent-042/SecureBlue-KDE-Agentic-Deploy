@@ -30,8 +30,8 @@ jobs:
       packages: write
       id-token: write
     env:
-      # Password for the cosign-generated signing key stored in SIGNING_SECRET.
-      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      # The cosign-generated signing key in SIGNING_SECRET has no password.
+      COSIGN_PASSWORD: ""
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
