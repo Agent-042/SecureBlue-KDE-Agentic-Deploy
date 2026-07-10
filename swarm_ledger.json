@@ -117,6 +117,12 @@
       "agent": "Kimi Code 2.7",
       "action": "Implemented modules/tahoe-theming (macOS Tahoe WhiteSur theme, first-login cosmetic reset), docs/TAHOE_THEMING.md, docs/LIVE_USB_PARITY.md, Mullvad udp2tcp + lockdown bootstrap service, scripts/push-live-status.sh hook, and updated all three fleet recipes; all recipes validated with bluebuild.",
       "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-10T10:11:47Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Fixed mullvad-vpn module to use rpm-ostree for package install and split bootstrap files into modules/mullvad-bootstrap; corrected WhiteSur-cursors install invocation.",
+      "result": "pending_verification"
     }
   ]
 }

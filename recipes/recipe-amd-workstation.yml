@@ -97,6 +97,9 @@ modules:
   # Mullvad VPN RPM repository and package
   - from-file: ../modules/mullvad-vpn/module.yml
 
+  # Mullvad udp2tcp + lockdown mode bootstrap service
+  - from-file: ../modules/mullvad-bootstrap/module.yml
+
   # Enable Mullvad VPN daemon and one-shot bootstrap for udp2tcp + lockdown
   - type: systemd
     system:

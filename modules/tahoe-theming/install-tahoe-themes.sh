@@ -109,7 +109,9 @@ download_tar "https://github.com/vinceliuice/WhiteSur-cursors/archive/refs/heads
 tar -xzf "${TMPDIR}/cursors/whitesur-cursors.tar.gz" -C "${TMPDIR}/cursors"
 cd "${TMPDIR}/cursors/WhiteSur-cursors-master"
 if [[ -x ./install.sh ]]; then
-  ./install.sh -d /usr/share/icons
+  # WhiteSur-cursors install.sh uses the root/user default destination;
+  # running it without arguments installs to /usr/share/icons as root.
+  ./install.sh
 fi
 
 # WhiteSur KDE Plasma / Aurorae / Kvantum themes
