@@ -5,18 +5,20 @@
 # and seeds Tahoe-specific assets (wallpaper, icons).
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# BlueBuild mounts the repo's ./files/ directory at /tmp/files/ during image build.
+# Supporting Tahoe assets live in files/tahoe-theming/.
+TAHOE_SRC="/tmp/files/tahoe-theming"
 
 # ---------------------------------------------------------------------------
 # Copy static XDG defaults and helper service
 # ---------------------------------------------------------------------------
 mkdir -p /usr/etc/xdg
-if [[ -d "${SCRIPT_DIR}/defaults/xdg" ]]; then
-  cp -aT "${SCRIPT_DIR}/defaults/xdg" /usr/etc/xdg
+if [[ -d "${TAHOE_SRC}/defaults/xdg" ]]; then
+  cp -aT "${TAHOE_SRC}/defaults/xdg" /usr/etc/xdg
 fi
 
-install -Dm755 "${SCRIPT_DIR}/tahoe-cosmetic-reset" /usr/bin/tahoe-cosmetic-reset
-install -Dm644 "${SCRIPT_DIR}/tahoe-cosmetic-reset.service" \
+install -Dm755 "${TAHOE_SRC}/tahoe-cosmetic-reset" /usr/bin/tahoe-cosmetic-reset
+install -Dm644 "${TAHOE_SRC}/tahoe-cosmetic-reset.service" \
   /usr/lib/systemd/user/tahoe-cosmetic-reset.service
 
 # ---------------------------------------------------------------------------
