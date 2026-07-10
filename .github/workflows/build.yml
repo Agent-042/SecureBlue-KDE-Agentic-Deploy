@@ -33,9 +33,9 @@ jobs:
       fail-fast: false
       matrix:
         recipe:
-          - recipe
-          - recipe-amd-workstation
-          - recipe-intel-g16
+          - recipe.yml
+          - recipe-amd-workstation.yml
+          - recipe-intel-g16.yml
     env:
       # The cosign-generated signing key in SIGNING_SECRET has no password.
       COSIGN_PASSWORD: ""
@@ -46,7 +46,7 @@ jobs:
       - name: Build and push image
         uses: blue-build/github-action@v1
         with:
-          # Relative to the config/ or recipes/ directory; do not prepend recipes/.
+          # Filename inside the recipes/ directory, including the .yml extension.
           # The image tag is derived from the recipe's `name:` field.
           recipe: ${{ matrix.recipe }}
           registry_token: ${{ github.token }}
