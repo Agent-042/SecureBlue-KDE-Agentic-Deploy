@@ -16,17 +16,28 @@ The workflow in `.github/workflows/build.yml` builds and pushes the image on eve
 
 ## 2. Rebase a host
 
-From a Fedora Atomic KDE installation, rebase to the built image:
+This project builds three fleet images. Use the fleet-aware helper to detect the current hardware and rebase to the matching image:
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest
-systemctl reboot
+# Preview the detected image and command
+scripts/rebase.sh --dry-run
+
+# Rebase to the detected image
+scripts/rebase.sh
+
+# Verify the image signature with cosign before rebasing
+scripts/rebase.sh --verify
 ```
 
-If you have image signing configured, use the verified ref instead:
+Or rebase manually to the image for your fleet:
+
+- Default / fallback: `ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest`
+- AMD Ryzen 9 9950X workstation (dual RTX 4080, VFIO): `ghcr.io/Agent-042/secureblue-kde-agentic-deploy-amd-workstation:latest`
+- Intel Core Ultra 9 G16 laptop (RTX 5080 OLED, Arc/NPU): `ghcr.io/Agent-042/secureblue-kde-agentic-deploy-intel-g16:latest`
 
 ```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/Agent-042/secureblue-kde-agentic-deploy-amd-workstation:latest
+systemctl reboot
 ```
 
 ## 3. Post-install configuration
@@ -80,17 +91,28 @@ IOMMU and KVM are already enabled. To complete VFIO or Whonix-on-KVM:
    ```
 
 2. Apply per-device `driverctl` overrides or libvirt XML hostdev entries.
+
+   On the AMD workstation image, the `vfio-bind-secondary-gpu.service` can bind the non-primary NVIDIA GPU to `vfio-pci` at boot. Run the helper manually with:
+
+   ```bash
+   sudo /usr/bin/vfio-bind-secondary-gpu.sh
+   ```
+
 3. For Whonix, import the KVM templates and attach them to an isolated virtual network.
 
 ## 7. Local AI (Ollama)
 
-The image includes an Ollama Podman Quadlet that runs as a user service with AMD Radeon ROCm support.
+Each fleet image includes an Ollama Podman Quadlet that runs as a user service.
 
 ```bash
 systemctl --user enable --now ollama.service
 ```
 
-The Quadlet uses `docker.io/ollama/ollama:rocm` for AMD Radeon GPU acceleration. For CPU-only inference, edit the Quadlet and change the image to `docker.io/ollama/ollama:latest`.
+Fleet-specific defaults:
+
+- **Default AMD 7800X3D image:** uses `docker.io/ollama/ollama:rocm` for AMD Radeon iGPU acceleration.
+- **AMD 9950X workstation:** uses CPU inference (`docker.io/ollama/ollama:latest`) because the host has no AMD iGPU and the NVIDIA RTX 4080s are reserved for display and VFIO passthrough.
+- **Intel G16 laptop:** uses CPU inference by default with Intel `/dev/dri` render access available. For Intel Arc iGPU or Core Ultra NPU offload, run `ipex-llm` / OpenVINO inside a persistent Distrobox rather than this Quadlet.
 
 Downloaded models persist in the `ollama` Podman volume (`/root/.ollama` inside the container).
 
@@ -164,14 +186,19 @@ containers:
 - **`flatpak-overrides`** — Sandboxing overrides for default Flatpaks. (`modules/flatpak-overrides/module.yml`)
 - **`google-chrome-config`** — Enterprise policy for Google Chrome. (`modules/google-chrome-config/module.yml`)
 - **`immutability`** — Redacted SDDM and powerdevil policies. (`modules/immutability/module.yml`)
+- **`intel-arc-npu`** — Custom BlueBuild module. (`modules/intel-arc-npu/module.yml`)
 - **`kde-theming`** — Dark mode, scaling, and macOS-style window controls. (`modules/kde-theming/module.yml`)
 - **`kimi-resume`** — Post-login helper to restore the project repo and Kimi CLI. (`modules/kimi-resume/module.yml`)
 - **`local-ai`** — Ollama Podman Quadlet. (`modules/local-ai/module.yml`)
+- **`local-ai-amd-workstation`** — Custom BlueBuild module. (`modules/local-ai-amd-workstation/module.yml`)
+- **`local-ai-intel-g16`** — Custom BlueBuild module. (`modules/local-ai-intel-g16/module.yml`)
 - **`mullvad-vpn`** — Mullvad VPN RPM repository and package. (`modules/mullvad-vpn/module.yml`)
 - **`network-lockdown`** — Mullvad defaults and Chrome split-tunnel routing. (`modules/network-lockdown/module.yml`)
+- **`oled-g16-tuning`** — Custom BlueBuild module. (`modules/oled-g16-tuning/module.yml`)
 - **`persist-workspace`** — Persistent `~/Agentic-OS` workspace. (`modules/persist-workspace/module.yml`)
 - **`privacy-browser-config`** — Isolated research browser launcher. (`modules/privacy-browser-config/module.yml`)
 - **`trivalent-config`** — Enterprise policy for Trivalent. (`modules/trivalent-config/module.yml`)
 - **`trivalent-rpm`** — Hardened Trivalent browser RPM. (`modules/trivalent-rpm/module.yml`)
 - **`vfio-sandbox`** — VFIO module loading for PCI passthrough. (`modules/vfio-sandbox/module.yml`)
+- **`vfio-workstation`** — Custom BlueBuild module. (`modules/vfio-workstation/module.yml`)
 <!-- END MODULES_SECTION -->

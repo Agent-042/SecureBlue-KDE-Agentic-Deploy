@@ -1,4 +1,4 @@
-name: Build SecureBlue-KDE-Agentic-Deploy Image
+name: Build SecureBlue-KDE-Agentic-Deploy Images
 
 on:
   schedule:
@@ -23,12 +23,19 @@ concurrency:
 
 jobs:
   build:
-    name: Build and Push Custom Image
+    name: Build and Push ${{ matrix.recipe }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
       id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        recipe:
+          - recipe
+          - recipe-amd-workstation
+          - recipe-intel-g16
     env:
       # The cosign-generated signing key in SIGNING_SECRET has no password.
       COSIGN_PASSWORD: ""
@@ -40,7 +47,8 @@ jobs:
         uses: blue-build/github-action@v1
         with:
           # Relative to the config/ or recipes/ directory; do not prepend recipes/.
-          recipe: recipe.yml
+          # The image tag is derived from the recipe's `name:` field.
+          recipe: ${{ matrix.recipe }}
           registry_token: ${{ github.token }}
           # Signing placeholder: generate cosign keypair and store the
           # private key in SIGNING_SECRET, the public key in the repo root

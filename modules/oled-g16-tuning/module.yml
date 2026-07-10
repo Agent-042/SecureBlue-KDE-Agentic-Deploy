@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: oled-g16-tuning/usr
+    destination: /usr
