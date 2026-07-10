@@ -1,6 +1,6 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-10T16:35:08Z
+Generated: 2026-07-10T16:36:03Z
 
 **Current turn:** kimi | **Status:** pending_verification | **Last action by:** kimi
 
@@ -43,4 +43,4 @@ Generated: 2026-07-10T16:35:08Z
 | 2026-07-10T13:08:51Z | Kimi Code 2.7 | GitHub Actions matrix build 29094135021 completed successfully with Kvantum guard, NVIDIA GSP workaround, and /etc/skel seeding. All three images built, pushed, and signed. | verified |
 | 2026-07-10T16:10:52Z | Kimi Code 2.7 | Closed macOS icon pipeline gaps: added libicns-utils and .icns-to-PNG conversion in install-tahoe-themes.sh, wired MACOS_ICONS_API_KEY secret into GitHub Actions workflow, created fallback SVGs for Microsoft Word/Photos/Netflix, and moved macos-icons assets under files/ so BlueBuild can access them. All recipes validated. | verified |
 | 2026-07-10T16:24:10Z | Kimi Code 2.7 | GitHub Actions matrix build 29106467764 completed successfully after icon pipeline fix (libicns-utils, MACOS_ICONS_API_KEY wiring, fallback SVGs). All three fleet images pushed and signed. | verified |
-| 2026-07-10T16:35:08Z | Kimi Code 2.7 | Addressed audit gaps: pushed tahoe-gap-optimizer, pinned Ollama Quadlet images to SHA256 digests (latest/rocm), hardened /tmp/files path assumption in install-tahoe-themes.sh, documented MACOS_ICONS_API_KEY setup. GitHub Actions build 29107876706 pending. | pending_verification |
+| 2026-07-10T16:35:08Z | Kimi Code 2.7 | Addressed audit gaps: pushed tahoe-gap-optimizer, pinned Ollama Quadlet images to SHA256 digests (latest/rocm), hardened /tmp/files path assumption in install-tahoe-themes.sh, documented MACOS_ICONS_API_KEY setup. GitHub Actions build 29107942746 pending (superseded 29107876706 after adding scraper retry logic). | pending_verification |
