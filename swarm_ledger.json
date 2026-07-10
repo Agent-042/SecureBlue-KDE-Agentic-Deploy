@@ -129,6 +129,12 @@
       "agent": "Kimi Code 2.7",
       "action": "Removed ffmpeg-free from all recipes to resolve rpm-ostree depsolve conflict with preinstalled ffmpeg package.",
       "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-10T10:33:23Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Moved mullvad-bootstrap files from modules/ to files/ to match BlueBuild files-module convention.",
+      "result": "pending_verification"
     }
   ]
 }
