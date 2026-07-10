@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Post-commit hook: keep docs/live_status.md in sync with swarm_ledger.json.
-# Safe to run from .git/hooks/post-commit: skips when the current commit
-# already carries the [live-status] marker to avoid infinite recursion.
+# Post-commit hook: keep docs/live_status.md in sync with swarm_ledger.json,
+# then push the result. Safe from .git/hooks/post-commit.
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -13,22 +12,21 @@ cd "$REPO_ROOT"
 # Avoid recursive live-status commits triggered by the post-commit hook.
 # Only the subject line is checked so the marker can be mentioned in body text.
 if git log -1 --pretty=%s | grep -q '^\[live-status\]'; then
+  git push origin HEAD
   exit 0
 fi
 
-if [[ ! -f "$LEDGER" ]]; then
-  echo "push-live-status: ledger not found: $LEDGER" >&2
-  exit 0
-fi
+if [[ -f "$LEDGER" ]]; then
+  # Skip regeneration if the ledger is unchanged since the last live-status commit.
+  # This avoids timestamp-only churn in docs/live_status.md.
+  LAST_STATUS_COMMIT=$(git log --grep='^\[live-status\]' -1 --pretty=%H 2>/dev/null || true)
+  LEDGER_CHANGED=true
+  if [[ -n "$LAST_STATUS_COMMIT" ]] && git diff --quiet "$LAST_STATUS_COMMIT" -- "$LEDGER"; then
+    LEDGER_CHANGED=false
+  fi
 
-# Skip if the ledger is unchanged since the last live-status commit.
-# This avoids timestamp-only churn in docs/live_status.md.
-LAST_STATUS_COMMIT=$(git log --grep='^\[live-status\]' -1 --pretty=%H 2>/dev/null || true)
-if [[ -n "$LAST_STATUS_COMMIT" ]] && git diff --quiet "$LAST_STATUS_COMMIT" -- "$LEDGER"; then
-  exit 0
-fi
-
-python3 - "$LEDGER" "$STATUS_MD" <<'PY'
+  if [[ "$LEDGER_CHANGED" == true ]]; then
+    python3 - "$LEDGER" "$STATUS_MD" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
@@ -74,10 +72,12 @@ status_path.parent.mkdir(parents=True, exist_ok=True)
 status_path.write_text("\n".join(lines))
 PY
 
-if git diff --quiet -- "$STATUS_MD"; then
-  exit 0
+    if ! git diff --quiet -- "$STATUS_MD"; then
+      git add "$STATUS_MD"
+      git commit -m "[live-status] sync docs/live_status.md with swarm_ledger.json"
+    fi
+  fi
 fi
 
-git add "$STATUS_MD"
-git commit -m "[live-status] sync docs/live_status.md with swarm_ledger.json"
+# Always push so the original commit (and any live-status commit) reach origin.
 git push origin HEAD
