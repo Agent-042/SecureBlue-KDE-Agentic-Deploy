@@ -1,7 +1,7 @@
 var desktop = new Activity
 desktop.wallpaperPlugin = "org.kde.image"
 
-// Top panel (menu bar with window buttons for maximized windows)
+// Top panel (menu bar)
 var topPanel = new Panel
 topPanel.location = "top"
 topPanel.alignment = "left"
@@ -17,12 +17,6 @@ topPanel.addWidget("org.kde.plasma.appmenu")
 // Spacer
 topPanel.addWidget("org.kde.plasma.panelspacer")
 
-// Window buttons (for maximized windows — stoplights appear here when title bar is hidden)
-var winButtons = topPanel.addWidget("org.kde.windowbuttons")
-winButtons.currentConfigGroup = ["General"]
-winButtons.writeConfig("spacing", 4)
-winButtons.writeConfig("buttonSize", 14)
-
 // System tray
 topPanel.addWidget("org.kde.plasma.systemtray")
 
@@ -36,15 +30,17 @@ topPanel.addWidget("org.kde.plasma.digitalclock")
 
 var dock = new Panel
 dock.location = "bottom"
-dock.lengthMode = "fit"
 dock.alignment = "center"
 dock.floating = true
 dock.hiding = "none"
+dock.lengthMode = "custom"
+dock.minimumLength = 0
+dock.maximumLength = 3840
 dock.height = 2 * Math.ceil(gridUnit * 3.5 / 2)
 
 var tasks = dock.addWidget("org.kde.plasma.icontasks")
 tasks.currentConfigGroup = ["General"]
-tasks.writeConfig("launchers", "applications:org.kde.dolphin.desktop,applications:org.kde.konsole.desktop,applications:org.kde.kwrite.desktop,applications:systemsettings.desktop,applications:trivalent.desktop,applications:org.kde.spectacle.desktop,applications:openwebui.desktop,applications:openhands.desktop")
+tasks.writeConfig("launchers", "applications:org.kde.dolphin.desktop,applications:org.kde.konsole.desktop,applications:org.kde.kwrite.desktop,applications:systemsettings.desktop,applications:trivalent.desktop,applications:org.kde.spectacle.desktop,applications:org.mozilla.Thunderbird.desktop,applications:com.vscodium.codium.desktop")
 tasks.writeConfig("sortingStrategy", 0)
 tasks.writeConfig("groupingStrategy", 0)
 tasks.writeConfig("separateLaunchers", false)

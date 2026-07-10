@@ -5,7 +5,7 @@
   "lockdown_mode": true,
   "relay_settings": {
     "normal": {
-      "location": "any",
+      "location": "us",
       "ownership": "any",
       "providers": "any",
       "tunnel_protocol": "any",
@@ -16,7 +16,7 @@
     }
   },
   "obfuscation_settings": {
-    "selected_obfuscation": "udp2tcp",
+    "selected_obfuscation": "quic",
     "udp2tcp": {
       "port": "any"
     }

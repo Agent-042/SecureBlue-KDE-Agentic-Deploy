@@ -15,8 +15,13 @@ SlidePaths=/usr/share/tahoe/wallpapers/
 FillMode=0
 
 [Containments][2]
-plugin=org.kde.panel
+activityId=
+formfactor=2
+immutability=1
+lastScreen=0
 location=3
+plugin=org.kde.panel
+wallpaperplugin=org.kde.image
 
 [Containments][2][General]
 thickness=26
@@ -67,18 +72,25 @@ showDate=true
 use24hFormat=0
 
 [Containments][3]
-plugin=org.kde.panel
+activityId=
+formfactor=2
+immutability=1
+lastScreen=0
 location=4
+plugin=org.kde.panel
+wallpaperplugin=org.kde.image
 
 [Containments][3][General]
 thickness=50
 floating=true
 offset=0
 alignment=center
-lengthMode=2
+lengthMode=custom
 panelVisibility=0
 opacity=opaque
-AppletOrder=20
+maxLength=3840
+minLength=0
+AppletOrder=20;21;22
 
 [Containments][3][Applets][20]
 immutability=1
@@ -92,7 +104,19 @@ separateLaunchers=false
 launchInPlace=true
 sortingStrategy=0
 groupingStrategy=0
-launchers=applications:org.kde.dolphin.desktop,applications:org.kde.konsole.desktop,applications:org.kde.kwrite.desktop,applications:systemsettings.desktop,applications:trivalent.desktop,applications:org.kde.spectacle.desktop,applications:org.mozilla.Thunderbird.desktop,applications:com.vscodium.codium.desktop,applications:trash.desktop
+launchers=applications:org.kde.dolphin.desktop,applications:org.kde.konsole.desktop,applications:org.kde.kwrite.desktop,applications:systemsettings.desktop,applications:trivalent.desktop,applications:org.kde.spectacle.desktop,applications:org.mozilla.Thunderbird.desktop,applications:com.vscodium.codium.desktop
+
+[Containments][3][Applets][21]
+immutability=1
+plugin=org.kde.plasma.panelspacer
+
+[Containments][3][Applets][21][Configuration][General]
+expanding=false
+length=20
+
+[Containments][3][Applets][22]
+immutability=1
+plugin=org.kde.plasma.trash
 
 [ScreenMapping]
 screenMapping=
