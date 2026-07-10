@@ -12,6 +12,7 @@ on:
       - '**.md'
       - 'docs/**'
       - 'swarm_ledger.json'
+      - 'scripts/push-live-status.sh'
   pull_request:
     branches:
       - main

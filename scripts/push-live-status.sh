@@ -21,6 +21,13 @@ if [[ ! -f "$LEDGER" ]]; then
   exit 0
 fi
 
+# Skip if the ledger is unchanged since the last live-status commit.
+# This avoids timestamp-only churn in docs/live_status.md.
+LAST_STATUS_COMMIT=$(git log --grep='^\[live-status\]' -1 --pretty=%H 2>/dev/null || true)
+if [[ -n "$LAST_STATUS_COMMIT" ]] && git diff --quiet "$LAST_STATUS_COMMIT" -- "$LEDGER"; then
+  exit 0
+fi
+
 python3 - "$LEDGER" "$STATUS_MD" <<'PY'
 import json
 import sys
