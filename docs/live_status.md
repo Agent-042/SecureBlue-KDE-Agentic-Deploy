@@ -1,8 +1,8 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-10T12:54:23Z
+Generated: 2026-07-10T13:08:56Z
 
-**Current turn:** kimi | **Status:** pending_verification | **Last action by:** kimi
+**Current turn:** kimi | **Status:** verified | **Last action by:** kimi
 
 **Target files:** recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*
 
@@ -39,4 +39,5 @@ Generated: 2026-07-10T12:54:23Z
 | 2026-07-10T11:37:11Z | Kimi Code 2.7 | Made push-live-status.sh idempotent (skips live_status.md when ledger is unchanged) and always pushes the current HEAD; added ledger and hook script to workflow paths-ignore. | verified |
 | 2026-07-10T12:36:03Z | Kimi Code 2.7 | Added modules/agent-stack and modules/agent-stack-skel to bake Ollama, qwen2.5-coder:7b-instruct-q4_K_M, Cline CLI, Kimi Code CLI, OpenClaw, and Antigravity CLI into the image with /etc/skel zero-config templates. Replaced local-ai modules in all three fleet recipes; all recipes validated with bluebuild. | verified |
 | 2026-07-10T12:52:29Z | Kimi Code 2.7 | GitHub Actions matrix build 29093100962 completed successfully with the baked-in agent stack. All three images built, pushed, and signed. | verified |
-| 2026-07-10T12:54:17Z | Kimi Code 2.7 | Applied pre-test critical fixes: Kvantum 1.1.7 composite guard in install-tahoe-themes.sh, nvidia.NVreg_EnableGpuFirmware=0 in G16 kargs, confirmed i915.force_probe=7d51 is removed, and seeded Tahoe XDG defaults into /etc/skel/.config for new users. | pending_verification |
+| 2026-07-10T12:54:17Z | Kimi Code 2.7 | Applied pre-test critical fixes: Kvantum 1.1.7 composite guard in install-tahoe-themes.sh, nvidia.NVreg_EnableGpuFirmware=0 in G16 kargs, confirmed i915.force_probe=7d51 is removed, and seeded Tahoe XDG defaults into /etc/skel/.config for new users. | verified |
+| 2026-07-10T13:08:51Z | Kimi Code 2.7 | GitHub Actions matrix build 29094135021 completed successfully with Kvantum guard, NVIDIA GSP workaround, and /etc/skel seeding. All three images built, pushed, and signed. | verified |
