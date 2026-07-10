@@ -11,7 +11,8 @@ STATUS_MD="${REPO_ROOT}/docs/live_status.md"
 cd "$REPO_ROOT"
 
 # Avoid recursive live-status commits triggered by the post-commit hook.
-if git log -1 --pretty=%B | grep -q '\[live-status\]'; then
+# Only the subject line is checked so the marker can be mentioned in body text.
+if git log -1 --pretty=%s | grep -q '^\[live-status\]'; then
   exit 0
 fi
 
