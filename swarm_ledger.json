@@ -135,6 +135,18 @@
       "agent": "Kimi Code 2.7",
       "action": "Moved mullvad-bootstrap files from modules/ to files/ to match BlueBuild files-module convention.",
       "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-10T10:51:11Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Moved tahoe-theming install script to files/scripts/ and assets to files/tahoe-theming/ to satisfy BlueBuild script/files module layout; all recipes validated.",
+      "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-10T10:51:11Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Rewrote scripts/push-live-status.sh to regenerate docs/live_status.md from swarm_ledger.json, skip on [live-status] commits, and push with 'git push origin HEAD' to avoid hangs.",
+      "result": "pending_verification"
     }
   ]
 }
