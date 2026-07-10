@@ -36,7 +36,6 @@ modules:
       - kvantum
       # Tahoe theme asset tooling and fonts
       - rsms-inter-fonts
-      - ffmpeg-free
       - ImageMagick
       - jq
       - python3-pip

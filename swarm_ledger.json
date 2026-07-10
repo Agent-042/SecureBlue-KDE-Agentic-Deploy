@@ -123,6 +123,12 @@
       "agent": "Kimi Code 2.7",
       "action": "Fixed mullvad-vpn module to use rpm-ostree for package install and split bootstrap files into modules/mullvad-bootstrap; corrected WhiteSur-cursors install invocation.",
       "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-10T10:22:49Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Removed ffmpeg-free from all recipes to resolve rpm-ostree depsolve conflict with preinstalled ffmpeg package.",
+      "result": "pending_verification"
     }
   ]
 }
