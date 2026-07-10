@@ -1,10 +1,10 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-09T23:44:14Z
+Generated: 2026-07-10T00:46:04Z
 
 **Current turn:** kimi | **Status:** verified | **Last action by:** kimi
 
-**Target files:** files/network-lockdown/usr/etc/mullvad-vpn/settings.json, recipes/recipe.yml, files/local-ai/usr/share/containers/systemd/ollama.container, files/flatpak-overrides/
+**Target files:** recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*
 
 ## Verification log
 
@@ -24,3 +24,7 @@ Generated: 2026-07-09T23:44:14Z
 | 2026-07-09T18:58:09Z | Kimi Code 2.7 | Migrated local repo to ~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy (persistent /var/lib), updated docs/DEPLOYMENT.md and README.md to reflect AMD target and Agentic-OS workspace. | pending_verification |
 | 2026-07-09T18:58:46Z | Kimi Code 2.7 | BlueBuild validation passed; documentation-only push merged to main. No recipe changes, so no image rebuild required. | verified |
 | 2026-07-09T23:41:13Z | Kimi Code 2.7 | Verified Mullvad settings (lockdown_mode=true, selected_obfuscation=udp2tcp) on main and deleted stale fix-mullvad-udp2tcp branch. | verified |
+| 2026-07-10T00:15:12Z | Kimi Code 2.7 | Created dual-fleet recipes (AMD 9950X workstation, Intel G16 laptop), matrix build workflow, rebase.sh, VFIO bind helper, Intel Arc/NPU udev rules, OLED tuning helper, ISO docs, and fleet-aware local-ai Quadlets; all recipes validated. | pending_verification |
+| 2026-07-10T00:20:50Z | Kimi Code 2.7 | GitHub Actions matrix build 29059530577 failed because RECIPE_PATH resolved to ./recipes/recipe, ./recipes/recipe-amd-workstation, and ./recipes/recipe-intel-g16 (missing .yml extension). Fixed .github/workflows/build.yml matrix to use recipe.yml, recipe-amd-workstation.yml, and recipe-intel-g16.yml. Re-validated all recipes. | pending_verification |
+| 2026-07-10T00:32:35Z | Kimi Code 2.7 | GitHub Actions matrix build 29059753910 partially failed: recipe.yml succeeded, but recipe-amd-workstation.yml and recipe-intel-g16.yml failed because local-ai-amd-workstation and local-ai-intel-g16 Quadlet files were not tracked (the generic containers/ rule in .gitignore excluded them). Updated .gitignore with allow rules for the fleet local-ai directories and added the missing ollama.container files. | pending_verification |
+| 2026-07-10T00:45:30Z | Kimi Code 2.7 | GitHub Actions matrix build 29060223964 completed successfully. All three images built, pushed, and signed: secureblue-kde-agentic-deploy, secureblue-kde-agentic-deploy-amd-workstation, and secureblue-kde-agentic-deploy-intel-g16. | verified |
