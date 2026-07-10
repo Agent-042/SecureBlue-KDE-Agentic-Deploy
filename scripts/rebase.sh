@@ -166,14 +166,20 @@ main() {
 
     if [[ "${dry_run}" == true ]]; then
         if [[ ${#elevate_cmd[@]} -gt 0 ]]; then
-            echo "[dry-run] ${elevate_cmd[*]} rpm-ostree rebase ostree-unverified-registry:${image_ref}"
+            echo "[dry-run] ${elevate_cmd[*]} bash -c 'rpm-ostree rebase \"\$1\"' bash ostree-unverified-registry:${image_ref}"
         else
             echo "[dry-run] rpm-ostree rebase ostree-unverified-registry:${image_ref}"
         fi
         echo "[dry-run] systemctl reboot"
     else
         echo "Rebasing..."
-        "${elevate_cmd[@]}" rpm-ostree rebase "ostree-unverified-registry:${image_ref}"
+        # run0 on secureblue cannot exec rpm-ostree directly (returns exit 203);
+        # route through a shell so the execution context transitions correctly.
+        if [[ ${#elevate_cmd[@]} -gt 0 ]]; then
+            "${elevate_cmd[@]}" bash -c 'rpm-ostree rebase "$1"' bash "ostree-unverified-registry:${image_ref}"
+        else
+            rpm-ostree rebase "ostree-unverified-registry:${image_ref}"
+        fi
         echo "Rebase complete. Run 'systemctl reboot' to boot into the new image."
     fi
 }
