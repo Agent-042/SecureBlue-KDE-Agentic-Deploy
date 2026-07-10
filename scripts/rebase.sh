@@ -133,10 +133,8 @@ main() {
     if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
         if command -v run0 >/dev/null 2>&1; then
             elevate_cmd=(run0)
-        elif command -v sudo >/dev/null 2>&1; then
-            elevate_cmd=(sudo)
         else
-            echo "error: rebasing requires root privileges; install run0 or sudo to escalate." >&2
+            echo "error: rebasing requires root privileges; install run0 to escalate." >&2
             exit 1
         fi
     fi
