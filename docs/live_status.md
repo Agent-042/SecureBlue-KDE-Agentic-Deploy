@@ -1,8 +1,8 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-10T16:46:11Z
+Generated: 2026-07-10T16:57:25Z
 
-**Current turn:** kimi | **Status:** verified | **Last action by:** kimi
+**Current turn:** kimi | **Status:** pending_verification | **Last action by:** kimi
 
 **Target files:** recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*
 
@@ -45,3 +45,4 @@ Generated: 2026-07-10T16:46:11Z
 | 2026-07-10T16:24:10Z | Kimi Code 2.7 | GitHub Actions matrix build 29106467764 completed successfully after icon pipeline fix (libicns-utils, MACOS_ICONS_API_KEY wiring, fallback SVGs). All three fleet images pushed and signed. | verified |
 | 2026-07-10T16:35:08Z | Kimi Code 2.7 | Addressed audit gaps: pushed tahoe-gap-optimizer, pinned Ollama Quadlet images to SHA256 digests (latest/rocm), hardened /tmp/files path assumption in install-tahoe-themes.sh, documented MACOS_ICONS_API_KEY setup. GitHub Actions build 29107942746 completed successfully (superseded 29107876706 after adding scraper retry logic). | verified |
 | 2026-07-10T16:46:11Z | Kimi Code 2.7 | GitHub Actions matrix build 29107942764 completed successfully after audit-gap fixes (gap optimizer, Ollama digest pins, /tmp/files guard, scraper retry logic). All three fleet images pushed and signed. | verified |
+| 2026-07-10T16:57:25Z | Kimi Code 2.7 | Tightened system tray spacing (iconSpacing=0) in tahoe-cosmetic-reset, gap optimizer, and seeded /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc. Hardened WhiteSur SVGZ true-black patch to handle panel-background variants, tasks.svgz, Aurorae decoration, hint margins, and opacity. GitHub Actions build 29109244740 pending. | pending_verification |
