@@ -1,8 +1,5 @@
-type: rpm-ostree
-repos:
-  # Official Mullvad VPN RPM repository.
-  - https://repository.mullvad.net/rpm/stable/mullvad.repo
-keys:
-  - https://repository.mullvad.net/rpm/mullvad-keyring.asc
-install:
-  - mullvad-vpn
+# Official Mullvad VPN RPM repository + package, plus a one-shot bootstrap
+# service that locks in udp2tcp obfuscation and enables lockdown mode.
+type: script
+scripts:
+  - install-mullvad-vpn.sh

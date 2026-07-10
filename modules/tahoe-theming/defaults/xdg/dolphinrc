@@ -1,0 +1,25 @@
+[General]
+MenuBar=Disabled
+ShowFullPath=false
+ShowStatusBar=false
+ShowZoomSlider=false
+UseTabForSwitching=true
+SingleClick=true
+NaturalSorting=true
+ShowPreview=true
+ShowHiddenFiles=false
+SortDirectoriesFirst=true
+ViewMode=0
+
+[Icon View]
+ArrangeItems=1
+IconSize=64
+PreviewSize=64
+TextWidthIndex=2
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[MainWindow]
+MenuBar=Disabled

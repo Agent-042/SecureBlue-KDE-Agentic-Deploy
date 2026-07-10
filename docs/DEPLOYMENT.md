@@ -120,7 +120,7 @@ Downloaded models persist in the `ollama` Podman volume (`/root/.ollama` inside 
 
 The curated stack includes VibrantLinux for OLED dimming workarounds and SDR saturation boosts inside HDR. VibrantLinux is not packaged in the Fedora repositories, so it must be installed manually (e.g., from the upstream GitHub release) or substituted with KDE System Settings → Display → Color Management and Night Color for software dimming and color temperature adjustment.
 
-Kvantum Manager is layered at build time and can be launched to apply the SVG-based macOS-style theme elements configured by the kde-theming module.
+Kvantum Manager is layered at build time. The macOS Tahoe theme is applied automatically before first login by `tahoe-cosmetic-reset.service`; see [`docs/TAHOE_THEMING.md`](TAHOE_THEMING.md) for customization and troubleshooting.
 
 ## Auto-generated recipe summary
 
@@ -152,9 +152,11 @@ systemd:
     - libvirtd.service
     - virtlogd.service
     - mullvad-daemon.service
+    - mullvad-bootstrap.service
   user:
     enabled:
     - agentic-workspace-init.service
+    - tahoe-cosmetic-reset.service
 ```
 <!-- END SERVICES_SECTION -->
 
@@ -187,16 +189,16 @@ containers:
 - **`google-chrome-config`** — Enterprise policy for Google Chrome. (`modules/google-chrome-config/module.yml`)
 - **`immutability`** — Redacted SDDM and powerdevil policies. (`modules/immutability/module.yml`)
 - **`intel-arc-npu`** — Custom BlueBuild module. (`modules/intel-arc-npu/module.yml`)
-- **`kde-theming`** — Dark mode, scaling, and macOS-style window controls. (`modules/kde-theming/module.yml`)
 - **`kimi-resume`** — Post-login helper to restore the project repo and Kimi CLI. (`modules/kimi-resume/module.yml`)
 - **`local-ai`** — Ollama Podman Quadlet. (`modules/local-ai/module.yml`)
 - **`local-ai-amd-workstation`** — Custom BlueBuild module. (`modules/local-ai-amd-workstation/module.yml`)
 - **`local-ai-intel-g16`** — Custom BlueBuild module. (`modules/local-ai-intel-g16/module.yml`)
-- **`mullvad-vpn`** — Mullvad VPN RPM repository and package. (`modules/mullvad-vpn/module.yml`)
+- **`mullvad-vpn`** — Mullvad VPN RPM repo and package with udp2tcp + lockdown bootstrap service. (`modules/mullvad-vpn/module.yml`)
 - **`network-lockdown`** — Mullvad defaults and Chrome split-tunnel routing. (`modules/network-lockdown/module.yml`)
 - **`oled-g16-tuning`** — Custom BlueBuild module. (`modules/oled-g16-tuning/module.yml`)
 - **`persist-workspace`** — Persistent `~/Agentic-OS` workspace. (`modules/persist-workspace/module.yml`)
 - **`privacy-browser-config`** — Isolated research browser launcher. (`modules/privacy-browser-config/module.yml`)
+- **`tahoe-theming`** — macOS Tahoe-inspired WhiteSur theme with true-black panels, dock, and left stoplights. (`modules/tahoe-theming/module.yml`)
 - **`trivalent-config`** — Enterprise policy for Trivalent. (`modules/trivalent-config/module.yml`)
 - **`trivalent-rpm`** — Hardened Trivalent browser RPM. (`modules/trivalent-rpm/module.yml`)
 - **`vfio-sandbox`** — VFIO module loading for PCI passthrough. (`modules/vfio-sandbox/module.yml`)

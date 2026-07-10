@@ -1,0 +1,17 @@
+[PlasmaViews][Panel 2]
+panelOpacity=1
+floating=1
+
+[PlasmaViews][Panel 2][Defaults]
+thickness=26
+maxLength=3840
+minLength=0
+
+[PlasmaViews][Panel 3]
+panelOpacity=1
+floating=1
+
+[PlasmaViews][Panel 3][Defaults]
+thickness=50
+maxLength=3840
+minLength=0

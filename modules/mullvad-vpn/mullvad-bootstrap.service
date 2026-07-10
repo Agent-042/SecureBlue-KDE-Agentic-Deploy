@@ -1,0 +1,12 @@
+[Unit]
+Description=Mullvad VPN bootstrap (udp2tcp + lockdown)
+After=mullvad-daemon.service
+Requires=mullvad-daemon.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mullvad-bootstrap.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

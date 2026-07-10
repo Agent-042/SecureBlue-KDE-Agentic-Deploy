@@ -80,8 +80,10 @@ See [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) for full details.
 - [x] Flatpak applications sandboxed via system-wide overrides
 - [x] Enterprise and privacy browser profiles isolated
 - [x] Google Chrome (enterprise browser) and Yubico Authenticator (hardware token 2FA/TOTP) preinstalled as Flatpaks
-- [x] Mullvad VPN client preinstalled via RPM repository
+- [x] Mullvad VPN client preinstalled via RPM repository with udp2tcp obfuscation and lockdown mode enabled
 - [x] Multi-fleet images: default AMD 7800X3D, AMD 9950X workstation, Intel G16 laptop
+- [x] macOS Tahoe-inspired WhiteSur KDE theme with true-black panels, dock, and left stoplights
+- [x] Live USB parity: Flatpaks, theming, and workspace helpers work before installation
 
 ## VFIO / Whonix Note
 
@@ -95,4 +97,6 @@ IOMMU and KVM are enabled for future VFIO pass-through and Whonix-on-KVM isolati
 
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — step-by-step deployment guide
 - [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) — browser profile and certificate isolation details
+- [`docs/TAHOE_THEMING.md`](docs/TAHOE_THEMING.md) — macOS Tahoe-inspired KDE theme details
+- [`docs/LIVE_USB_PARITY.md`](docs/LIVE_USB_PARITY.md) — live USB behavior and limitations
 - [`scripts/generate-docs.py`](scripts/generate-docs.py) — regenerate deployment docs from `recipes/recipe.yml`

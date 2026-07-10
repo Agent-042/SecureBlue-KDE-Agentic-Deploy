@@ -34,6 +34,14 @@ modules:
       - just
       # macOS-style SVG theme engine for KDE Plasma
       - kvantum
+      # Tahoe theme asset tooling and fonts
+      - rsms-inter-fonts
+      - ffmpeg-free
+      - ImageMagick
+      - jq
+      - python3-pip
+      - git
+      - rsync
 
   # Kernel arguments for AMD VFIO/IOMMU and virtualization
   - type: kargs
@@ -87,11 +95,12 @@ modules:
   # Mullvad VPN RPM repository and package
   - from-file: ../modules/mullvad-vpn/module.yml
 
-  # Enable Mullvad VPN daemon
+  # Enable Mullvad VPN daemon and one-shot bootstrap for udp2tcp + lockdown
   - type: systemd
     system:
       enabled:
         - mullvad-daemon.service
+        - mullvad-bootstrap.service
 
   # Flatpak permission lockdown
   - from-file: ../modules/flatpak-overrides/module.yml
@@ -112,8 +121,8 @@ modules:
   # Audio equalizer: system-wide EasyEffects preset and login autoload for G16
   - from-file: ../modules/audio-eq/module.yml
 
-  # KDE theming: dark mode, 150% scale, macOS-style window controls
-  - from-file: ../modules/kde-theming/module.yml
+  # KDE theming: macOS Tahoe look with true-black panels, dock, stoplights
+  - from-file: ../modules/tahoe-theming/module.yml
 
   # Local AI: Ollama Podman Quadlet (disabled by default; enable per-user)
   - from-file: ../modules/local-ai/module.yml
@@ -129,6 +138,7 @@ modules:
     user:
       enabled:
         - agentic-workspace-init.service
+        - tahoe-cosmetic-reset.service
 
   # Kimi Code CLI resume helper (clone repo, verify CLI)
   - from-file: ../modules/kimi-resume/module.yml

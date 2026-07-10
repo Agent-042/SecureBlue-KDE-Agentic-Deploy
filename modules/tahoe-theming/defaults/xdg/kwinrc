@@ -1,0 +1,17 @@
+[org.kde.kdecoration2]
+library=org.kde.kwin.aurorae.v2
+theme=__aurorae__svg__WhiteSur-dark_x1.25
+ButtonsOnLeft=XIA
+ButtonsOnRight=
+BorderSize=None
+font=Inter,10,-1,0,400,0,0,0,0,0
+
+[Plugins]
+blurEnabled=true
+
+[Windows]
+Placement=Centered
+ElectricBorders=0
+
+[ModifierOnlyShortcuts]
+Meta=org.kde.krunner,/App,,KRunner

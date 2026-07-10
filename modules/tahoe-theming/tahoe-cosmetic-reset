@@ -1,0 +1,280 @@
+#!/usr/bin/env bash
+# tahoe-cosmetic-reset
+# Apply macOS Tahoe-inspired user-space cosmetic defaults before the first
+# Plasma login. Idempotent: a stamp file skips re-runs on installed systems.
+# On live USB the stamp is lost each reboot, so the look is restored every
+# fresh session.
+set -euo pipefail
+
+STAMP="${HOME}/.local/share/tahoe-cosmetic-reset-done"
+if [[ -f "$STAMP" ]]; then
+  exit 0
+fi
+
+CONFIG_DIR="${HOME}/.config"
+DATA_DIR="${HOME}/.local/share"
+APPS_DIR="${DATA_DIR}/applications"
+ICONS_DIR="${DATA_DIR}/icons/hicolor/scalable/apps"
+TAHOE_SHARE="/usr/share/tahoe"
+
+mkdir -p "$CONFIG_DIR" "$APPS_DIR" "$ICONS_DIR"
+
+# ---------------------------------------------------------------------------
+# Renamed / overridden .desktop entries
+# ---------------------------------------------------------------------------
+write_desktop() {
+  local file="$1"
+  cat > "$file" <<'EOF'
+[Desktop Entry]
+EOF
+}
+
+cat > "$APPS_DIR/org.kde.dolphin.desktop" <<'EOF'
+[Desktop Entry]
+Name=Finder
+Comment=Browse files
+Exec=dolphin %u
+Icon=org.kde.dolphin
+Type=Application
+Terminal=false
+Categories=System;FileTools;FileManager;
+MimeType=inode/directory;
+EOF
+
+cat > "$APPS_DIR/org.kde.konsole.desktop" <<'EOF'
+[Desktop Entry]
+Name=Terminal
+Comment=Terminal emulator
+Exec=konsole --profile "macOS Terminal"
+Icon=utilities-terminal
+Type=Application
+Terminal=false
+Categories=System;TerminalEmulator;
+EOF
+
+cat > "$APPS_DIR/org.kde.kwrite.desktop" <<'EOF'
+[Desktop Entry]
+Name=TextEdit
+Comment=Text editor
+Exec=kwrite %U
+Icon=text-editor
+Type=Application
+Terminal=false
+Categories=Utility;TextEditor;
+MimeType=text/plain;
+EOF
+
+cat > "$APPS_DIR/systemsettings.desktop" <<'EOF'
+[Desktop Entry]
+Name=Settings
+Comment=System settings
+Exec=env LD_PRELOAD= systemsettings
+Icon=preferences-system
+Type=Application
+Terminal=false
+Categories=Settings;
+EOF
+
+cat > "$APPS_DIR/trivalent.desktop" <<'EOF'
+[Desktop Entry]
+Name=Safari
+Comment=Browse the web
+Exec=/usr/bin/trivalent --profile-directory=Default --ozone-platform=wayland --enable-features=UseOzonePlatform --disable-features=WaylandWindowDecorations %U
+Icon=safari-dark
+Type=Application
+Terminal=false
+StartupNotify=true
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
+EOF
+
+cat > "$APPS_DIR/org.kde.spectacle.desktop" <<'EOF'
+[Desktop Entry]
+Name=Screenshot
+Comment=Take screenshots
+Exec=/usr/bin/spectacle
+Icon=spectacle
+Type=Application
+Terminal=false
+Categories=Graphics;KDE;
+X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2
+EOF
+
+cat > "$APPS_DIR/org.mozilla.Thunderbird.desktop" <<'EOF'
+[Desktop Entry]
+Name=Mail
+Comment=Thunderbird email client
+Exec=flatpak run org.mozilla.Thunderbird %u
+Icon=org.mozilla.Thunderbird
+Type=Application
+Terminal=false
+Categories=Network;Email;
+MimeType=x-scheme-handler/mailto;
+EOF
+
+cat > "$APPS_DIR/com.vscodium.codium.desktop" <<'EOF'
+[Desktop Entry]
+Name=Code
+Comment=VSCodium code editor
+Exec=flatpak run com.vscodium.codium %F
+Icon=com.vscodium.codium
+Type=Application
+Terminal=false
+Categories=Development;IDE;
+MimeType=text/plain;
+EOF
+
+cat > "$APPS_DIR/trash.desktop" <<'EOF'
+[Desktop Entry]
+Name=Trash
+Comment=Deleted files
+Exec=dolphin trash:/
+Icon=user-trash
+Type=Application
+Terminal=false
+EOF
+
+# ---------------------------------------------------------------------------
+# Custom icons copied from the system-wide Tahoe asset store
+# ---------------------------------------------------------------------------
+if [[ -d "${TAHOE_SHARE}/icons" ]]; then
+  for icon in start-here safari-dark; do
+    if [[ -f "${TAHOE_SHARE}/icons/${icon}.svg" ]]; then
+      cp -f "${TAHOE_SHARE}/icons/${icon}.svg" "${ICONS_DIR}/${icon}.svg"
+    fi
+  done
+fi
+
+# ---------------------------------------------------------------------------
+# Plasma panel, dock, and desktop wallpaper layout
+# Containment IDs are pre-assigned so Plasma can pick them up on first start.
+# ---------------------------------------------------------------------------
+cat > "$CONFIG_DIR/plasma-org.kde.plasma.desktop-appletsrc" <<'EOF'
+[Containments][1]
+activityId=
+formfactor=0
+location=0
+plugin=org.kde.desktopcontainment
+wallpaperplugin=org.kde.image
+
+[Containments][1][General]
+appletsInCurrentActivity=
+iconSizeMode=0
+
+[Containments][1][Wallpaper][org.kde.image][General]
+Image=/usr/share/tahoe/wallpapers/default.png
+SlidePaths=/usr/share/tahoe/wallpapers/
+FillMode=0
+
+[Containments][2]
+plugin=org.kde.panel
+location=3
+
+[Containments][2][General]
+thickness=26
+floating=true
+offset=0
+alignment=left
+opacity=opaque
+AppletOrder=10;11;12;13;14
+
+[Containments][2][Applets][10]
+immutability=1
+plugin=org.kde.plasma.kickoff
+
+[Containments][2][Applets][10][Configuration][General]
+icon=start-here
+favoritesPortedToKAstats=true
+
+[Containments][2][Applets][11]
+immutability=1
+plugin=org.kde.plasma.appmenu
+
+[Containments][2][Applets][11][Configuration][General]
+compactView=true
+showIcon=false
+
+[Containments][2][Applets][12]
+immutability=1
+plugin=org.kde.plasma.panelspacer
+
+[Containments][2][Applets][13]
+immutability=1
+plugin=org.kde.plasma.systemtray
+
+[Containments][2][Applets][13][Configuration][General]
+iconSpacing=1
+scaleIconsToFit=true
+iconSize=20
+shownItems=org.kde.plasma.volume,org.kde.plasma.networkmanagement,org.kde.plasma.battery,org.kde.plasma.notifications,org.kde.plasma.clipboard
+hiddenItems=
+extraItems=org.kde.plasma.keyboardlayout,org.kde.plasma.keyboardindicator,org.kde.plasma.devicenotifier,org.kde.plasma.manage-inputmethod,org.kde.plasma.notifications,org.kde.plasma.clipboard,org.kde.plasma.battery,org.kde.plasma.networkmanagement,org.kde.plasma.volume
+
+[Containments][2][Applets][14]
+immutability=1
+plugin=org.kde.plasma.digitalclock
+
+[Containments][2][Applets][14][Configuration][General]
+showDate=true
+use24hFormat=0
+
+[Containments][3]
+plugin=org.kde.panel
+location=4
+
+[Containments][3][General]
+thickness=50
+floating=true
+offset=0
+alignment=center
+lengthMode=2
+panelVisibility=0
+opacity=opaque
+AppletOrder=20
+
+[Containments][3][Applets][20]
+immutability=1
+plugin=org.kde.plasma.icontasks
+
+[Containments][3][Applets][20][Configuration][General]
+iconSize=48
+iconSpacing=0
+fill=false
+separateLaunchers=false
+launchInPlace=true
+sortingStrategy=0
+groupingStrategy=0
+launchers=applications:org.kde.dolphin.desktop,applications:org.kde.konsole.desktop,applications:org.kde.kwrite.desktop,applications:systemsettings.desktop,applications:trivalent.desktop,applications:org.kde.spectacle.desktop,applications:org.mozilla.Thunderbird.desktop,applications:com.vscodium.codium.desktop,applications:trash.desktop
+
+[ScreenMapping]
+screenMapping=
+EOF
+
+# ---------------------------------------------------------------------------
+# Trivalent pref: let KWin draw the stoplights by disabling custom frame
+# ---------------------------------------------------------------------------
+mkdir -p "$CONFIG_DIR/trivalent/Default"
+if command -v python3 &>/dev/null; then
+  python3 - <<'PY'
+import json, os
+path = os.path.expanduser("~/.config/trivalent/Default/Preferences")
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except Exception:
+        data = {}
+data.setdefault("browser", {})
+data["browser"]["custom_chrome_frame"] = False
+os.makedirs(os.path.dirname(path), exist_ok=True)
+with open(path, "w") as f:
+    json.dump(data, f)
+PY
+fi
+
+# ---------------------------------------------------------------------------
+# Mark complete so existing installs only run this once.
+# ---------------------------------------------------------------------------
+mkdir -p "$(dirname "$STAMP")"
+touch "$STAMP"
