@@ -42,30 +42,40 @@ mkdir -p "$ICON_DIR" "$DESKTOP_DIR"
 fetch_icon() {
     local query="$1"
     local output="$2"
-    
-    local response
-    response=$(curl -s -X POST "$API_URL" \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $API_KEY" \
-        -d "{\"query\":\"$query\"}" 2>/dev/null) || true
-    
-    if [[ -z "$response" ]]; then
-        echo "[scraper] No response for: $query"
-        return 1
-    fi
-    
-    # Extract the first PNG URL from the response
-    local png_url
-    png_url=$(echo "$response" | jq -r '.[0].lowResPngUrl // .[0].pngUrl // empty' 2>/dev/null) || true
-    
-    if [[ -z "$png_url" || "$png_url" == "null" ]]; then
-        echo "[scraper] No icon found for: $query"
-        return 1
-    fi
-    
-    curl -s -L "$png_url" -o "$output" || return 1
-    echo "[scraper] Downloaded: $output"
-    return 0
+    local attempt=1
+    local max_attempts=3
+    local delay=2
+
+    while [[ $attempt -le $max_attempts ]]; do
+        local response
+        response=$(curl -s -X POST "$API_URL" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $API_KEY" \
+            -d "{\"query\":\"$query\"}" 2>/dev/null) || true
+
+        if [[ -n "$response" ]]; then
+            # Extract the first PNG URL from the response
+            local png_url
+            png_url=$(echo "$response" | jq -r '.[0].lowResPngUrl // .[0].pngUrl // empty' 2>/dev/null) || true
+
+            if [[ -n "$png_url" && "$png_url" != "null" ]]; then
+                if curl -fs -L --retry 3 "$png_url" -o "$output" 2>/dev/null; then
+                    echo "[scraper] Downloaded: $output"
+                    return 0
+                fi
+            fi
+        fi
+
+        echo "[scraper] Attempt $attempt/$max_attempts failed for: $query"
+        if [[ $attempt -lt $max_attempts ]]; then
+            sleep "$delay"
+            delay=$((delay * 2))
+        fi
+        attempt=$((attempt + 1))
+    done
+
+    echo "[scraper] Giving up on: $query"
+    return 1
 }
 
 for app_spec in "${TARGET_APPS[@]}"; do
