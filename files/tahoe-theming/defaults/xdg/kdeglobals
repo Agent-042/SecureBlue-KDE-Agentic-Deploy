@@ -20,3 +20,7 @@ LookAndFeelPackage=com.github.vinceliuice.WhiteSur-dark
 
 [kde]
 LookAndFeelPackage=com.github.vinceliuice.WhiteSur-dark
+
+[KDE Action Restrictions]
+action/krunner_history=false
+action/recent_files=false

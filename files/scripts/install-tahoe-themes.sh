@@ -10,6 +10,47 @@ set -euo pipefail
 TAHOE_SRC="/tmp/files/tahoe-theming"
 
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Add Klassy COPR repository (C++ binary window decoration)
+# Replaces Aurorae SVG engine to eliminate fractional scaling artifacts
+# ---------------------------------------------------------------------------
+cat > /etc/yum.repos.d/_copr_errornointernet-klassy.repo <<'COPR'
+[copr:copr.fedorainfracloud.org:errornointernet:klassy]
+name=Copr repo for klassy owned by errornointernet
+baseurl=https://download.copr.fedorainfracloud.org/results/errornointernet/klassy/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/errornointernet/klassy/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+COPR
+
+# Add applet-window-buttons COPR (stoplights in top panel for maximized windows)
+cat > /etc/yum.repos.d/_copr_aleasto-applet-window-buttons.repo <<'COPR'
+[copr:copr.fedorainfracloud.org:aleasto:applet-window-buttons]
+name=Copr repo for aleasto-applet-window-buttons
+baseurl=https://download.copr.fedorainfracloud.org/results/aleasto/applet-window-buttons/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/aleasto/applet-window-buttons/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+COPR
+
+# Layer Klassy and applet-window-buttons into the image
+rpm-ostree install -y klassy applet-window-buttons || true
+
+# ---------------------------------------------------------------------------
+# Flatpak overrides: map host GTK CSS into sandbox for consistent CSD theming
+# ---------------------------------------------------------------------------
+flatpak override --system --filesystem=xdg-config/gtk-4.0:ro || true
+flatpak override --system --filesystem=xdg-config/gtk-3.0:ro || true
+
 # Copy static XDG defaults and helper service
 # ---------------------------------------------------------------------------
 mkdir -p /usr/etc/xdg
@@ -141,7 +182,7 @@ if [[ -d "$PLASMA_THEME" ]]; then
     if [[ -f "$svgz" ]]; then
       tmp="${TMPDIR}/panel-bg.svg"
       gzip -cd "$svgz" > "$tmp"
-      # Force common dark grays to pure black while preserving structure.
+      # Force panel backgrounds to true-black (#000000, opacity=1)
       sed -i -E \
         -e 's/#2[0-9a-fA-F]{5}/#000000/g' \
         -e 's/#3[0-9a-fA-F]{5}/#000000/g' \
