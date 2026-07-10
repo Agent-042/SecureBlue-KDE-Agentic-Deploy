@@ -1,8 +1,8 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-10T11:37:17Z
+Generated: 2026-07-10T12:36:10Z
 
-**Current turn:** kimi | **Status:** verified | **Last action by:** kimi
+**Current turn:** kimi | **Status:** pending_verification | **Last action by:** kimi
 
 **Target files:** recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*
 
@@ -37,3 +37,4 @@ Generated: 2026-07-10T11:37:17Z
 | 2026-07-10T11:04:18Z | Kimi Code 2.7 | GitHub Actions matrix build 29087665818 completed successfully. All three images built, pushed, and signed: secureblue-kde-agentic-deploy, secureblue-kde-agentic-deploy-amd-workstation, and secureblue-kde-agentic-deploy-intel-g16. | verified |
 | 2026-07-10T11:37:11Z | Kimi Code 2.7 | GitHub Actions matrix build 29089440372 completed successfully after CI optimization to ignore ledger/hook-only changes; all three fleet images pushed and signed. | verified |
 | 2026-07-10T11:37:11Z | Kimi Code 2.7 | Made push-live-status.sh idempotent (skips live_status.md when ledger is unchanged) and always pushes the current HEAD; added ledger and hook script to workflow paths-ignore. | verified |
+| 2026-07-10T12:36:03Z | Kimi Code 2.7 | Added modules/agent-stack and modules/agent-stack-skel to bake Ollama, qwen2.5-coder:7b-instruct-q4_K_M, Cline CLI, Kimi Code CLI, OpenClaw, and Antigravity CLI into the image with /etc/skel zero-config templates. Replaced local-ai modules in all three fleet recipes; all recipes validated with bluebuild. | pending_verification |
