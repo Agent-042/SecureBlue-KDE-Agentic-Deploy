@@ -1,0 +1,626 @@
+#!/bin/bash
+# Reduce gaps/spacing for the KDE Plasma 6 macOS Tahoe skin.
+# Canonical doc: /var/home/agent-042/macOS-Tahoe-Runbook.md
+# Idempotent. Backs up files before editing.
+set -euo pipefail
+
+TAHOE_SCALE="${TAHOE_SCALE:-1.5}"
+scale_int() { awk -v n="$1" -v s="$TAHOE_SCALE" 'BEGIN {v=n*s; print int(v+0.5)}'; }
+
+TOP_THICKNESS=$(scale_int 26)
+DOCK_THICKNESS=$(scale_int 50)
+DOCK_ICON_SIZE=$(scale_int 48)
+SYSTRAY_ICON_SIZE=$(scale_int 20)
+export TOP_THICKNESS DOCK_THICKNESS DOCK_ICON_SIZE SYSTRAY_ICON_SIZE
+
+HOME_DIR="$HOME"
+LOG="$HOME_DIR/tahoe-gap-optimizer.log"
+PLASMA_RC="$HOME_DIR/.config/plasma-org.kde.plasma.desktop-appletsrc"
+ICON_DIR="$HOME_DIR/.local/share/icons"
+ID_DISCOVER="$HOME_DIR/.local/bin/plasma-id-discover.py"
+COSMETIC_RESET="$HOME_DIR/.local/bin/cosmetic-reset.sh"
+SYSTRAY_PY="$HOME_DIR/.local/bin/macos-systemtray.py"
+RUNBOOK_SH="$HOME_DIR/macos-tahoe-runbook.sh"
+RUNBOOK_MD="$HOME_DIR/macOS-Tahoe-Runbook.md"
+AURORAE_DIR="$HOME_DIR/.local/share/aurorae/themes"
+THEME_DIR="$HOME_DIR/.local/share/plasma/desktoptheme/WhiteSur-dark"
+BACKUP_DIR="$HOME_DIR/.config/backup/tahoe-gap-optimizer-$(date +%Y%m%d-%H%M%S)"
+
+export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/bus"
+
+exec > >(tee -a "$LOG") 2>&1
+log() { echo "[tahoe-gap-optimizer] $(date -Iseconds) $*"; }
+
+mkdir -p "$BACKUP_DIR"
+log "Backup directory: $BACKUP_DIR"
+
+# ---------------------------------------------------------------------------
+# Discover current Plasma IDs
+# ---------------------------------------------------------------------------
+if [ ! -x "$ID_DISCOVER" ]; then
+    log "ERROR: ID discovery helper not found: $ID_DISCOVER"
+    exit 1
+fi
+eval "$(python3 "$ID_DISCOVER")"
+
+if [ -z "$WALL_CONTAINMENT" ] || [ -z "$TOP_CONTAINMENT" ] || [ -z "$DOCK_CONTAINMENT" ]; then
+    log "ERROR: Could not discover required Plasma containment IDs"
+    exit 1
+fi
+log "Discovered containment IDs: wall=$WALL_CONTAINMENT top=$TOP_CONTAINMENT dock=$DOCK_CONTAINMENT"
+log "Applet IDs: kickoff=$KICKOFF_APPLET appmenu=$APPMENU_APPLET clock=$CLOCK_APPLET systray=$SYSTRAY_APPLET dock=$DOCK_APPLET"
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+backup_file() {
+    local src="$1"
+    if [ -f "$src" ]; then
+        local dest="$BACKUP_DIR/${src#/}"
+        mkdir -p "$(dirname "$dest")"
+        cp -- "$src" "$dest"
+        log "Backed up: $src"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# 1. System tray spacing
+# ---------------------------------------------------------------------------
+if [ -n "$SYSTRAY_APPLET" ]; then
+    log "Tightening system tray spacing ..."
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$TOP_CONTAINMENT" \
+        --group "Applets" --group "$SYSTRAY_APPLET" \
+        --group "General" --key "iconSpacing" "1"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$TOP_CONTAINMENT" \
+        --group "Applets" --group "$SYSTRAY_APPLET" \
+        --group "General" --key "scaleIconsToFit" "true"
+    essential='org.kde.plasma.volume,org.kde.plasma.networkmanagement,org.kde.plasma.battery,org.kde.plasma.notifications,org.kde.plasma.clipboard'
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$TOP_CONTAINMENT" \
+        --group "Applets" --group "$SYSTRAY_APPLET" \
+        --group "General" --key "shownItems" "$essential"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$TOP_CONTAINMENT" \
+        --group "Applets" --group "$SYSTRAY_APPLET" \
+        --group "General" --key "extraItems" "$essential"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$TOP_CONTAINMENT" \
+        --group "Applets" --group "$SYSTRAY_APPLET" \
+        --group "General" --key "knownItems" "$essential"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$TOP_CONTAINMENT" \
+        --group "Applets" --group "$SYSTRAY_APPLET" \
+        --group "General" --key "iconSize" "$SYSTRAY_ICON_SIZE"
+else
+    log "WARNING: system tray applet not discovered; skipping tray spacing config"
+fi
+
+# ---------------------------------------------------------------------------
+# 2. Custom icons
+# ---------------------------------------------------------------------------
+if [ -f "$HOME_DIR/Downloads/dolphin3.jpeg" ]; then
+    log "Ensuring Dolphin3 Canvas uses the cyberpunk PNG icon ..."
+    rm -f "$ICON_DIR/WhiteSur/apps/scalable/dolphin3.svg" "$ICON_DIR/WhiteSur-dark/apps/scalable/dolphin3.svg"
+    for theme in WhiteSur WhiteSur-dark hicolor; do
+        cache="$ICON_DIR/$theme"
+        [ -d "$cache" ] && gtk-update-icon-cache -f "$cache" 2>/dev/null || true
+    done
+fi
+
+# ---------------------------------------------------------------------------
+# 3. Smart Video Wallpaper: disable crossfade for 4K safety
+# ---------------------------------------------------------------------------
+VIDEO_PLUGIN="luisbocanegra.smart.video.wallpaper.reborn"
+CURRENT_PLUGIN=$(kreadconfig6 --file "$PLASMA_RC" \
+    --group "Containments" --group "$WALL_CONTAINMENT" --key wallpaperplugin 2>/dev/null || true)
+if [ "$CURRENT_PLUGIN" = "$VIDEO_PLUGIN" ]; then
+    log "Disabling video crossfade ..."
+    kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$WALL_CONTAINMENT" --group "Wallpaper" --group "$VIDEO_PLUGIN" --group "General" --key "CrossfadeEnabled" "false"
+    kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$WALL_CONTAINMENT" --group "Wallpaper" --group "$VIDEO_PLUGIN" --group "General" --key "ResumeLastVideo" "false"
+fi
+
+# ---------------------------------------------------------------------------
+# 4. Top panel
+# ---------------------------------------------------------------------------
+log "Tightening top panel ..."
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "thickness" "$TOP_THICKNESS"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "floating" "true"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "offset" "0"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "alignment" "left"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "opacity" "opaque"
+
+# ---------------------------------------------------------------------------
+# 5. Dock
+# ---------------------------------------------------------------------------
+log "Tightening dock ..."
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "thickness" "$DOCK_THICKNESS"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "floating" "true"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "offset" "0"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "alignment" "center"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "lengthMode" "2"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "panelVisibility" "0"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "opacity" "opaque"
+
+if [ -n "$DOCK_APPLET" ]; then
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$DOCK_CONTAINMENT" \
+        --group "Applets" --group "$DOCK_APPLET" \
+        --group "Configuration" --group "General" --key "iconSize" "$DOCK_ICON_SIZE"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$DOCK_CONTAINMENT" \
+        --group "Applets" --group "$DOCK_APPLET" \
+        --group "Configuration" --group "General" --key "iconSpacing" "0"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$DOCK_CONTAINMENT" \
+        --group "Applets" --group "$DOCK_APPLET" \
+        --group "Configuration" --group "General" --key "fill" "false"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$DOCK_CONTAINMENT" \
+        --group "Applets" --group "$DOCK_APPLET" \
+        --group "Configuration" --group "General" --key "separateLaunchers" "false"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$DOCK_CONTAINMENT" \
+        --group "Applets" --group "$DOCK_APPLET" \
+        --group "Configuration" --group "General" --key "launchInPlace" "true"
+    kwriteconfig6 --file "$PLASMA_RC" \
+        --group "Containments" --group "$DOCK_CONTAINMENT" \
+        --group "Applets" --group "$DOCK_APPLET" \
+        --group "Configuration" --group "General" --key "maxStripes" "1"
+else
+    log "WARNING: dock icon-tasks applet not discovered; skipping dock iconSize config"
+fi
+
+# ---------------------------------------------------------------------------
+# 6. Aurorae window decoration
+# ---------------------------------------------------------------------------
+patch_aurorae_rc() {
+    local rc="$1"
+    [ -f "$rc" ] || return 0
+    log "Patching Aurorae rc: $rc"
+    cp -- "$rc" "$BACKUP_DIR/$(basename "$rc").bak"
+    python3 - "$rc" <<'PY'
+import configparser, sys
+path = sys.argv[1]
+cp = configparser.ConfigParser()
+cp.optionxform = str
+cp.read(path)
+
+updates = {
+    'Layout': {
+        'PaddingTop': '16',
+        'PaddingBottom': '14',
+        'PaddingLeft': '14',
+        'PaddingRight': '14',
+        'TitleEdgeTop': '4',
+        'TitleEdgeBottom': '4',
+        'TitleEdgeLeft': '6',
+        'TitleEdgeRight': '6',
+        'TitleBorderLeft': '62',
+        'TitleBorderRight': '62',
+        'ButtonSpacing': '8',
+        'TitleEdgeTopMaximized': '4',
+        'TitleEdgeBottomMaximized': '4',
+        'TitleEdgeLeftMaximized': '6',
+        'TitleEdgeRightMaximized': '6',
+    }
+}
+
+for section, keys in updates.items():
+    if section not in cp.sections():
+        cp.add_section(section)
+    for k, v in keys.items():
+        cp.set(section, k, v)
+
+with open(path, 'w') as f:
+    cp.write(f)
+PY
+}
+
+log "Patching WhiteSur-dark Aurorae theme ..."
+for theme_dir in "$AURORAE_DIR"/WhiteSur-dark*; do
+    [ -d "$theme_dir" ] || continue
+    rc_name="$(basename "$theme_dir").rc"
+    rc_file="$theme_dir/$rc_name"
+    if [ ! -f "$rc_file" ] && [ -f "$theme_dir/WhiteSur-darkrc" ]; then
+        rc_file="$theme_dir/WhiteSur-darkrc"
+    fi
+    patch_aurorae_rc "$rc_file"
+done
+
+# ---------------------------------------------------------------------------
+# 7. WhiteSur SVG theme assets
+# ---------------------------------------------------------------------------
+log "Patching WhiteSur panel background SVGs ..."
+for variant in opaque solid translucent widgets; do
+    src="$THEME_DIR/$variant/widgets/panel-background.svgz"
+    [ -f "$src" ] || continue
+    backup_file "$src"
+    tmp=$(mktemp)
+    zcat "$src" > "$tmp"
+    sed -i \
+        -e 's/#333333/#000000/g' \
+        -e 's/#1a1a1a/#000000/g' \
+        -e 's/#2d2d2d/#000000/g' \
+        -e 's/#3c3c3c/#000000/g' \
+        -e 's/#424242/#000000/g' \
+        -e 's/#4a4a4a/#000000/g' \
+        -e 's/opacity:0\.9/opacity:1/g' \
+        -e 's/opacity:0\.66663194/opacity:1/g' \
+        -e 's/opacity:0\.45/opacity:1/g' \
+        -e 's/opacity:0\.25/opacity:1/g' \
+        -e 's/fill:#f5f5f5/fill:#000000/g' \
+        -e 's/fill:#ffffff/fill:#000000/g' \
+        -e 's/fill:currentColor/fill:#000000/g' \
+        "$tmp"
+    sed -i \
+        -e 's/thick-hint-top-margin" width="8"/thick-hint-top-margin" width="2"/g' \
+        -e 's/thick-hint-bottom-margin" width="8"/thick-hint-bottom-margin" width="2"/g' \
+        -e 's/thick-hint-left-margin" width="8"/thick-hint-left-margin" width="2"/g' \
+        -e 's/thick-hint-right-margin" width="8"/thick-hint-right-margin" width="2"/g' \
+        -e 's/thick-hint-top-margin" height="8"/thick-hint-top-margin" height="2"/g' \
+        -e 's/thick-hint-bottom-margin" height="8"/thick-hint-bottom-margin" height="2"/g' \
+        -e 's/thick-hint-left-margin" height="8"/thick-hint-left-margin" height="2"/g' \
+        -e 's/thick-hint-right-margin" height="8"/thick-hint-right-margin" height="2"/g' \
+        "$tmp"
+    gzip -c "$tmp" > "$src"
+    rm "$tmp"
+    log "Patched: $src"
+done
+
+TASKS_SVG="$THEME_DIR/widgets/tasks.svgz"
+if [ -f "$TASKS_SVG" ]; then
+    backup_file "$TASKS_SVG"
+    tmp=$(mktemp)
+    zcat "$TASKS_SVG" > "$tmp"
+    sed -i \
+        -e 's/normal-hint-top-margin" width="4"/normal-hint-top-margin" width="1"/g' \
+        -e 's/normal-hint-bottom-margin" width="2"/normal-hint-bottom-margin" width="1"/g' \
+        -e 's/normal-hint-left-margin" width="4"/normal-hint-left-margin" width="1"/g' \
+        -e 's/normal-hint-right-margin" width="2"/normal-hint-right-margin" width="1"/g' \
+        -e 's/normal-hint-top-margin" height="2"/normal-hint-top-margin" height="1"/g' \
+        -e 's/normal-hint-bottom-margin" height="4"/normal-hint-bottom-margin" height="1"/g' \
+        -e 's/normal-hint-left-margin" height="2"/normal-hint-left-margin" height="1"/g' \
+        -e 's/normal-hint-right-margin" height="4"/normal-hint-right-margin" height="1"/g' \
+        "$tmp"
+    gzip -c "$tmp" > "$TASKS_SVG"
+    rm "$tmp"
+    log "Patched: $TASKS_SVG"
+fi
+
+DECO_SVG="$HOME_DIR/.local/share/aurorae/themes/WhiteSur-dark/decoration.svg"
+if [ -f "$DECO_SVG" ]; then
+    backup_file "$DECO_SVG"
+    sed -i \
+        -e 's/#363636/#000000/g; s/#2d2d2d/#000000/g; s/#242424/#000000/g; s/#1a1a1a/#000000/g' \
+        "$DECO_SVG"
+    log "Patched: $DECO_SVG"
+fi
+
+PLASMASHELL_RC="$HOME_DIR/.config/plasmashellrc"
+if [ -f "$PLASMASHELL_RC" ]; then
+    backup_file "$PLASMASHELL_RC"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $TOP_CONTAINMENT" --key "panelOpacity" "1"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $TOP_CONTAINMENT" --key "floating" "1"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $TOP_CONTAINMENT" --group "Defaults" --key "thickness" "$TOP_THICKNESS"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $TOP_CONTAINMENT" --group "Defaults" --key "maxLength" "3840"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $TOP_CONTAINMENT" --group "Defaults" --key "minLength" "0"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $DOCK_CONTAINMENT" --key "panelOpacity" "1"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $DOCK_CONTAINMENT" --key "floating" "1"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $DOCK_CONTAINMENT" --group "Defaults" --key "thickness" "$DOCK_THICKNESS"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $DOCK_CONTAINMENT" --group "Defaults" --key "maxLength" "3840"
+    kwriteconfig6 --file "$PLASMASHELL_RC" --group "PlasmaViews" --group "Panel $DOCK_CONTAINMENT" --group "Defaults" --key "minLength" "0"
+    python3 - "$PLASMASHELL_RC" <<'PY'
+import re, sys
+path = sys.argv[1]
+with open(path) as f: txt = f.read()
+out = []
+skip = False
+for line in txt.splitlines(keepends=True):
+    if re.match(r'^\[PlasmaViews\]\[Panel \d+\]\[Horizontal\d+\]', line):
+        skip = True
+        continue
+    if skip and line.startswith('['):
+        skip = False
+    if not skip:
+        out.append(line)
+with open(path, 'w') as f: f.writelines(out)
+PY
+    log "Aligned plasmashellrc panel views"
+fi
+
+# ---------------------------------------------------------------------------
+# 8. Patch persistence helpers
+# ---------------------------------------------------------------------------
+log "Updating persistence helpers ..."
+
+backup_file "$COSMETIC_RESET"
+backup_file "$SYSTRAY_PY"
+backup_file "$RUNBOOK_SH"
+backup_file "$RUNBOOK_MD"
+
+python3 - "$COSMETIC_RESET" "$SYSTRAY_PY" "$RUNBOOK_SH" "$RUNBOOK_MD" <<'PY'
+import os
+import re
+import sys
+
+TOP_THICKNESS = os.environ.get('TOP_THICKNESS', '39')
+DOCK_THICKNESS = os.environ.get('DOCK_THICKNESS', '75')
+DOCK_ICON_SIZE = os.environ.get('DOCK_ICON_SIZE', '72')
+SYSTRAY_ICON_SIZE = os.environ.get('SYSTRAY_ICON_SIZE', '30')
+
+cosmetic, systray, runbook_sh, runbook_md = sys.argv[1:5]
+
+# cosmetic-reset.sh
+with open(cosmetic, 'r') as f:
+    c = f.read()
+
+c = re.sub(
+    r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$TOP_CONTAINMENT" --group "General" --key "thickness") "\d+"',
+    rf'\1 "{TOP_THICKNESS}"', c)
+if '--group "$TOP_CONTAINMENT" --group "General" --key "offset"' not in c:
+    c = re.sub(
+        r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$TOP_CONTAINMENT" --group "General" --key "floating" "true")\n',
+        r'\1\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "offset" "0"\n',
+        c)
+
+if '--group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSpacing"' not in c:
+    c = c.replace(
+        'if [ -x "$HOME_DIR/.local/bin/macos-systemtray.py" ]; then\n  python3 "$HOME_DIR/.local/bin/macos-systemtray.py" --restart\nfi\n',
+        '''if [ -x "$HOME_DIR/.local/bin/macos-systemtray.py" ]; then
+  python3 "$HOME_DIR/.local/bin/macos-systemtray.py" --restart
+fi
+
+if [ -n "$SYSTRAY_APPLET" ]; then
+  essential='org.kde.plasma.volume,org.kde.plasma.networkmanagement,org.kde.plasma.battery,org.kde.plasma.notifications,org.kde.plasma.clipboard'
+  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "shownItems" "$essential"
+  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "extraItems" "$essential"
+  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "knownItems" "$essential"
+  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSpacing" "1"
+  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSize" "''' + SYSTRAY_ICON_SIZE + '''"
+  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "scaleIconsToFit" "true"
+fi
+''')
+
+c = re.sub(
+    r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$DOCK_CONTAINMENT" --group "General" --key "thickness") "\d+"',
+    rf'\1 "{DOCK_THICKNESS}"', c)
+if '--group "$DOCK_CONTAINMENT" --group "General" --key "offset"' not in c:
+    c = re.sub(
+        r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$DOCK_CONTAINMENT" --group "General" --key "floating" "true")\n',
+        r'\1\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "offset" "0"\n',
+        c)
+c = re.sub(
+    r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$DOCK_CONTAINMENT" --group "Applets" --group "\$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSize") "\d+"',
+    rf'\1 "{DOCK_ICON_SIZE}"', c)
+if '--group "$DOCK_CONTAINMENT" --group "Applets" --group "$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSpacing"' not in c:
+    c = c.replace(
+        'kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "Applets" --group "$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSize" "' + DOCK_ICON_SIZE + '"\n',
+        '''kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "Applets" --group "$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSize" "''' + DOCK_ICON_SIZE + '''"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "Applets" --group "$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSpacing" "0"
+kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "Applets" --group "$DOCK_APPLET" --group "Configuration" --group "General" --key "fill" "false"
+''')
+
+old_aurorae_block = '''if [ -f "$AURORAE" ]; then
+  sed -i 's/^TitleBorderLeft=50$/TitleBorderLeft=58/' "$AURORAE"
+  sed -i 's/^TitleBorderRight=50$/TitleBorderRight=58/' "$AURORAE"
+fi'''
+new_aurorae_block = '''if [ -f "$AURORAE" ]; then
+  python3 - "$AURORAE" <<'AURPY'
+import configparser, sys
+path = sys.argv[1]
+cp = configparser.ConfigParser()
+cp.optionxform = str
+cp.read(path)
+if 'Layout' not in cp.sections():
+    cp.add_section('Layout')
+for k, v in {
+    'PaddingTop': '16', 'PaddingBottom': '14',
+    'PaddingLeft': '14', 'PaddingRight': '14',
+    'TitleEdgeTop': '4', 'TitleEdgeBottom': '4',
+    'TitleEdgeLeft': '6', 'TitleEdgeRight': '6',
+    'TitleBorderLeft': '62', 'TitleBorderRight': '62',
+    'ButtonSpacing': '8',
+    'TitleEdgeTopMaximized': '4', 'TitleEdgeBottomMaximized': '4',
+    'TitleEdgeLeftMaximized': '6', 'TitleEdgeRightMaximized': '6',
+}.items():
+    cp.set('Layout', k, v)
+with open(path, 'w') as f:
+    cp.write(f)
+AURPY
+fi'''
+c = c.replace(old_aurorae_block, new_aurorae_block)
+
+c = c.replace(
+    "sed -i 's/#333333/#000000/g; s/#1a1a1a/#000000/g; s/#2d2d2d/#000000/g' \"$tmp\"",
+    "sed -i 's/#333333/#000000/g; s/#1a1a1a/#000000/g; s/#2d2d2d/#000000/g; s/#3c3c3c/#000000/g; s/#424242/#000000/g; s/#4a4a4a/#000000/g; s/opacity:0.9/opacity:1/g; s/opacity:0.66663194/opacity:1/g; s/fill:#f5f5f5/fill:#000000/g; s/fill:#ffffff/fill:#000000/g; s/thick-hint-top-margin\" width=\"8\"/thick-hint-top-margin\" width=\"2\"/g; s/thick-hint-bottom-margin\" width=\"8\"/thick-hint-bottom-margin\" width=\"2\"/g; s/thick-hint-left-margin\" width=\"8\"/thick-hint-left-margin\" width=\"2\"/g; s/thick-hint-right-margin\" width=\"8\"/thick-hint-right-margin\" width=\"2\"/g; s/thick-hint-top-margin\" height=\"8\"/thick-hint-top-margin\" height=\"2\"/g; s/thick-hint-bottom-margin\" height=\"8\"/thick-hint-bottom-margin\" height=\"2\"/g; s/thick-hint-left-margin\" height=\"8\"/thick-hint-left-margin\" height=\"2\"/g; s/thick-hint-right-margin\" height=\"8\"/thick-hint-right-margin\" height=\"2\"/g' \"$tmp\"",
+)
+
+if 'TASKS_SVG' not in c:
+    c = c.replace(
+        'THEME_DIR="$HOME_DIR/.local/share/plasma/desktoptheme/WhiteSur-dark"',
+        '''THEME_DIR="$HOME_DIR/.local/share/plasma/desktoptheme/WhiteSur-dark"
+TASKS_SVG="$THEME_DIR/widgets/tasks.svgz"
+if [ -f "$TASKS_SVG" ]; then
+  tmp=$(mktemp)
+  zcat "$TASKS_SVG" > "$tmp"
+  sed -i 's/normal-hint-top-margin\" width=\"4\"/normal-hint-top-margin\" width=\"1\"/g; s/normal-hint-bottom-margin\" width=\"2\"/normal-hint-bottom-margin\" width=\"1\"/g; s/normal-hint-left-margin\" width=\"4\"/normal-hint-left-margin\" width=\"1\"/g; s/normal-hint-right-margin\" width=\"2\"/normal-hint-right-margin\" width=\"1\"/g; s/normal-hint-top-margin\" height=\"2\"/normal-hint-top-margin\" height=\"1\"/g; s/normal-hint-bottom-margin\" height=\"4\"/normal-hint-bottom-margin\" height=\"1\"/g; s/normal-hint-left-margin\" height=\"2\"/normal-hint-left-margin\" height=\"1\"/g; s/normal-hint-right-margin\" height=\"4\"/normal-hint-right-margin\" height=\"1\"/g' "$tmp"
+  gzip -c "$tmp" > "$TASKS_SVG"
+  rm "$tmp"
+fi''',
+    )
+
+with open(cosmetic, 'w') as f:
+    f.write(c)
+
+# macos-systemtray.py
+with open(systray, 'r') as f:
+    s = f.read()
+
+if 'set_key(gen_lines, "iconSpacing", "1")' not in s:
+    s = s.replace(
+        '    set_key(gen_lines, "shownItems", ",".join(DEFAULT_SHOW_ITEMS))\n',
+        '    set_key(gen_lines, "shownItems", ",".join(DEFAULT_SHOW_ITEMS))\n    set_key(gen_lines, "iconSpacing", "1")\n    set_key(gen_lines, "scaleIconsToFit", "true")\n',
+    )
+
+with open(systray, 'w') as f:
+    f.write(s)
+
+# macos-tahoe-runbook.sh
+with open(runbook_sh, 'r') as f:
+    r = f.read()
+
+r = re.sub(
+    r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$TOP_CONTAINMENT" --group "General" --key "thickness") "\d+"',
+    rf'\1 "{TOP_THICKNESS}"', r)
+if '--group "$TOP_CONTAINMENT" --group "General" --key "offset"' not in r:
+    r = re.sub(
+        r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$TOP_CONTAINMENT" --group "General" --key "floating" "true")\n',
+        r'\1\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "offset" "0"\n',
+        r)
+
+r = re.sub(
+    r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$TOP_CONTAINMENT" --group "Applets" --group "\$SYSTRAY_APPLET" --group "General" --key "shownItems")\n?\s+[^\n]+',
+    r'\1 "org.kde.plasma.volume,org.kde.plasma.networkmanagement,org.kde.plasma.battery,org.kde.plasma.notifications,org.kde.plasma.clipboard"',
+    r,
+    flags=re.DOTALL,
+)
+if '--group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSize"' not in r:
+    r = r.replace(
+        '        kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "shownItems" "$essential"\n',
+        '        kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "shownItems" "$essential"\n        kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSize" "' + SYSTRAY_ICON_SIZE + '"\n',
+    )
+
+r = re.sub(
+    r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$DOCK_CONTAINMENT" --group "General" --key "thickness") "\d+"',
+    rf'\1 "{DOCK_THICKNESS}"', r)
+if '--group "$DOCK_CONTAINMENT" --group "General" --key "offset"' not in r:
+    r = re.sub(
+        r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$DOCK_CONTAINMENT" --group "General" --key "floating" "true")\n',
+        r'\1\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "offset" "0"\n',
+        r)
+r = re.sub(
+    r'(kwriteconfig6 --file "\$PLASMA_RC" --group "Containments" --group "\$DOCK_CONTAINMENT" --group "Applets" --group "\$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSize") "\d+"',
+    rf'\1 "{DOCK_ICON_SIZE}"', r)
+
+old_runbook_aurorae = '''    if [[ -f "$AURORAE" ]]; then
+        log "Widening WhiteSur-dark stoplight bar ..."
+        sed -i 's/^TitleBorderLeft=50$/TitleBorderLeft=58/' "$AURORAE"
+        sed -i 's/^TitleBorderRight=50$/TitleBorderRight=58/' "$AURORAE"
+    fi'''
+new_runbook_aurorae = '''    if [[ -f "$AURORAE" ]]; then
+        log "Tightening WhiteSur-dark title bar ..."
+        python3 - "$AURORAE" <<'AURPY'
+import configparser, sys
+path = sys.argv[1]
+cp = configparser.ConfigParser()
+cp.optionxform = str
+cp.read(path)
+if 'Layout' not in cp.sections():
+    cp.add_section('Layout')
+for k, v in {
+    'PaddingTop': '16', 'PaddingBottom': '14',
+    'PaddingLeft': '14', 'PaddingRight': '14',
+    'TitleEdgeTop': '4', 'TitleEdgeBottom': '4',
+    'TitleEdgeLeft': '6', 'TitleEdgeRight': '6',
+    'TitleBorderLeft': '62', 'TitleBorderRight': '62',
+    'ButtonSpacing': '8',
+    'TitleEdgeTopMaximized': '4', 'TitleEdgeBottomMaximized': '4',
+    'TitleEdgeLeftMaximized': '6', 'TitleEdgeRightMaximized': '6',
+}.items():
+    cp.set('Layout', k, v)
+with open(path, 'w') as f:
+    cp.write(f)
+AURPY
+    fi'''
+r = r.replace(old_runbook_aurorae, new_runbook_aurorae)
+
+r = r.replace(
+    "sed -i 's/#333333/#000000/g; s/#1a1a1a/#000000/g; s/#2d2d2d/#000000/g' \"$tmp\"",
+    "sed -i 's/#333333/#000000/g; s/#1a1a1a/#000000/g; s/#2d2d2d/#000000/g; s/#3c3c3c/#000000/g; s/#424242/#000000/g; s/#4a4a4a/#000000/g; s/opacity:0.9/opacity:1/g; s/opacity:0.66663194/opacity:1/g; s/fill:#f5f5f5/fill:#000000/g; s/fill:#ffffff/fill:#000000/g' \"$tmp\"",
+)
+
+with open(runbook_sh, 'w') as f:
+    f.write(r)
+
+# macOS-Tahoe-Runbook.md
+with open(runbook_md, 'r') as f:
+    m = f.read()
+
+m = re.sub(
+    r'\| Top bar \| True-black, 28 px, floating, Apple logo, global menu, minimal tray, 12h clock \|',
+    r'| Top bar | True-black, 26 px, floating, flush offset 0, Apple logo, global menu, minimal tray, 12h clock |',
+    m,
+)
+m = re.sub(
+    r'\| Bottom dock \| True-black, floating, centered, 56 px icons, no auto-hide, no bouncing cursor \|',
+    r'| Bottom dock | True-black, floating, centered, 50 px panel / 48 px icons, no auto-hide, no bouncing cursor |',
+    m,
+)
+m = re.sub(
+    r'- \*\*Height:\*\* 28 px \(`plasma-org\.kde\.plasma\.desktop-appletsrc` → `\[Containments\]\[<TOP_CONTAINMENT>\]\[General\] thickness=28`',
+    r'- **Height:** 26 px (`plasma-org.kde.plasma.desktop-appletsrc` → `[Containments][<TOP_CONTAINMENT>][General] thickness=26; offset=0`)',
+    m,
+)
+m = re.sub(
+    r'- \*\*Size:\*\* 56 px panel \+ 56 px icons\.',
+    r'- **Size:** 50 px panel + 48 px icons.',
+    m,
+)
+m = re.sub(
+    r'- \*\*Aurorae:\*\* `WhiteSur-dark`, title bar widened \(`TitleBorderLeft=58`, `TitleBorderRight=58`\)\.',
+    r'- **Aurorae:** `WhiteSur-dark`, title bar tightened (`TitleBorderLeft=62`, `TitleBorderRight=62`, reduced padding/title-edge values).',
+    m,
+)
+m = m.replace(
+    '### Top panel height\n\n```bash\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "thickness" "28"\n```',
+    '### Top panel height\n\n```bash\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "General" --key "thickness" "26"\n```',
+)
+m = m.replace(
+    '### Dock spacing / icon size\n\nEdit `~/macos-tahoe-runbook.sh`:\n\n```bash\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "thickness" "56"\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "Applets" --group "$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSize" "56"\n```\n\nValid macOS-like sizes are 48–64 px.',
+    '### Dock spacing / icon size\n\nEdit `~/macos-tahoe-runbook.sh`:\n\n```bash\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "General" --key "thickness" "50"\nkwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$DOCK_CONTAINMENT" --group "Applets" --group "$DOCK_APPLET" --group "Configuration" --group "General" --key "iconSize" "48"\n```\n\nValid macOS-like sizes are 48–64 px.',
+)
+m = re.sub(
+    r'- If the stoplight bar still looks off, edit `~/.local/share/aurorae/themes/WhiteSur-dark/WhiteSur-darkrc` and adjust `TitleBorderLeft` / `TitleBorderRight`\.',
+    r'- If the stoplight bar still looks off, edit `~/.local/share/aurorae/themes/WhiteSur-dark/WhiteSur-darkrc` and adjust `TitleBorderLeft` / `TitleBorderRight` (tight default is 62).',
+    m,
+)
+m = re.sub(
+    r'`- \.local/share/aurorae/themes/WhiteSur-dark/WhiteSur-darkrc`',
+    r'- `~/.local/share/aurorae/themes/WhiteSur-dark/WhiteSur-darkrc`',
+    m,
+)
+
+with open(runbook_md, 'w') as f:
+    f.write(m)
+PY
+
+# ---------------------------------------------------------------------------
+# 9. Transparency + blur
+# ---------------------------------------------------------------------------
+log "Applying transparency and blur ..."
+if [ -x "$HOME_DIR/.local/bin/tahoe-transparency.sh" ]; then
+    "$HOME_DIR/.local/bin/tahoe-transparency.sh"
+else
+    log "WARNING: tahoe-transparency.sh not found; skipping transparency pass"
+fi
+
+# ---------------------------------------------------------------------------
+# 10. Reconfigure KWin and restart Plasma
+# ---------------------------------------------------------------------------
+log "Reconfiguring KWin ..."
+if command -v dbus-send >/dev/null 2>&1; then
+    dbus-send --session --dest=org.kde.KWin --type=method_call /KWin org.kde.KWin.reconfigure 2>/dev/null || true
+fi
+
+log "Restarting Plasma shell ..."
+if pgrep -x plasmashell >/dev/null 2>&1; then
+    killall plasmashell 2>/dev/null || true
+    sleep 2
+    kstart6 plasmashell >/dev/null 2>&1 || true
+else
+    log "plasmashell not running; changes apply on next login."
+fi
+
+log "Tahoe gap optimization complete. Backup: $BACKUP_DIR"

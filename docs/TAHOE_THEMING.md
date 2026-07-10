@@ -29,6 +29,29 @@ This image ships a macOS Tahoe-style look for KDE Plasma 6 on SecureBlue:
 | `/usr/etc/xdg/konsolerc` + `konsole/macOS Terminal.*` | True-black Terminal profile |
 | `/usr/share/tahoe/wallpapers/default.png` | Default OLED-friendly wallpaper |
 | `/usr/share/tahoe/icons/{start-here,safari-dark}.svg` | Apple logo and Safari-style icon |
+| `/usr/bin/tahoe-gap-optimizer` | Optional runtime helper that tightens panel/dock spacing and patches Aurorae geometry |
+
+## Runtime tools
+
+After first login you can further tighten spacing with the optional helper:
+
+```bash
+tahoe-gap-optimizer
+```
+
+This adjusts the current user's panel/dock dimensions, system-tray spacing, Aurorae title-bar geometry, and patches the persistence helpers (`cosmetic-reset`, `macos-systemtray`, `macos-tahoe-runbook`) so the changes survive the next login. It is idempotent and backs up edited files to `~/.config/backup/tahoe-gap-optimizer-<timestamp>/`.
+
+## macOS icon scraper
+
+The build can replace a few application icons with authentic macOS-style artwork from `macosicons.com`. Because the API requires an API key, scraping is disabled by default and the image falls back to bundled WhiteSur icons plus deterministic SVG fallbacks for Microsoft Word, Photos, and Netflix.
+
+To enable live scraping in CI, add a repository secret:
+
+1. Go to **Settings → Secrets and variables → Actions → New repository secret**.
+2. Name: `MACOS_ICONS_API_KEY`
+3. Value: your `macosicons.com` API key.
+
+The workflow passes it to `scrape-macos-icons.sh`; without it the script exits cleanly and the build continues.
 
 ## Customization
 

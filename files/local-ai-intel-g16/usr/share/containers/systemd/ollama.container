@@ -3,7 +3,7 @@
 # offload, run ipex-llm / OpenVINO inside a persistent Distrobox instead of
 # this Quadlet, or switch the image after verifying driver support.
 [Container]
-Image=docker.io/ollama/ollama:latest
+Image=docker.io/ollama/ollama:latest@sha256:44a722d67f64752ee8d8d1d19d26d83fce0a522af9eab1eafcc6f5c4f61990f0
 ContainerName=ollama
 # Persist downloaded models in a named Podman volume.
 Volume=ollama:/root/.ollama

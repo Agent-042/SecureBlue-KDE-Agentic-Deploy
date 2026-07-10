@@ -2,7 +2,7 @@
 # The host has no AMD iGPU and the NVIDIA RTX 4080s are reserved for display
 # and VFIO passthrough, so this Quadlet uses CPU inference by default.
 [Container]
-Image=docker.io/ollama/ollama:latest
+Image=docker.io/ollama/ollama:latest@sha256:44a722d67f64752ee8d8d1d19d26d83fce0a522af9eab1eafcc6f5c4f61990f0
 ContainerName=ollama
 # Persist downloaded models in a named Podman volume.
 Volume=ollama:/root/.ollama

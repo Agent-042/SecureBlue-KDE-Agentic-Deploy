@@ -1,6 +1,6 @@
 # Ollama Quadlet targeting AMD Ryzen 7 7800X3D / Radeon iGPU via ROCm.
 [Container]
-Image=docker.io/ollama/ollama:rocm
+Image=docker.io/ollama/ollama:rocm@sha256:0f56816ba03061337fed467bcf67336c69ba4dbb18a37f49c23d555d091519c0
 ContainerName=ollama
 # Persist downloaded models in a named Podman volume.
 Volume=ollama:/root/.ollama

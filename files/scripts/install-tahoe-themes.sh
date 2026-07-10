@@ -7,7 +7,16 @@ set -euo pipefail
 
 # BlueBuild mounts the repo's ./files/ directory at /tmp/files/ during image build.
 # Supporting Tahoe assets live in files/tahoe-theming/.
-TAHOE_SRC="/tmp/files/tahoe-theming"
+FILES_ROOT="/tmp/files"
+TAHOE_SRC="${FILES_ROOT}/tahoe-theming"
+
+# Guard against running outside the BlueBuild container (e.g. local testing).
+# Fall back to the in-repo files/ tree so the script can be exercised manually.
+if [[ ! -d "$TAHOE_SRC" ]]; then
+  echo "[tahoe] BlueBuild staging path ${TAHOE_SRC} missing; falling back to ./files/"
+  FILES_ROOT="./files"
+  TAHOE_SRC="${FILES_ROOT}/tahoe-theming"
+fi
 
 # ---------------------------------------------------------------------------
 
@@ -68,6 +77,7 @@ fi
 install -Dm755 "${TAHOE_SRC}/tahoe-cosmetic-reset" /usr/bin/tahoe-cosmetic-reset
 install -Dm644 "${TAHOE_SRC}/tahoe-cosmetic-reset.service" \
   /usr/lib/systemd/user/tahoe-cosmetic-reset.service
+install -Dm755 "${TAHOE_SRC}/tahoe-gap-optimizer" /usr/bin/tahoe-gap-optimizer
 
 # ---------------------------------------------------------------------------
 # Tahoe asset directory
@@ -316,7 +326,7 @@ sanitize_icon_name() {
 }
 
 convert_macos_icns() {
-    local src_dir="/tmp/files/assets/macos-icons/top_50_mac_icons"
+    local src_dir="${FILES_ROOT}/assets/macos-icons/top_50_mac_icons"
     local dst_dir="/usr/share/icons/hicolor/512x512/apps"
 
     [[ -d "$src_dir" ]] || {
@@ -392,7 +402,7 @@ convert_macos_icns
 # Install deterministic fallback icons for apps the scraper missed
 # ---------------------------------------------------------------------------
 install_fallback_icons() {
-    local src_dir="/tmp/files/assets/macos-icons/fallbacks"
+    local src_dir="${FILES_ROOT}/assets/macos-icons/fallbacks"
     local scalable_dir="/usr/share/icons/hicolor/scalable/apps"
     local png_dir="/usr/share/icons/hicolor/512x512/apps"
 
@@ -423,6 +433,6 @@ install_fallback_icons
 # ---------------------------------------------------------------------------
 # Run macOS icon scraper (if API key is available)
 # ---------------------------------------------------------------------------
-if [[ -x /tmp/files/scripts/scrape-macos-icons.sh ]]; then
-    /tmp/files/scripts/scrape-macos-icons.sh || true
+if [[ -x "${FILES_ROOT}/scripts/scrape-macos-icons.sh" ]]; then
+    "${FILES_ROOT}/scripts/scrape-macos-icons.sh" || true
 fi
