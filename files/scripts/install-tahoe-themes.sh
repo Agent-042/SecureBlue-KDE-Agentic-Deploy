@@ -267,3 +267,45 @@ if [[ -f "$KVANTUM_CONFIG" ]]; then
     fi
   fi
 fi
+
+# ---------------------------------------------------------------------------
+# Inject Tahoe dock layout.js as the system default
+# Overwrites the default KDE panel layout with macOS-style dock
+# ---------------------------------------------------------------------------
+LAYOUT_SRC="/tmp/files/tahoe-theming/layout-templates"
+LAYOUT_DST="/usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents"
+SHELL_DST="/usr/share/plasma/shells/org.kde.plasma.desktop/contents"
+
+if [[ -f "${LAYOUT_SRC}/org.kde.plasma.desktop.defaultPanel/contents/layout.js" ]]; then
+    mkdir -p "${LAYOUT_DST}"
+    cp -f "${LAYOUT_SRC}/org.kde.plasma.desktop.defaultPanel/contents/layout.js" \
+        "${LAYOUT_DST}/layout.js"
+    echo "[tahoe] Injected dock layout.js into defaultPanel template"
+fi
+
+if [[ -f "${LAYOUT_SRC}/org.kde.plasma.desktop/contents/layout.js" ]]; then
+    mkdir -p "${SHELL_DST}"
+    cp -f "${LAYOUT_SRC}/org.kde.plasma.desktop/contents/layout.js" \
+        "${SHELL_DST}/layout.js"
+    echo "[tahoe] Injected dock layout.js into desktop shell"
+fi
+
+# ---------------------------------------------------------------------------
+# Inject desktop shell layout with top panel + window buttons + dock
+# ---------------------------------------------------------------------------
+SHELL_SRC="/tmp/files/tahoe-theming/shells"
+SHELL_DST="/usr/share/plasma/shells/org.kde.plasma.desktop/contents"
+
+if [[ -f "${SHELL_SRC}/org.kde.plasma.desktop/contents/layout.js" ]]; then
+    mkdir -p "${SHELL_DST}"
+    cp -f "${SHELL_SRC}/org.kde.plasma.desktop/contents/layout.js" \
+        "${SHELL_DST}/layout.js"
+    echo "[tahoe] Injected desktop shell layout with top panel + window buttons"
+fi
+
+# ---------------------------------------------------------------------------
+# Run macOS icon scraper (if API key is available)
+# ---------------------------------------------------------------------------
+if [[ -x /tmp/files/scripts/scrape-macos-icons.sh ]]; then
+    /tmp/files/scripts/scrape-macos-icons.sh || true
+fi
