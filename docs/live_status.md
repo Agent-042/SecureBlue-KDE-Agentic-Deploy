@@ -1,6 +1,6 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-10T11:14:58Z
+Generated: 2026-07-10T11:37:17Z
 
 **Current turn:** kimi | **Status:** verified | **Last action by:** kimi
 
@@ -35,3 +35,5 @@ Generated: 2026-07-10T11:14:58Z
 | 2026-07-10T10:51:11Z | Kimi Code 2.7 | Moved tahoe-theming install script to files/scripts/ and assets to files/tahoe-theming/ to satisfy BlueBuild script/files module layout; all recipes validated. | verified |
 | 2026-07-10T10:51:11Z | Kimi Code 2.7 | Rewrote scripts/push-live-status.sh to regenerate docs/live_status.md from swarm_ledger.json, skip on [live-status] commits, and push with 'git push origin HEAD' to avoid hangs. | verified |
 | 2026-07-10T11:04:18Z | Kimi Code 2.7 | GitHub Actions matrix build 29087665818 completed successfully. All three images built, pushed, and signed: secureblue-kde-agentic-deploy, secureblue-kde-agentic-deploy-amd-workstation, and secureblue-kde-agentic-deploy-intel-g16. | verified |
+| 2026-07-10T11:37:11Z | Kimi Code 2.7 | GitHub Actions matrix build 29089440372 completed successfully after CI optimization to ignore ledger/hook-only changes; all three fleet images pushed and signed. | verified |
+| 2026-07-10T11:37:11Z | Kimi Code 2.7 | Made push-live-status.sh idempotent (skips live_status.md when ledger is unchanged) and always pushes the current HEAD; added ledger and hook script to workflow paths-ignore. | verified |
