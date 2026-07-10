@@ -1,0 +1,18 @@
+# Ollama Quadlet for the AMD Ryzen 9 9950X workstation.
+# The host has no AMD iGPU and the NVIDIA RTX 4080s are reserved for display
+# and VFIO passthrough, so this Quadlet uses CPU inference by default.
+[Container]
+Image=docker.io/ollama/ollama:latest
+ContainerName=ollama
+# Persist downloaded models in a named Podman volume.
+Volume=ollama:/root/.ollama
+# Expose the Ollama API on localhost.
+PublishPort=127.0.0.1:11434:11434
+# No GPU devices are passed through by default.
+
+[Service]
+Restart=always
+
+[Install]
+# Enable with: systemctl --user enable --now ollama.service
+WantedBy=default.target

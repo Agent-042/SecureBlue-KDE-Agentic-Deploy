@@ -1,0 +1,22 @@
+# Ollama Quadlet for the ASUS ROG Zephyrus G16 (Intel Core Ultra 9 / RTX 5080).
+# Default image uses CPU inference. For Intel Arc iGPU or Core Ultra NPU
+# offload, run ipex-llm / OpenVINO inside a persistent Distrobox instead of
+# this Quadlet, or switch the image after verifying driver support.
+[Container]
+Image=docker.io/ollama/ollama:latest
+ContainerName=ollama
+# Persist downloaded models in a named Podman volume.
+Volume=ollama:/root/.ollama
+# Expose the Ollama API on localhost.
+PublishPort=127.0.0.1:11434:11434
+# Pass through Intel iGPU render nodes for possible Arc OpenCL/Vulkan use.
+# NPU access (/dev/accel*) is intentionally omitted here; use a Distrobox for
+# NPU-specific frameworks such as ipex-llm or OpenVINO.
+AddDevice=/dev/dri
+
+[Service]
+Restart=always
+
+[Install]
+# Enable with: systemctl --user enable --now ollama.service
+WantedBy=default.target

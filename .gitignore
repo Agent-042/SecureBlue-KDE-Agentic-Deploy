@@ -25,6 +25,10 @@ cosign.pub
 # Allow Podman Quadlet files despite generic containers/ ignore.
 !files/local-ai/usr/share/containers/
 !files/local-ai/usr/share/containers/**
+!files/local-ai-amd-workstation/usr/share/containers/
+!files/local-ai-amd-workstation/usr/share/containers/**
+!files/local-ai-intel-g16/usr/share/containers/
+!files/local-ai-intel-g16/usr/share/containers/**
 
 # Secrets
 *.key

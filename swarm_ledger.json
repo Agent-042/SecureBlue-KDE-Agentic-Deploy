@@ -99,6 +99,12 @@
       "agent": "Kimi Code 2.7",
       "action": "GitHub Actions matrix build 29059530577 failed because RECIPE_PATH resolved to ./recipes/recipe, ./recipes/recipe-amd-workstation, and ./recipes/recipe-intel-g16 (missing .yml extension). Fixed .github/workflows/build.yml matrix to use recipe.yml, recipe-amd-workstation.yml, and recipe-intel-g16.yml. Re-validated all recipes.",
       "result": "pending_verification"
+    },
+    {
+      "timestamp": "2026-07-10T00:32:35Z",
+      "agent": "Kimi Code 2.7",
+      "action": "GitHub Actions matrix build 29059753910 partially failed: recipe.yml succeeded, but recipe-amd-workstation.yml and recipe-intel-g16.yml failed because local-ai-amd-workstation and local-ai-intel-g16 Quadlet files were not tracked (the generic containers/ rule in .gitignore excluded them). Updated .gitignore with allow rules for the fleet local-ai directories and added the missing ollama.container files.",
+      "result": "pending_verification"
     }
   ]
 }
