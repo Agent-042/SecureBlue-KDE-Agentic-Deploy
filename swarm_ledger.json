@@ -1,7 +1,7 @@
 {
   "current_turn": "kimi",
   "last_action_by": "kimi",
-  "status": "verified",
+  "status": "pending_verification",
   "target_file": "recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*",
   "verification_logs": [
     {
@@ -165,6 +165,12 @@
       "agent": "Kimi Code 2.7",
       "action": "Made push-live-status.sh idempotent (skips live_status.md when ledger is unchanged) and always pushes the current HEAD; added ledger and hook script to workflow paths-ignore.",
       "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-10T12:36:03Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Added modules/agent-stack and modules/agent-stack-skel to bake Ollama, qwen2.5-coder:7b-instruct-q4_K_M, Cline CLI, Kimi Code CLI, OpenClaw, and Antigravity CLI into the image with /etc/skel zero-config templates. Replaced local-ai modules in all three fleet recipes; all recipes validated with bluebuild.",
+      "result": "pending_verification"
     }
   ]
 }

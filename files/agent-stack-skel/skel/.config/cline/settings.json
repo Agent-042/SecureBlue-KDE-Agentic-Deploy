@@ -1,0 +1,9 @@
+{
+  "_comment": "Cline / Roo Code settings template for SecureBlue KDE Agentic Deploy",
+  "_ollama": "Ollama is baked into the image as a system binary and started by ollama.service on 127.0.0.1:11434",
+  "provider": "ollama",
+  "apiUrl": "http://127.0.0.1:11434",
+  "model": "qwen2.5-coder:7b-instruct-q4_K_M",
+  "temperature": 0.2,
+  "maxTokens": 4096
+}

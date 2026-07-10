@@ -1,0 +1,14 @@
+# Kimi Code CLI configuration template for SecureBlue KDE Agentic Deploy.
+#
+# Ollama is baked into the image as a system binary and started by ollama.service on
+# http://127.0.0.1:11434. This endpoint is localhost-only, so it is
+# agnostic to the username / home directory path.
+#
+# NOTE: This is a best-guess template. Kimi Code's actual configuration
+# format may differ; update this file once the exact schema is known.
+provider: ollama
+ollama:
+  base_url: http://127.0.0.1:11434
+  model: qwen2.5-coder:7b-instruct-q4_K_M
+  temperature: 0.2
+  max_tokens: 4096

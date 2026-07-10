@@ -127,8 +127,15 @@ modules:
   # KDE theming: macOS Tahoe look with true-black panels, dock, stoplights
   - from-file: ../modules/tahoe-theming/module.yml
 
-  # Local AI: CPU-only Ollama Quadlet (no AMD iGPU on 9950X; RTX 4080s reserved)
-  - from-file: ../modules/local-ai-amd-workstation/module.yml
+  # Local AI: baked-in Ollama + agent CLI toolchain, pre-seeded for live USB
+  - from-file: ../modules/agent-stack/module.yml
+  - from-file: ../modules/agent-stack-skel/module.yml
+
+  # Enable the baked-in Ollama system service
+  - type: systemd
+    system:
+      enabled:
+        - ollama.service
 
   # VFIO workstation module: bind secondary NVIDIA GPU to vfio-pci at boot
   - from-file: ../modules/vfio-workstation/module.yml

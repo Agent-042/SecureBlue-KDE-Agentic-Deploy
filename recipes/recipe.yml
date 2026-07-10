@@ -126,8 +126,15 @@ modules:
   # KDE theming: macOS Tahoe look with true-black panels, dock, stoplights
   - from-file: ../modules/tahoe-theming/module.yml
 
-  # Local AI: Ollama Podman Quadlet (disabled by default; enable per-user)
-  - from-file: ../modules/local-ai/module.yml
+  # Local AI: baked-in Ollama + agent CLI toolchain, pre-seeded for live USB
+  - from-file: ../modules/agent-stack/module.yml
+  - from-file: ../modules/agent-stack-skel/module.yml
+
+  # Enable the baked-in Ollama system service
+  - type: systemd
+    system:
+      enabled:
+        - ollama.service
 
   # VFIO module loading for virtual device sandboxing / PCI passthrough
   - from-file: ../modules/vfio-sandbox/module.yml

@@ -137,9 +137,16 @@ modules:
   # OLED G16 tuning: dimming helper, RGB subpixel, tuning notes
   - from-file: ../modules/oled-g16-tuning/module.yml
 
-  # Local AI: CPU Ollama Quadlet with Intel iGPU render access.
+  # Local AI: baked-in Ollama + agent CLI toolchain, pre-seeded for live USB.
   # For NPU offload use ipex-llm / OpenVINO in a persistent Distrobox.
-  - from-file: ../modules/local-ai-intel-g16/module.yml
+  - from-file: ../modules/agent-stack/module.yml
+  - from-file: ../modules/agent-stack-skel/module.yml
+
+  # Enable the baked-in Ollama system service
+  - type: systemd
+    system:
+      enabled:
+        - ollama.service
 
   # VFIO module loading for virtual device sandboxing / PCI passthrough
   - from-file: ../modules/vfio-sandbox/module.yml
