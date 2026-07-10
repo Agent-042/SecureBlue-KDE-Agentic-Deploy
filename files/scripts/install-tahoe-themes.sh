@@ -17,6 +17,13 @@ if [[ -d "${TAHOE_SRC}/defaults/xdg" ]]; then
   cp -aT "${TAHOE_SRC}/defaults/xdg" /usr/etc/xdg
 fi
 
+# Also seed the same defaults into /etc/skel/.config so live USB / new users
+# get the Tahoe look before first login without relying on the helper service.
+mkdir -p /etc/skel/.config
+if [[ -d "${TAHOE_SRC}/defaults/xdg" ]]; then
+  cp -aT "${TAHOE_SRC}/defaults/xdg" /etc/skel/.config
+fi
+
 install -Dm755 "${TAHOE_SRC}/tahoe-cosmetic-reset" /usr/bin/tahoe-cosmetic-reset
 install -Dm644 "${TAHOE_SRC}/tahoe-cosmetic-reset.service" \
   /usr/lib/systemd/user/tahoe-cosmetic-reset.service
@@ -190,3 +197,32 @@ for theme_dir in /usr/share/icons/WhiteSur /usr/share/icons/WhiteSur-dark /usr/s
     gtk-update-icon-cache -f "$theme_dir" || true
   fi
 done
+
+# ---------------------------------------------------------------------------
+# Kvantum version guard: Kvantum 1.1.7 + Qt 6.11+ crashes Plasma on Wayland
+# when compositing is enabled. Force it off for that version.
+# ---------------------------------------------------------------------------
+KVANTUM_CONFIG="/usr/etc/xdg/Kvantum/kvantum.kvconfig"
+if [[ -f "$KVANTUM_CONFIG" ]]; then
+  kvantum_version=""
+  if command -v rpm >/dev/null 2>&1; then
+    kvantum_version=$(rpm -q --queryformat '%{VERSION}' kvantum 2>/dev/null || true)
+  fi
+  if [[ -z "$kvantum_version" ]] && command -v dpkg >/dev/null 2>&1; then
+    kvantum_version=$(dpkg-query -W -f='${Version}' kvantum 2>/dev/null || true)
+  fi
+
+  if [[ "$kvantum_version" == "1.1.7" ]]; then
+    mkdir -p /usr/etc/xdg/Kvantum
+    if grep -q '^\s*composite\s*=' "$KVANTUM_CONFIG" 2>/dev/null; then
+      sed -i 's/^\s*composite\s*=.*/composite=false/' "$KVANTUM_CONFIG"
+    else
+      echo "composite=false" >> "$KVANTUM_CONFIG"
+    fi
+    if grep -q '^\s*translucent_windows\s*=' "$KVANTUM_CONFIG" 2>/dev/null; then
+      sed -i 's/^\s*translucent_windows\s*=.*/translucent_windows=false/' "$KVANTUM_CONFIG"
+    else
+      echo "translucent_windows=false" >> "$KVANTUM_CONFIG"
+    fi
+  fi
+fi
