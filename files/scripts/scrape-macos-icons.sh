@@ -9,8 +9,6 @@ API_URL="https://api.macosicons.com/api/v1/search"
 ICON_DIR="/usr/share/icons/hicolor/512x512/apps"
 DESKTOP_DIR="/usr/local/share/applications"
 
-mkdir -p "$ICON_DIR" "$DESKTOP_DIR"
-
 # Target apps to fetch macOS icons for
 # Format: "desktop-file-name:search-query"
 declare -a TARGET_APPS=(
@@ -29,13 +27,17 @@ declare -a TARGET_APPS=(
 # the intended approach and falls back to WhiteSur icons.
 #
 # To enable: set API_KEY environment variable in the BlueBuild pipeline.
-API_KEY="${MACOSICONS_API_KEY:-}"
+# Accept the user's requested secret name, but keep backward compatibility
+# with the old no-underscore variable name.
+API_KEY="${MACOS_ICONS_API_KEY:-${MACOSICONS_API_KEY:-}}"
 
 if [[ -z "$API_KEY" ]]; then
-    echo "[scraper] No API key set (MACOSICONS_API_KEY). Skipping live scrape."
+    echo "[scraper] No API key set (MACOS_ICONS_API_KEY or MACOSICONS_API_KEY). Skipping live scrape."
     echo "[scraper] WhiteSur icons will be used as fallback."
     exit 0
 fi
+
+mkdir -p "$ICON_DIR" "$DESKTOP_DIR"
 
 fetch_icon() {
     local query="$1"

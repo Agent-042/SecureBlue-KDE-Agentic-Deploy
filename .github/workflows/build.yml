@@ -47,6 +47,8 @@ jobs:
 
       - name: Build and push image
         uses: blue-build/github-action@v1
+        env:
+          MACOS_ICONS_API_KEY: ${{ secrets.MACOS_ICONS_API_KEY }}
         with:
           # Filename inside the recipes/ directory, including the .yml extension.
           # The image tag is derived from the recipe's `name:` field.

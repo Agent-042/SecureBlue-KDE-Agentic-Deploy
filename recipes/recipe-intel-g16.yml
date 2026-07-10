@@ -41,6 +41,7 @@ modules:
       # Tahoe theme asset tooling and fonts
       - rsms-inter-fonts
       - ImageMagick
+      - libicns-utils
       - jq
       - python3-pip
       - git

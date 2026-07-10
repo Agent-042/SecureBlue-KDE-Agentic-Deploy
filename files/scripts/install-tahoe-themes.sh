@@ -304,6 +304,123 @@ if [[ -f "${SHELL_SRC}/org.kde.plasma.desktop/contents/layout.js" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Convert bundled macOS .icns files to PNGs for KDE Plasma
+# ---------------------------------------------------------------------------
+sanitize_icon_name() {
+    local name="$1"
+    # Strip extension, lowercase, replace spaces/special chars with underscores
+    name="${name%.icns}"
+    name=$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')
+    name=$(printf '%s' "$name" | sed -e 's/[^a-z0-9._-]/_/g' -e 's/__*/_/g' -e 's/^_//' -e 's/_$//')
+    printf '%s.png' "$name"
+}
+
+convert_macos_icns() {
+    local src_dir="/tmp/files/assets/macos-icons/top_50_mac_icons"
+    local dst_dir="/usr/share/icons/hicolor/512x512/apps"
+
+    [[ -d "$src_dir" ]] || {
+        echo "[tahoe] No bundled .icns source directory at ${src_dir}; skipping conversion"
+        return 0
+    }
+
+    mkdir -p "$dst_dir"
+
+    local converter=""
+    if command -v icns2png &>/dev/null; then
+        converter="icns2png"
+    elif command -v convert &>/dev/null; then
+        converter="convert"
+    else
+        echo "[tahoe] No icns2png or ImageMagick convert available; skipping .icns conversion"
+        return 0
+    fi
+
+    local tmpdir
+    tmpdir=$(mktemp -d)
+    # shellcheck disable=SC2064
+    trap "rm -rf '${tmpdir}'" RETURN
+
+    for icns in "$src_dir"/*.icns; do
+        [[ -f "$icns" ]] || continue
+        local base out_name out_path
+        base=$(basename "$icns")
+        out_name=$(sanitize_icon_name "$base")
+        out_path="${dst_dir}/${out_name}"
+
+        if [[ "$converter" == "icns2png" ]]; then
+            # Try the exact 512x512 size first
+            rm -f "$tmpdir"/*.png
+            if icns2png -x -s 512x512 -o "$tmpdir" "$icns" &>/dev/null; then
+                local extracted
+                extracted=$(ls -S "$tmpdir"/*.png 2>/dev/null | head -n1)
+                if [[ -f "$extracted" ]]; then
+                    mv "$extracted" "$out_path"
+                    echo "[tahoe] Converted .icns (512): ${base} -> ${out_name}"
+                    continue
+                fi
+            fi
+
+            # Fall back to extracting the largest available size
+            rm -f "$tmpdir"/*.png
+            if icns2png -x -o "$tmpdir" "$icns" &>/dev/null; then
+                local extracted
+                extracted=$(ls -S "$tmpdir"/*.png 2>/dev/null | head -n1)
+                if [[ -f "$extracted" ]]; then
+                    if command -v convert &>/dev/null; then
+                        convert "$extracted" -resize 512x512 "$out_path" 2>/dev/null
+                    else
+                        mv "$extracted" "$out_path"
+                    fi
+                    echo "[tahoe] Converted .icns (resize): ${base} -> ${out_name}"
+                fi
+            fi
+        else
+            # ImageMagick fallback
+            if convert "$icns" -resize 512x512 "$out_path" 2>/dev/null; then
+                echo "[tahoe] Converted .icns (convert): ${base} -> ${out_name}"
+            fi
+        fi
+    done
+
+    gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+}
+
+convert_macos_icns
+
+# ---------------------------------------------------------------------------
+# Install deterministic fallback icons for apps the scraper missed
+# ---------------------------------------------------------------------------
+install_fallback_icons() {
+    local src_dir="/tmp/files/assets/macos-icons/fallbacks"
+    local scalable_dir="/usr/share/icons/hicolor/scalable/apps"
+    local png_dir="/usr/share/icons/hicolor/512x512/apps"
+
+    [[ -d "$src_dir" ]] || return 0
+    mkdir -p "$scalable_dir" "$png_dir"
+
+    local svg
+    for svg in "$src_dir"/*.svg; do
+        [[ -f "$svg" ]] || continue
+        local base
+        base=$(basename "$svg")
+        install -Dm644 "$svg" "${scalable_dir}/${base}"
+        echo "[tahoe] Installed fallback SVG: ${base}"
+
+        local png_out="${png_dir}/${base%.svg}.png"
+        if command -v rsvg-convert &>/dev/null; then
+            rsvg-convert -w 512 -h 512 "$svg" -o "$png_out" 2>/dev/null &&
+                echo "[tahoe] Rendered fallback PNG (rsvg-convert): ${base%.svg}.png"
+        elif command -v convert &>/dev/null; then
+            convert "$svg" -resize 512x512 "$png_out" 2>/dev/null &&
+                echo "[tahoe] Rendered fallback PNG (convert): ${base%.svg}.png"
+        fi
+    done
+}
+
+install_fallback_icons
+
+# ---------------------------------------------------------------------------
 # Run macOS icon scraper (if API key is available)
 # ---------------------------------------------------------------------------
 if [[ -x /tmp/files/scripts/scrape-macos-icons.sh ]]; then
