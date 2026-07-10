@@ -1,7 +1,7 @@
 {
   "current_turn": "kimi",
   "last_action_by": "kimi",
-  "status": "verified",
+  "status": "pending_verification",
   "target_file": "recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*",
   "verification_logs": [
     {
@@ -201,6 +201,12 @@
       "agent": "Kimi Code 2.7",
       "action": "GitHub Actions matrix build 29106467764 completed successfully after icon pipeline fix (libicns-utils, MACOS_ICONS_API_KEY wiring, fallback SVGs). All three fleet images pushed and signed.",
       "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-10T16:35:08Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Addressed audit gaps: pushed tahoe-gap-optimizer, pinned Ollama Quadlet images to SHA256 digests (latest/rocm), hardened /tmp/files path assumption in install-tahoe-themes.sh, documented MACOS_ICONS_API_KEY setup. GitHub Actions build 29107876706 pending.",
+      "result": "pending_verification"
     }
   ]
 }
