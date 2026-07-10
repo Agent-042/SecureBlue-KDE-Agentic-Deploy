@@ -153,6 +153,18 @@
       "agent": "Kimi Code 2.7",
       "action": "GitHub Actions matrix build 29087665818 completed successfully. All three images built, pushed, and signed: secureblue-kde-agentic-deploy, secureblue-kde-agentic-deploy-amd-workstation, and secureblue-kde-agentic-deploy-intel-g16.",
       "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-10T11:37:11Z",
+      "agent": "Kimi Code 2.7",
+      "action": "GitHub Actions matrix build 29089440372 completed successfully after CI optimization to ignore ledger/hook-only changes; all three fleet images pushed and signed.",
+      "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-10T11:37:11Z",
+      "agent": "Kimi Code 2.7",
+      "action": "Made push-live-status.sh idempotent (skips live_status.md when ledger is unchanged) and always pushes the current HEAD; added ledger and hook script to workflow paths-ignore.",
+      "result": "verified"
     }
   ]
 }
