@@ -23,7 +23,7 @@ readonly PROJECT_ROOT
 readonly COSIGN_PUB="${PROJECT_ROOT}/cosign.pub"
 
 # Image registry and tag configuration.
-readonly REGISTRY="ghcr.io/Agent-042"
+readonly REGISTRY="ghcr.io/agent-042"
 readonly TAG="latest"
 readonly DEFAULT_IMAGE="${REGISTRY}/secureblue-kde-agentic-deploy:${TAG}"
 readonly AMD_WORKSTATION_IMAGE="${REGISTRY}/secureblue-kde-agentic-deploy-amd-workstation:${TAG}"
@@ -129,8 +129,16 @@ main() {
         esac
     done
 
+    local elevate_cmd=()
     if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
-        echo "warning: rebasing usually requires root privileges. Continuing detection..." >&2
+        if command -v run0 >/dev/null 2>&1; then
+            elevate_cmd=(run0)
+        elif command -v sudo >/dev/null 2>&1; then
+            elevate_cmd=(sudo)
+        else
+            echo "error: rebasing requires root privileges; install run0 or sudo to escalate." >&2
+            exit 1
+        fi
     fi
 
     local fleet image_ref
@@ -159,11 +167,15 @@ main() {
     fi
 
     if [[ "${dry_run}" == true ]]; then
-        echo "[dry-run] rpm-ostree rebase ostree-image-signed:docker://${image_ref}"
+        if [[ ${#elevate_cmd[@]} -gt 0 ]]; then
+            echo "[dry-run] ${elevate_cmd[*]} rpm-ostree rebase ostree-unverified-registry:${image_ref}"
+        else
+            echo "[dry-run] rpm-ostree rebase ostree-unverified-registry:${image_ref}"
+        fi
         echo "[dry-run] systemctl reboot"
     else
         echo "Rebasing..."
-        rpm-ostree rebase "ostree-image-signed:docker://${image_ref}"
+        "${elevate_cmd[@]}" rpm-ostree rebase "ostree-unverified-registry:${image_ref}"
         echo "Rebase complete. Run 'systemctl reboot' to boot into the new image."
     fi
 }
