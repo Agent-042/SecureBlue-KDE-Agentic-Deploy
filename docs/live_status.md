@@ -1,8 +1,8 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-10T13:08:56Z
+Generated: 2026-07-10T16:11:01Z
 
-**Current turn:** kimi | **Status:** verified | **Last action by:** kimi
+**Current turn:** kimi | **Status:** pending_verification | **Last action by:** kimi
 
 **Target files:** recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*
 
@@ -41,3 +41,4 @@ Generated: 2026-07-10T13:08:56Z
 | 2026-07-10T12:52:29Z | Kimi Code 2.7 | GitHub Actions matrix build 29093100962 completed successfully with the baked-in agent stack. All three images built, pushed, and signed. | verified |
 | 2026-07-10T12:54:17Z | Kimi Code 2.7 | Applied pre-test critical fixes: Kvantum 1.1.7 composite guard in install-tahoe-themes.sh, nvidia.NVreg_EnableGpuFirmware=0 in G16 kargs, confirmed i915.force_probe=7d51 is removed, and seeded Tahoe XDG defaults into /etc/skel/.config for new users. | verified |
 | 2026-07-10T13:08:51Z | Kimi Code 2.7 | GitHub Actions matrix build 29094135021 completed successfully with Kvantum guard, NVIDIA GSP workaround, and /etc/skel seeding. All three images built, pushed, and signed. | verified |
+| 2026-07-10T16:10:52Z | Kimi Code 2.7 | Closed macOS icon pipeline gaps: added libicns-utils and .icns-to-PNG conversion in install-tahoe-themes.sh, wired MACOS_ICONS_API_KEY secret into GitHub Actions workflow, created fallback SVGs for Microsoft Word/Photos/Netflix, and moved macos-icons assets under files/ so BlueBuild can access them. All recipes validated. | pending_verification |
