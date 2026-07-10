@@ -1,8 +1,8 @@
 # SecureBlue KDE Agentic Deploy — Live Status
 
-Generated: 2026-07-10T00:46:04Z
+Generated: 2026-07-10T10:52:01Z
 
-**Current turn:** kimi | **Status:** verified | **Last action by:** kimi
+**Current turn:** kimi | **Status:** pending_verification | **Last action by:** kimi
 
 **Target files:** recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*
 
@@ -28,3 +28,9 @@ Generated: 2026-07-10T00:46:04Z
 | 2026-07-10T00:20:50Z | Kimi Code 2.7 | GitHub Actions matrix build 29059530577 failed because RECIPE_PATH resolved to ./recipes/recipe, ./recipes/recipe-amd-workstation, and ./recipes/recipe-intel-g16 (missing .yml extension). Fixed .github/workflows/build.yml matrix to use recipe.yml, recipe-amd-workstation.yml, and recipe-intel-g16.yml. Re-validated all recipes. | pending_verification |
 | 2026-07-10T00:32:35Z | Kimi Code 2.7 | GitHub Actions matrix build 29059753910 partially failed: recipe.yml succeeded, but recipe-amd-workstation.yml and recipe-intel-g16.yml failed because local-ai-amd-workstation and local-ai-intel-g16 Quadlet files were not tracked (the generic containers/ rule in .gitignore excluded them). Updated .gitignore with allow rules for the fleet local-ai directories and added the missing ollama.container files. | pending_verification |
 | 2026-07-10T00:45:30Z | Kimi Code 2.7 | GitHub Actions matrix build 29060223964 completed successfully. All three images built, pushed, and signed: secureblue-kde-agentic-deploy, secureblue-kde-agentic-deploy-amd-workstation, and secureblue-kde-agentic-deploy-intel-g16. | verified |
+| 2026-07-10T10:02:41Z | Kimi Code 2.7 | Implemented modules/tahoe-theming (macOS Tahoe WhiteSur theme, first-login cosmetic reset), docs/TAHOE_THEMING.md, docs/LIVE_USB_PARITY.md, Mullvad udp2tcp + lockdown bootstrap service, scripts/push-live-status.sh hook, and updated all three fleet recipes; all recipes validated with bluebuild. | pending_verification |
+| 2026-07-10T10:11:47Z | Kimi Code 2.7 | Fixed mullvad-vpn module to use rpm-ostree for package install and split bootstrap files into modules/mullvad-bootstrap; corrected WhiteSur-cursors install invocation. | pending_verification |
+| 2026-07-10T10:22:49Z | Kimi Code 2.7 | Removed ffmpeg-free from all recipes to resolve rpm-ostree depsolve conflict with preinstalled ffmpeg package. | pending_verification |
+| 2026-07-10T10:33:23Z | Kimi Code 2.7 | Moved mullvad-bootstrap files from modules/ to files/ to match BlueBuild files-module convention. | pending_verification |
+| 2026-07-10T10:51:11Z | Kimi Code 2.7 | Moved tahoe-theming install script to files/scripts/ and assets to files/tahoe-theming/ to satisfy BlueBuild script/files module layout; all recipes validated. | pending_verification |
+| 2026-07-10T10:51:11Z | Kimi Code 2.7 | Rewrote scripts/push-live-status.sh to regenerate docs/live_status.md from swarm_ledger.json, skip on [live-status] commits, and push with 'git push origin HEAD' to avoid hangs. | pending_verification |
