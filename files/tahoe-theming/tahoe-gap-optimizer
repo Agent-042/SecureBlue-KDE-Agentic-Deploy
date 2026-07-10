@@ -71,7 +71,7 @@ if [ -n "$SYSTRAY_APPLET" ]; then
     kwriteconfig6 --file "$PLASMA_RC" \
         --group "Containments" --group "$TOP_CONTAINMENT" \
         --group "Applets" --group "$SYSTRAY_APPLET" \
-        --group "General" --key "iconSpacing" "1"
+        --group "General" --key "iconSpacing" "0"
     kwriteconfig6 --file "$PLASMA_RC" \
         --group "Containments" --group "$TOP_CONTAINMENT" \
         --group "Applets" --group "$SYSTRAY_APPLET" \
@@ -377,7 +377,7 @@ if [ -n "$SYSTRAY_APPLET" ]; then
   kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "shownItems" "$essential"
   kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "extraItems" "$essential"
   kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "knownItems" "$essential"
-  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSpacing" "1"
+  kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSpacing" "0"
   kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "iconSize" "''' + SYSTRAY_ICON_SIZE + '''"
   kwriteconfig6 --file "$PLASMA_RC" --group "Containments" --group "$TOP_CONTAINMENT" --group "Applets" --group "$SYSTRAY_APPLET" --group "General" --key "scaleIconsToFit" "true"
 fi
@@ -458,10 +458,10 @@ with open(cosmetic, 'w') as f:
 with open(systray, 'r') as f:
     s = f.read()
 
-if 'set_key(gen_lines, "iconSpacing", "1")' not in s:
+if 'set_key(gen_lines, "iconSpacing", "0")' not in s:
     s = s.replace(
         '    set_key(gen_lines, "shownItems", ",".join(DEFAULT_SHOW_ITEMS))\n',
-        '    set_key(gen_lines, "shownItems", ",".join(DEFAULT_SHOW_ITEMS))\n    set_key(gen_lines, "iconSpacing", "1")\n    set_key(gen_lines, "scaleIconsToFit", "true")\n',
+        '    set_key(gen_lines, "shownItems", ",".join(DEFAULT_SHOW_ITEMS))\n    set_key(gen_lines, "iconSpacing", "0")\n    set_key(gen_lines, "scaleIconsToFit", "true")\n',
     )
 
 with open(systray, 'w') as f:

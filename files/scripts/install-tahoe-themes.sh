@@ -183,25 +183,73 @@ cd "${TMPDIR}/kde/WhiteSur-kde-master"
 ./install.sh
 
 # ---------------------------------------------------------------------------
-# Patch panel backgrounds to true black
+# Helper: apply the true-black / tight-margin transform to a plain SVG file
+# ---------------------------------------------------------------------------
+tahoe_patch_svg() {
+  local svg="$1"
+  [[ -f "$svg" ]] || return 0
+
+  sed -i \
+    -e 's/#333333/#000000/g' \
+    -e 's/#1a1a1a/#000000/g' \
+    -e 's/#2d2d2d/#000000/g' \
+    -e 's/#3c3c3c/#000000/g' \
+    -e 's/#424242/#000000/g' \
+    -e 's/#4a4a4a/#000000/g' \
+    -e 's/#363636/#000000/g' \
+    -e 's/#242424/#000000/g' \
+    -e 's/opacity:0\.9/opacity:1/g' \
+    -e 's/opacity:0\.66663194/opacity:1/g' \
+    -e 's/opacity:0\.45/opacity:1/g' \
+    -e 's/opacity:0\.25/opacity:1/g' \
+    -e 's/fill:#f5f5f5/fill:#000000/g' \
+    -e 's/fill:#ffffff/fill:#000000/g' \
+    -e 's/fill:currentColor/fill:#000000/g' \
+    "$svg"
+
+  # Shrink Plasma hint margins so panels/docks sit flush with edges
+  for hint in top bottom left right; do
+    sed -i \
+      -e "s/thick-hint-${hint}-margin\" width=\"8\"/thick-hint-${hint}-margin\" width=\"2\"/g" \
+      -e "s/thick-hint-${hint}-margin\" height=\"8\"/thick-hint-${hint}-margin\" height=\"2\"/g" \
+      -e "s/normal-hint-${hint}-margin\" width=\"4\"/normal-hint-${hint}-margin\" width=\"1\"/g" \
+      -e "s/normal-hint-${hint}-margin\" width=\"2\"/normal-hint-${hint}-margin\" width=\"1\"/g" \
+      -e "s/normal-hint-${hint}-margin\" height=\"2\"/normal-hint-${hint}-margin\" height=\"1\"/g" \
+      -e "s/normal-hint-${hint}-margin\" height=\"4\"/normal-hint-${hint}-margin\" height=\"1\"/g" \
+      "$svg"
+  done
+}
+
+# ---------------------------------------------------------------------------
+# Patch Plasma theme SVGZs to true black
 # ---------------------------------------------------------------------------
 PLASMA_THEME="/usr/share/plasma/desktoptheme/WhiteSur-dark"
 if [[ -d "$PLASMA_THEME" ]]; then
-  for variant in opaque solid translucent; do
-    svgz="${PLASMA_THEME}/${variant}/widgets/panel-background.svgz"
+  # Panel backgrounds (variants used by different panel opacity modes)
+  for variant in opaque solid translucent ""; do
+    if [[ -n "$variant" ]]; then
+      svgz="${PLASMA_THEME}/${variant}/widgets/panel-background.svgz"
+    else
+      svgz="${PLASMA_THEME}/widgets/panel-background.svgz"
+    fi
     if [[ -f "$svgz" ]]; then
       tmp="${TMPDIR}/panel-bg.svg"
       gzip -cd "$svgz" > "$tmp"
-      # Force panel backgrounds to true-black (#000000, opacity=1)
-      sed -i -E \
-        -e 's/#2[0-9a-fA-F]{5}/#000000/g' \
-        -e 's/#3[0-9a-fA-F]{5}/#000000/g' \
-        -e 's/#1[0-9a-fA-F]{5}/#000000/g' \
-        -e 's/fill:[[:space:]]*#[0-9a-fA-F]{3,6}/fill:#000000/g' \
-        "$tmp"
+      tahoe_patch_svg "$tmp"
       gzip -c "$tmp" > "$svgz"
+      echo "[tahoe] Patched panel background: $svgz"
     fi
   done
+
+  # Task / dock item background SVG
+  tasks_svgz="${PLASMA_THEME}/widgets/tasks.svgz"
+  if [[ -f "$tasks_svgz" ]]; then
+    tmp="${TMPDIR}/tasks.svg"
+    gzip -cd "$tasks_svgz" > "$tmp"
+    tahoe_patch_svg "$tmp"
+    gzip -c "$tmp" > "$tasks_svgz"
+    echo "[tahoe] Patched tasks background: $tasks_svgz"
+  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -209,9 +257,7 @@ fi
 # ---------------------------------------------------------------------------
 for aurorae in /usr/share/aurorae/themes/WhiteSur-dark*; do
   [[ -d "$aurorae" ]] || continue
-  dec="${aurorae}/decoration.svg"
-  decz="${aurorae}/decoration.svgz"
-  for f in "$dec" "$decz"; do
+  for f in "${aurorae}/decoration.svg" "${aurorae}/decoration.svgz"; do
     if [[ -f "$f" ]]; then
       tmp="${TMPDIR}/decoration.svg"
       if [[ "$f" == *.svgz ]]; then
@@ -219,17 +265,13 @@ for aurorae in /usr/share/aurorae/themes/WhiteSur-dark*; do
       else
         cp "$f" "$tmp"
       fi
-      sed -i -E \
-        -e 's/#2[0-9a-fA-F]{5}/#000000/g' \
-        -e 's/#3[0-9a-fA-F]{5}/#000000/g' \
-        -e 's/#1[0-9a-fA-F]{5}/#000000/g' \
-        -e 's/fill:[[:space:]]*#[0-9a-fA-F]{3,6}/fill:#000000/g' \
-        "$tmp"
+      tahoe_patch_svg "$tmp"
       if [[ "$f" == *.svgz ]]; then
         gzip -c "$tmp" > "$f"
       else
         cp "$tmp" "$f"
       fi
+      echo "[tahoe] Patched Aurorae decoration: $f"
     fi
   done
 done
