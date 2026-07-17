@@ -10,9 +10,11 @@ on:
       - master
     paths-ignore:
       - '**.md'
-      - 'docs/**'
-      - 'swarm_ledger.json'
-      - 'scripts/push-live-status.sh'
+      - '.assets/docs/**'
+      - '.backend/swarm_ledger.json'
+      - 'push-live-status.sh'
+      - '.backend/scripts/legacy/**'
+      - '.github/**'
   pull_request:
     branches:
       - main
@@ -50,12 +52,8 @@ jobs:
         env:
           MACOS_ICONS_API_KEY: ${{ secrets.MACOS_ICONS_API_KEY }}
         with:
-          # Filename inside the recipes/ directory, including the .yml extension.
-          # The image tag is derived from the recipe's `name:` field.
           recipe: ${{ matrix.recipe }}
+          recipe_dir: .backend/recipes
           registry_token: ${{ github.token }}
-          # Signing placeholder: generate cosign keypair and store the
-          # private key in SIGNING_SECRET, the public key in the repo root
-          # as cosign.pub, and update this secret name if needed.
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           pr_event_number: ${{ github.event.number }}

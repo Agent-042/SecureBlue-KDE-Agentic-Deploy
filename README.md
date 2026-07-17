@@ -1,5 +1,24 @@
 # SecureBlue KDE Agentic Deploy
 
+> **SECURITY AUDIT** — This repository contains the following patterns that require operator awareness before use in production or on air-gapped systems:
+>
+> 1. **`curl | bash` install patterns** — Several scripts download and execute remote installers without local checksum verification:
+>    - `install-agent-stack.sh` → `https://code.kimi.com/kimi-code/install.sh`
+>    - `install-agent-stack.sh` → `https://antigravity.google/cli/install.sh`
+>    - `install-agent-stack.sh` → `https://rpm.nodesource.com/setup_22.x`
+>    - `vibrant-linux-install.sh` → `https://github.com/libvibrant/vibrantLinux/releases/download/PLACEHOLDER/vibrantlinux`
+>    - `install-agent-stack.sh` → `https://github.com/ollama/ollama/releases/download/v0.5.7/ollama-linux-amd64`
+>
+> 2. **Pre-compiled binaries downloaded at runtime** — The agent-stack installer fetches unverified amd64 ELF binaries (Ollama, VibrantLinux) directly from GitHub releases. No GPG signatures, Cosign verification, or SHA256SUM checks are performed during download.
+>
+> 3. **Hardcoded API keys and secrets** — The following sensitive values are embedded in source files:
+>    - `mullvad-bootstrap.sh` → Mullvad account number: `1532954861423045`
+>    - `scrape-macos-icons.sh` → API key references: `MACOS_ICONS_API_KEY`, `MACOSICONS_API_KEY` (read from environment at runtime)
+>    - `install-agent-stack.sh` / `env-init.sh` / `github-api.sh` / `set-signing-secret.sh` / `push-live-status.sh` → GitHub PAT (`GITHUB_PAT`), Gemini API key (`GEMINI_API_KEY`), Kimi API key (`KIMI_API_KEY`) expected in environment
+>    - `generate-cosign-keys.sh` / `generate-iso.sh` / `rebase.sh` → Cosign public key path: `cosign.pub`
+>
+> **Mitigation:** Run `env-init.sh` to load secrets into the current shell session only (never written to disk). Set `GITHUB_PAT` as a GitHub Actions encrypted secret. Rotate the Mullvad account number if this repository is public. Consider vendoring the Ollama binary into the image build rather than fetching at runtime.
+
 A hardened, immutable Fedora Atomic KDE OCI image built with [BlueBuild](https://blue-build.org/) on top of [SecureBlue](https://github.com/secureblue/secureblue).
 
 ## Purpose
@@ -16,7 +35,7 @@ This project produces a locked-down, reproducible desktop operating system image
 
 ## Install / Rebase
 
-This project builds three fleet images. Use `scripts/rebase.sh` to detect the
+This project builds three fleet images. Use `./rebase.sh` to detect the
 current host and rebase to the matching image, or run the equivalent
 `rpm-ostree rebase` command manually.
 
@@ -32,13 +51,13 @@ current host and rebase to the matching image, or run the equivalent
 
 ```bash
 # Detect the host and print the matching rebase command
-scripts/rebase.sh --dry-run
+./rebase.sh --dry-run
 
 # Rebase to the detected image
-scripts/rebase.sh
+./rebase.sh
 
 # Verify the signed image with cosign before rebasing
-scripts/rebase.sh --verify
+./rebase.sh --verify
 ```
 
 Manual rebase (replace `YOUR_IMAGE_REF` with the built image tag):
@@ -47,7 +66,7 @@ Manual rebase (replace `YOUR_IMAGE_REF` with the built image tag):
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest
 ```
 
-Then reboot. After first boot, restore the persistent project workspace by running `kimi-resume.sh` (installed at `/usr/bin/kimi-resume.sh`). Verify the pre-configured systemd services and Flatpak overrides described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+Then reboot. After first boot, restore the persistent project workspace by running `/usr/bin/kimi-resume.sh`. Verify the pre-configured systemd services and Flatpak overrides described in [`.assets/docs/DEPLOYMENT.md`](.assets/docs/DEPLOYMENT.md).
 
 ## Workspace Layout
 
@@ -65,7 +84,7 @@ Use `~/Agentic-OS` for project repositories, cloud-sync targets, and any state t
 - **Google Chrome** (`google-chrome-config`): Additional enterprise browser with the same SSO/dark-mode policy goals as Trivalent, managed via a separate Chrome policy path.
 - **Mullvad Browser** (`privacy-browser-config`): Isolated research browser with a dedicated profile and certificate store, hardened DNS/proxy settings, and no cross-contamination with the enterprise browser.
 
-See [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) for full details.
+See [`.assets/docs/BROWSER_POLICY.md`](.assets/docs/BROWSER_POLICY.md) for full details.
 
 ## Hardening Checklist
 
@@ -87,7 +106,7 @@ See [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) for full details.
 
 ## VFIO / Whonix Note
 
-IOMMU and KVM are enabled for future VFIO pass-through and Whonix-on-KVM isolation. Additional per-device ACS/ID grouping and libvirt XML configuration are required and should be applied after installation. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the planning section.
+IOMMU and KVM are enabled for future VFIO pass-through and Whonix-on-KVM isolation. Additional per-device ACS/ID grouping and libvirt XML configuration are required and should be applied after installation. See [`.assets/docs/DEPLOYMENT.md`](.assets/docs/DEPLOYMENT.md) for the planning section.
 
 ## Build Status
 
@@ -95,8 +114,34 @@ IOMMU and KVM are enabled for future VFIO pass-through and Whonix-on-KVM isolati
 
 ## Documentation
 
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — step-by-step deployment guide
-- [`docs/BROWSER_POLICY.md`](docs/BROWSER_POLICY.md) — browser profile and certificate isolation details
-- [`docs/TAHOE_THEMING.md`](docs/TAHOE_THEMING.md) — macOS Tahoe-inspired KDE theme details
-- [`docs/LIVE_USB_PARITY.md`](docs/LIVE_USB_PARITY.md) — live USB behavior and limitations
-- [`scripts/generate-docs.py`](scripts/generate-docs.py) — regenerate deployment docs from `recipes/recipe.yml`
+- [`.assets/docs/DEPLOYMENT.md`](.assets/docs/DEPLOYMENT.md) — step-by-step deployment guide
+- [`.assets/docs/BROWSER_POLICY.md`](.assets/docs/BROWSER_POLICY.md) — browser profile and certificate isolation details
+- [`.assets/docs/TAHOE_THEMING.md`](.assets/docs/TAHOE_THEMING.md) — macOS Tahoe-inspired KDE theme details
+- [`.assets/docs/LIVE_USB_PARITY.md`](.assets/docs/LIVE_USB_PARITY.md) — live USB behavior and limitations
+- [`.backend/scripts/legacy/generate-docs.py`](.backend/scripts/legacy/generate-docs.py) — regenerate deployment docs from `.backend/recipes/recipe.yml`
+
+## Repository Structure
+
+```
+.
+├── *.sh                          # SPDM manifests (Self-Parsing Deployment Manifest)
+│                                 #   Run with --bluebuild to emit AST, or execute normally
+├── .assets/docs/                 # Markdown documentation
+│   ├── BROWSER_POLICY.md
+│   ├── DEPLOYMENT.md
+│   ├── LIVE_USB_PARITY.md
+│   └── TAHOE_THEMING.md
+├── .backend/                     # Backend build assets (hidden from storefront)
+│   ├── recipes/                  # BlueBuild recipe YAML files
+│   ├── modules/                  # BlueBuild module configurations
+│   ├── files/                    # Files injected into the image by modules
+│   ├── scripts/legacy/           # Original pre-SPDM scripts (archived)
+│   ├── Justfile                  # Just task runner definitions
+│   ├── paint_recipe.py           # Recipe painting helper
+│   ├── agent_bootstrap.py        # Agent bootstrap script
+│   └── swarm_ledger.json         # Swarm verification ledger
+├── .github/workflows/            # GitHub Actions CI/CD
+│   └── build.yml
+├── cosign.pub                    # Cosign public key for image verification
+└── README.md                     # This file
+```
