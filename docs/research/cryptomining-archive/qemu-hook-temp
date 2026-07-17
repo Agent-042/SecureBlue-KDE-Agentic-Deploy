@@ -1,0 +1,81 @@
+#!/bin/bash
+# Libvirt QEMU hook template for Windows11 GPU passthrough.
+#
+# Install with the helper deploy-hook.sh (requires interactive run0):
+#   ~/deploy-hook.sh
+#
+# IMPORTANT: Replace PCI_ADDR below with the actual RTX 4080 address reported
+# by `lspci | grep -i nvidia`.  The placeholder 0000:01:00.0 is almost certainly
+# not correct for this host.
+
+set -euo pipefail
+
+VM_NAME="${1:-}"
+STATE="${2:-}"
+
+# RTX 4080 PCI address discovered on this host.
+PCI_ADDR="0000:09:00.0"
+
+USER="agent-42"
+HOME_DIR="/var/home/${USER}"
+
+log() {
+  logger -t qemu-hook-windows11 "$@"
+}
+
+run_as_user() {
+  su - "$USER" -c "$*"
+}
+
+if [[ "$VM_NAME" != "Windows11" ]]; then
+  exit 0
+fi
+
+case "$STATE" in
+  prepare|begin)
+    log "prepare: stopping alph-miner and detaching ${PCI_ADDR}"
+
+    # Stop the GPU miner before the VM takes the card.
+    run_as_user "systemctl --user stop alph-miner" || true
+
+    driver_link="/sys/bus/pci/devices/${PCI_ADDR}/driver"
+    if [[ -L "$driver_link" ]]; then
+      driver=$(readlink -f "$driver_link" | xargs basename)
+      log "prepare: ${PCI_ADDR} currently bound to ${driver}"
+
+      if [[ "$driver" == "nvidia" ]]; then
+        run0 sh -c "
+          echo '${PCI_ADDR}' > /sys/bus/pci/drivers/nvidia/unbind &&
+          echo 'vfio-pci' > /sys/bus/pci/devices/${PCI_ADDR}/driver_override &&
+          echo '${PCI_ADDR}' > /sys/bus/pci/drivers/vfio-pci/bind
+        " || {
+          log "prepare: failed to bind ${PCI_ADDR} to vfio-pci"
+          exit 1
+        }
+      fi
+    fi
+    ;;
+
+  release|stopped)
+    log "release: rebinding ${PCI_ADDR} to nvidia and restarting idle monitor"
+
+    run0 sh -c "
+      echo '${PCI_ADDR}' > /sys/bus/pci/drivers/vfio-pci/unbind 2>/dev/null || true
+      echo > /sys/bus/pci/devices/${PCI_ADDR}/driver_override
+      modprobe nvidia || true
+      echo 1 > /sys/bus/pci/rescan
+    " || {
+      log "release: PCI rebind failed"
+      exit 1
+    }
+
+    # Restart the idle monitor so mining resumes according to idle rules.
+    run_as_user "${HOME_DIR}/idle_monitor.sh restart" || true
+    ;;
+
+  *)
+    exit 0
+    ;;
+esac
+
+exit 0
