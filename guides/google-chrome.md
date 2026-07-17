@@ -29,16 +29,42 @@ modules:
 
 # File: config/files/usr/share/flatpak/overrides/com.google.Chrome (System override file)
 [Context]
-unset-environment=LD_PRELOAD;
-sockets=!x11;
-filesystems=!xdg-documents;!xdg-pictures;!xdg-music;!xdg-videos;
+shared=network
+filesystems=!host;home;xdg-download
+devices=!all
+features=!background
 
-[Environment]
-LD_PRELOAD=
+[Session Bus Policy]
+org.freedesktop.secrets=none
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
 
-# File: config/files/usr/lib/tmpfiles.d/google-chrome-flatpak-overrides.conf (Tmpfiles.d config to copy override to /var)
+[System Bus Policy]
+org.freedesktop.Avahi=none
+
+# File: config/files/usr/lib/tmpfiles.d/google-chrome-flatpak-overrides.conf
 C+ /var/lib/flatpak/overrides/com.google.Chrome 0644 root root - /usr/share/flatpak/overrides/com.google.Chrome
 
 # File: config/files/etc/skel/.var/app/com.google.Chrome/config/chrome-flags.conf (Default flags for new users)
 --ozone-platform-hint=auto
 --enable-features=VaapiVideoDecodeLinuxGL
+
+# File: config/files/usr/etc/opt/chrome/policies/managed/google-chrome-policies.json
+{
+  "DefaultCookiesSetting": 4,
+  "DefaultJavaScriptSetting": 1,
+  "DefaultNotificationsSetting": 2,
+  "DefaultGeolocationSetting": 2,
+  "DefaultMediaStreamingSetting": 2,
+  "DefaultSearchProviderEnabled": true,
+  "DefaultSearchProviderName": "DuckDuckGo",
+  "DefaultSearchProviderSearchURL": "https://duckduckgo.com/?q={searchTerms}",
+  "ExtensionInstallBlocklist": ["*"],
+  "HomepageLocation": "https://duckduckgo.com",
+  "RestoreOnStartup": 5,
+  "SafeBrowsingEnabled": true,
+  "SitePerProcess": true,
+  "SSLVersionMin": "tls1.2"
+}
