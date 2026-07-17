@@ -77,6 +77,8 @@ pcsc_scan
 
 ## 6. VFIO / Whonix planning
 
+> **Cryptomining is not included in this image.** Any historical GPU-mining documentation has been moved to the separate `Agent-042/BuildBlue-cryptomining-docs` repository and is **opt-in only**. The image does not ship miner containers, systemd units, or wallet configurations. GPU workloads are limited to optional local AI inference and ethical distributed computing.
+
 IOMMU and KVM are already enabled. To complete VFIO or Whonix-on-KVM:
 
 1. Identify the IOMMU groups for the target device(s):
@@ -100,25 +102,42 @@ IOMMU and KVM are already enabled. To complete VFIO or Whonix-on-KVM:
 
 3. For Whonix, import the KVM templates and attach them to an isolated virtual network.
 
-## 7. Local AI (Ollama)
+## 7. Local AI
 
-Each fleet image includes an Ollama Podman Quadlet that runs as a user service.
+Each fleet image includes an Ollama server; the default and workstation images run it as a Podman Quadlet user service, while the Intel G16 image uses a pre-baked IPEX-LLM system service.
+
+### Podman Quadlet (default / workstation)
 
 ```bash
 systemctl --user enable --now ollama.service
 ```
 
-Fleet-specific defaults:
+Fleet-specific container images:
 
 - **Default AMD 7800X3D image:** uses `docker.io/ollama/ollama:rocm` for AMD Radeon iGPU acceleration.
 - **AMD 9950X workstation:** uses CPU inference (`docker.io/ollama/ollama:latest`) because the host has no AMD iGPU and the NVIDIA RTX 4080s are reserved for display and VFIO passthrough.
-- **Intel G16 laptop:** uses CPU inference by default with Intel `/dev/dri` render access available. For Intel Arc iGPU or Core Ultra NPU offload, run `ipex-llm` / OpenVINO inside a persistent Distrobox rather than this Quadlet.
 
 Downloaded models persist in the `ollama` Podman volume (`/root/.ollama` inside the container).
 
+### Intel G16 laptop
+
+The Intel G16 image ships a pre-baked `ipex-ollama.service` system service for Intel Arc iGPU and Core Ultra NPU offload via IPEX-LLM.
+
+```bash
+sudo systemctl enable --now ipex-ollama.service
+```
+
+The service runs `/opt/ipex-llm/bin/ollama serve` and listens on `127.0.0.1:11434`.
+
 ## 8. Display calibration
 
-The curated stack includes VibrantLinux for OLED dimming workarounds and SDR saturation boosts inside HDR. VibrantLinux is not packaged in the Fedora repositories, so it must be installed manually (e.g., from the upstream GitHub release) or substituted with KDE System Settings → Display → Color Management and Night Color for software dimming and color temperature adjustment.
+The curated stack includes VibrantLinux for OLED dimming workarounds and SDR saturation boosts inside HDR. It is installed as a Flatpak (`io.github.libvibrant.vibrantLinux`); run it from the application menu or with:
+
+```bash
+flatpak run io.github.libvibrant.vibrantLinux
+```
+
+If you prefer not to use it, substitute with KDE System Settings → Display → Color Management and Night Color for software dimming and color temperature adjustment.
 
 Kvantum Manager is layered at build time. The macOS Tahoe theme is applied automatically before first login by `tahoe-cosmetic-reset.service`; see [`docs/TAHOE_THEMING.md`](TAHOE_THEMING.md) for customization and troubleshooting.
 
@@ -152,7 +171,8 @@ systemd:
     - libvirtd.service
     - virtlogd.service
     - mullvad-daemon.service
-    - mullvad-bootstrap.service
+    - bluebuild-first-boot.service
+    - ollama.service
   user:
     enabled:
     - agentic-workspace-init.service
@@ -175,12 +195,15 @@ containers:
   - im.riot.Riot
   - com.vscodium.codium
   - com.github.zocker_160.SyncThingy
+  - io.github.libvibrant.vibrantLinux
 ```
 <!-- END FLATPAK_SECTION -->
 
 <!-- BEGIN MODULES_SECTION -->
 ### Custom modules
 
+- **`agent-stack`** — Self-parsing CLI manifest that installs Kimi Code, Antigravity CLI, and Mullvad VPN. (`modules/agent-stack/module.yml`)
+- **`agent-stack-skel`** — Custom BlueBuild module. (`modules/agent-stack-skel/module.yml`)
 - **`audio-eq`** — EasyEffects G16 speaker-clarity preset. (`modules/audio-eq/module.yml`)
 - **`docs-readme`** — On-image documentation. (`modules/docs-readme/module.yml`)
 - **`emergency-rescue`** — Basic network/diagnostic rescue tooling. (`modules/emergency-rescue/module.yml`)
@@ -192,8 +215,7 @@ containers:
 - **`kimi-resume`** — Post-login helper to restore the project repo and Kimi CLI. (`modules/kimi-resume/module.yml`)
 - **`local-ai`** — Ollama Podman Quadlet. (`modules/local-ai/module.yml`)
 - **`local-ai-amd-workstation`** — Custom BlueBuild module. (`modules/local-ai-amd-workstation/module.yml`)
-- **`local-ai-intel-g16`** — Custom BlueBuild module. (`modules/local-ai-intel-g16/module.yml`)
-- **`mullvad-vpn`** — Mullvad VPN RPM repo and package with udp2tcp + lockdown bootstrap service. (`modules/mullvad-vpn/module.yml`)
+- **`local-ai-intel-g16`** — IPEX-LLM Ollama systemd service for Intel Arc iGPU and Core Ultra NPU offload. (`modules/local-ai-intel-g16/module.yml`)
 - **`network-lockdown`** — Mullvad defaults and Chrome split-tunnel routing. (`modules/network-lockdown/module.yml`)
 - **`oled-g16-tuning`** — Custom BlueBuild module. (`modules/oled-g16-tuning/module.yml`)
 - **`persist-workspace`** — Persistent `~/Agentic-OS` workspace. (`modules/persist-workspace/module.yml`)

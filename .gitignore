@@ -57,3 +57,16 @@ __pycache__/
 
 # Logs
 *.log
+
+# Cryptomining artifacts (kept in separate BuildBlue docs repo; not part of image)
+wallet_work/
+*.miner
+*-miner.container
+mo-gpu-miner.Containerfile
+cpu-miner.Containerfile
+gpu-miner.Containerfile
+mm.json
+mining_stats.log
+gpu_watchdog.log
+idle_monitor.pid
+
