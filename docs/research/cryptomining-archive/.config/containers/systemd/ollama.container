@@ -1,0 +1,26 @@
+[Unit]
+Description=Ollama local LLM inference container
+Documentation=https://ollama.com/
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/ollama/ollama:latest
+ContainerName=ollama
+
+# CPU inference by default; no GPU device required
+
+# Persistent Ollama model and state data
+Volume=ollama:/root/.ollama
+
+# Expose API only on localhost
+PublishPort=127.0.0.1:11434:11434
+
+[Service]
+Restart=always
+RestartSec=10
+# Ensure the container is removed on stop so Quadlet creates a fresh one.
+ExecStopPost=-/usr/bin/podman rm -f ollama
+
+[Install]
+WantedBy=default.target

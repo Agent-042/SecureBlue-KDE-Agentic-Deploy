@@ -1,0 +1,37 @@
+[Unit]
+Description=Folding@home ethical distributed computing container
+Documentation=https://foldingathome.org/
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=lscr.io/linuxserver/foldingathome:latest
+ContainerName=folding
+
+# GPU access for Folding@home workloads
+AddDevice=nvidia.com/gpu=all
+
+# Persistent Folding@home data (work units, config, logs)
+Volume=folding-data:/config
+
+# Team and passkey configuration.
+# Replace placeholders with your own values, or remove if you prefer anonymous folding.
+# FOLD_TEAM=0 means "no team" / anonymous. Set to your team number if desired.
+Environment=PUID=1000
+Environment=PGID=1000
+Environment=tz=Etc/UTC
+Environment=FOLD_TEAM=0
+Environment=FOLD_USER=Anonymous
+Environment=FOLD_PASSKEY=REPLACE_WITH_YOUR_PASSKEY
+
+[Service]
+# Resource politeness: lowest CPU priority and light weight
+Nice=19
+CPUWeight=20
+Restart=always
+RestartSec=10
+# Ensure the container is removed on stop so Quadlet creates a fresh one.
+ExecStopPost=-/usr/bin/podman rm -f folding
+
+[Install]
+WantedBy=default.target
