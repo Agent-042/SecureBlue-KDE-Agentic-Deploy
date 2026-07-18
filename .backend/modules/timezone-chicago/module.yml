@@ -1,0 +1,6 @@
+# Default system timezone to America/Chicago for all users.
+# Drops /usr/etc/localtime so fresh deployments and new users inherit CST/CDT.
+type: files
+files:
+  - source: timezone-chicago/usr
+    destination: /usr

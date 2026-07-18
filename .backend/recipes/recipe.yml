@@ -114,6 +114,9 @@ modules:
   # On-image documentation
   - from-file: ../modules/docs-readme/module.yml
 
+  # Default timezone: America/Chicago (Central Time) for all users
+  - from-file: ../modules/timezone-chicago/module.yml
+
   # Immutability layer: redacted SDDM, powerdevil policies
   # (tmpfs /var/home moved to modules/ephemeral-home for optional future use)
   - from-file: ../modules/immutability/module.yml
