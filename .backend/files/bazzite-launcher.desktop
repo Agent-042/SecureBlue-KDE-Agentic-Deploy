@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Bazzite VM Launcher
+Comment=Start Bazzite VM and Looking Glass Client
+Exec=bash -c "virsh start bazzite-vm && looking-glass-client"
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Game;System;
