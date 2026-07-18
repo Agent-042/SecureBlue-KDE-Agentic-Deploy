@@ -1,7 +1,8 @@
 [Unit]
 Description=Bind secondary NVIDIA GPU to vfio-pci
-After=multi-user.target
-Wants=multi-user.target
+DefaultDependencies=no
+After=systemd-modules-load.service
+Before=plasmalogin.service display-manager.service
 
 [Service]
 Type=oneshot
@@ -9,4 +10,5 @@ ExecStart=/usr/bin/vfio-bind-secondary-gpu.sh
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target
+RequiredBy=plasmalogin.service display-manager.service
+WantedBy=basic.target
