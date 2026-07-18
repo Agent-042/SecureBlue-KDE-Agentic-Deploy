@@ -54,6 +54,9 @@ modules:
       - rd.driver.blacklist=nouveau
       - modprobe.blacklist=nouveau
 
+  # Default timezone for all users (Central Time / Chicago)
+  - from-file: ../modules/timezone/module.yml
+
   # System services
   - type: systemd
     system:
