@@ -114,6 +114,8 @@ IOMMU and KVM are enabled for future VFIO pass-through and Whonix-on-KVM isolati
 
 ## Documentation
 
+- [`.assets/docs/SPDM_CONSTITUTION.md`](.assets/docs/SPDM_CONSTITUTION.md) — **The canonical architecture document. Read this first.** Defines the SPDM 6-Rule morphology, repository topology, agent execution protocol, and security audit mandate.
+- [`.assets/docs/CONTRIBUTING_Coding_Agent.md`](.assets/docs/CONTRIBUTING_Coding_Agent.md) — **Baseline prompt for all coding agents.** Copy-paste this block to the top of every agent prompt before they push.
 - [`.assets/docs/DEPLOYMENT.md`](.assets/docs/DEPLOYMENT.md) — step-by-step deployment guide
 - [`.assets/docs/BROWSER_POLICY.md`](.assets/docs/BROWSER_POLICY.md) — browser profile and certificate isolation details
 - [`.assets/docs/TAHOE_THEMING.md`](.assets/docs/TAHOE_THEMING.md) — macOS Tahoe-inspired KDE theme details
