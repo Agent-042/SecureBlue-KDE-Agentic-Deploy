@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# SPDM Constitution: .assets/docs/SPDM_CONSTITUTION.md
+# Coding Guidelines: .assets/docs/CONTRIBUTING_Coding_Agent.md
+# GITHUB_PAT: ${GITHUB_PAT} (Value redacted for SPDM Section 6 compliance)
+#
 # bazzite-deploy.sh
 # Provision a Bazzite gaming VM with GPU and audio passthrough, Looking Glass, and evdev inputs.
 # SPDM Manifest: Self-Parsing Deployment Manifest format.

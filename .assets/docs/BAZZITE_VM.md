@@ -1,5 +1,10 @@
 # Bazzite VM Deployment and Provisioning Guide
 
+> **SPDM Constitution:** [SPDM_CONSTITUTION.md](SPDM_CONSTITUTION.md)  
+> **Coding Guidelines:** [CONTRIBUTING_Coding_Agent.md](CONTRIBUTING_Coding_Agent.md)  
+> **GITHUB_PAT:** `${GITHUB_PAT}` (Value redacted for SPDM Section 6 compliance)
+
+---
 This guide details how to configure, provision, and run a high-performance Bazzite gaming VM inside SecureBlue using GPU and audio passthrough, Looking Glass, and evdev input routing.
 
 ## Prerequisites

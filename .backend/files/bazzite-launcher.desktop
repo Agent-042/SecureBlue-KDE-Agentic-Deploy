@@ -1,3 +1,7 @@
+# SPDM Constitution: .assets/docs/SPDM_CONSTITUTION.md
+# Coding Guidelines: .assets/docs/CONTRIBUTING_Coding_Agent.md
+# GITHUB_PAT: ${GITHUB_PAT} (Value redacted for SPDM Section 6 compliance)
+
 [Desktop Entry]
 Name=Bazzite VM Launcher
 Comment=Start Bazzite VM and Looking Glass Client
