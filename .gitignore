@@ -19,16 +19,16 @@ cosign.key
 cosign.pub
 
 # Allow EasyEffects system-wide output presets despite generic output/ ignore.
-!files/audio-eq/usr/etc/easyeffects/output/
-!files/audio-eq/usr/etc/easyeffects/output/**
+!.backend/files/audio-eq/usr/etc/easyeffects/output/
+!.backend/files/audio-eq/usr/etc/easyeffects/output/**
 
 # Allow Podman Quadlet files despite generic containers/ ignore.
-!files/local-ai/usr/share/containers/
-!files/local-ai/usr/share/containers/**
-!files/local-ai-amd-workstation/usr/share/containers/
-!files/local-ai-amd-workstation/usr/share/containers/**
-!files/local-ai-intel-g16/usr/share/containers/
-!files/local-ai-intel-g16/usr/share/containers/**
+!.backend/files/local-ai/usr/share/containers/
+!.backend/files/local-ai/usr/share/containers/**
+!.backend/files/local-ai-amd-workstation/usr/share/containers/
+!.backend/files/local-ai-amd-workstation/usr/share/containers/**
+!.backend/files/local-ai-intel-g16/usr/share/containers/
+!.backend/files/local-ai-intel-g16/usr/share/containers/**
 
 # Secrets
 *.key
@@ -41,10 +41,10 @@ secrets/
 # Cosign public key is required for image verification; do not ignore it.
 !cosign.pub
 
-# Local script outputs / env derivatives (do not commit secrets)
-scripts/*.env
-scripts/*.secret
-scripts/env-init-output*
+# Backend legacy scripts and local script outputs (do not commit secrets)
+.backend/scripts/legacy/*.env
+.backend/scripts/legacy/*.secret
+.backend/scripts/legacy/env-init-output*
 __pycache__/
 *.pyc
 
@@ -69,4 +69,3 @@ mm.json
 mining_stats.log
 gpu_watchdog.log
 idle_monitor.pid
-
