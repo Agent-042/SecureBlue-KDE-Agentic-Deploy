@@ -57,16 +57,3 @@ jobs:
           registry_token: ${{ github.token }}
           cosign_private_key: ${{ secrets.COSIGN_PRIVATE_KEY }}
           pr_event_number: ${{ github.event.number }}
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.5.0
-
-      - name: Sign Container Image
-        if: github.event_name != 'pull_request'
-        run: |
-          IMAGE_NAME=$(grep '^name:' .backend/recipes/${{ matrix.recipe }} | awk '{print $2}')
-          REGISTRY="ghcr.io"
-          NAMESPACE=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${REGISTRY}/${NAMESPACE}/${IMAGE_NAME}:latest
-        env:
-          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
