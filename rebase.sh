@@ -228,17 +228,17 @@ main() {
 
     if [[ "${dry_run}" == true ]]; then
         if [[ ${#elevate_cmd[@]} -gt 0 ]]; then
-            echo "[dry-run] ${elevate_cmd[*]} bash -c 'rpm-ostree rebase \"\$1\"' bash ostree-unverified-registry:${image_ref}"
+            echo "[dry-run] ${elevate_cmd[*]} bash -c 'rpm-ostree rebase \"\$1\"' bash ostree-image-signed:${image_ref}"
         else
-            echo "[dry-run] rpm-ostree rebase ostree-unverified-registry:${image_ref}"
+            echo "[dry-run] rpm-ostree rebase ostree-image-signed:${image_ref}"
         fi
         echo "[dry-run] systemctl reboot"
     else
         echo "Rebasing..."
         if [[ ${#elevate_cmd[@]} -gt 0 ]]; then
-            "${elevate_cmd[@]}" bash -c 'rpm-ostree rebase "$1"' bash "ostree-unverified-registry:${image_ref}"
+            "${elevate_cmd[@]}" bash -c 'rpm-ostree rebase "$1"' bash "ostree-image-signed:${image_ref}"
         else
-            rpm-ostree rebase "ostree-unverified-registry:${image_ref}"
+            rpm-ostree rebase "ostree-image-signed:${image_ref}"
         fi
         echo "Rebase complete. Run 'systemctl reboot' to boot into the new image."
     fi
