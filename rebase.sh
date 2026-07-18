@@ -86,6 +86,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly PROJECT_ROOT
 
 readonly COSIGN_PUB="${PROJECT_ROOT}/cosign.pub"
+readonly COSIGN_KEY_MARKER="/var/lib/buildblue-cosign-enrolled"
 
 readonly REGISTRY="ghcr.io/agent-042"
 readonly TAG="latest"
@@ -100,9 +101,11 @@ Usage: $(basename "$0") [OPTIONS]
 Detect the local hardware fleet and rebase to the corresponding image.
 
 Options:
-  --dry-run   Print the rpm-ostree rebase command instead of running it.
-  --verify    Run cosign verify before rebasing (requires cosign.pub).
-  -h, --help  Show this help message.
+  --dry-run      Print the rpm-ostree rebase command instead of running it.
+  --verify       Run cosign verify before rebasing (requires cosign.pub).
+  --enroll-key   Enroll the cosign public key for ostree-image-signed rebase.
+                 Run this once before your first signed rebase.
+  -h, --help     Show this help message.
 
 Detected fleets:
   amd-workstation -> ${AMD_WORKSTATION_IMAGE}
@@ -165,9 +168,52 @@ image_for_fleet() {
     esac
 }
 
+enroll_cosign_key() {
+    local elevate=()
+    if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+        if command -v run0 >/dev/null 2>&1; then
+            elevate=(run0)
+        else
+            echo "error: key enrollment requires root privileges; install run0." >&2
+            return 1
+        fi
+    fi
+
+    if [[ -f "${COSIGN_KEY_MARKER}" ]]; then
+        echo "Cosign key already enrolled (marker: ${COSIGN_KEY_MARKER})"
+        return 0
+    fi
+
+    if [[ ! -f "${COSIGN_PUB}" ]]; then
+        echo "error: cosign public key not found at ${COSIGN_PUB}" >&2
+        echo "       Place cosign.pub from this repository in the same directory as rebase.sh." >&2
+        return 1
+    fi
+
+    echo "Enrolling cosign public key for ostree-image-signed verification..."
+
+    if [[ ${#elevate[@]} -gt 0 ]]; then
+        "${elevate[@]}" mkdir -p /etc/pki/containers
+        "${elevate[@]}" cp "${COSIGN_PUB}" /etc/pki/containers/
+        "${elevate[@]}" touch "${COSIGN_KEY_MARKER}"
+    else
+        mkdir -p /etc/pki/containers
+        cp "${COSIGN_PUB}" /etc/pki/containers/
+        touch "${COSIGN_KEY_MARKER}"
+    fi
+
+    echo "Key enrolled at /etc/pki/containers/cosign.pub"
+    echo ""
+    echo "NOTE: If rpm-ostree still fails with signature errors, your ostree version may"
+    echo "      require additional remote configuration. Consult the project documentation."
+    echo ""
+    return 0
+}
+
 main() {
     local dry_run=false
     local verify=false
+    local enroll_key=false
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
@@ -177,6 +223,10 @@ main() {
                 ;;
             --verify)
                 verify=true
+                shift
+                ;;
+            --enroll-key)
+                enroll_key=true
                 shift
                 ;;
             -h|--help)
@@ -190,6 +240,11 @@ main() {
                 ;;
         esac
     done
+
+    if [[ "${enroll_key}" == true ]]; then
+        enroll_cosign_key
+        exit $?
+    fi
 
     local elevate_cmd=()
     if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
@@ -208,6 +263,14 @@ main() {
     echo ""
     echo "Detected fleet: ${fleet}"
     echo "Target image:   ${image_ref}"
+
+    # Pre-flight: warn if cosign key not enrolled for ostree-image-signed
+    if [[ ! -f "${COSIGN_KEY_MARKER}" ]]; then
+        echo ""
+        echo "WARNING: Cosign key not enrolled. ostree-image-signed rebase may fail."
+        echo "         Run: $(basename "$0") --enroll-key"
+        echo ""
+    fi
 
     if [[ "${verify}" == true ]]; then
         if ! command -v cosign >/dev/null 2>&1; then
