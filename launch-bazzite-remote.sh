@@ -18,8 +18,9 @@ echo -e "${CYAN}${BOLD}=========================================================
 echo -e "${BLUE}${BOLD}       🎮  BAZZITE GAMING REMOTE STREAM LAUNCHER (G16 CLIENT)  🎮        ${NC}"
 echo -e "${CYAN}${BOLD}======================================================================${NC}"
 
-HOST_B_IP="100.82.139.39" # Host B's Tailscale IP
-PORT=47989               # Sunshine Port on Host B (mapped via socat proxy)
+HOST_B_IP="100.82.139.39"  # Host B's Tailscale IP (Hypervisor)
+VM_IP="100.85.147.119"     # Direct Tailscale IP of Bazzite Gaming VM
+PORT=47989                 # Sunshine Port on Guest VM
 
 # 1. Verify Tailscale Connectivity
 echo -e "${BLUE}[*] Verifying secure private Tailnet link to Host B (${HOST_B_IP})...${NC}"
@@ -51,15 +52,15 @@ if [ "$VM_STATE" != "running" ]; then
     echo -e "${GREEN}[+] VM remote launch signal sent successfully!${NC}"
 fi
 
-# 3. Poll Sunshine stream daemon availability on Host B (over Tailscale)
+# 3. Poll Sunshine stream daemon availability on Guest VM (over Tailscale)
 TIMEOUT=60
 COUNTER=0
-echo -n -e "${YELLOW}[*] Polling Sunshine game-streaming port forwarding...${NC}"
-while ! timeout 1 bash -c "cat < /dev/null > /dev/tcp/${HOST_B_IP}/${PORT}" >/dev/null 2>&1; do
+echo -n -e "${YELLOW}[*] Polling Sunshine game-streaming port directly on VM (${VM_IP})...${NC}"
+while ! timeout 1 bash -c "cat < /dev/null > /dev/tcp/${VM_IP}/${PORT}" >/dev/null 2>&1; do
     sleep 1
     let COUNTER=COUNTER+1
     if [ $COUNTER -ge $TIMEOUT ]; then
-        echo -e "\n${RED}[x] Error: Timeout waiting for Sunshine stream daemon on ${HOST_B_IP}:${PORT}.${NC}"
+        echo -e "\n${RED}[x] Error: Timeout waiting for Sunshine stream daemon on ${VM_IP}:${PORT}.${NC}"
         exit 1
     fi
     printf "."
