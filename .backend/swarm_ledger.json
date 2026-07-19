@@ -1,6 +1,6 @@
 {
-  "current_turn": "kimi",
-  "last_action_by": "kimi",
+  "current_turn": "antigravity",
+  "last_action_by": "antigravity",
   "status": "verified",
   "target_file": "recipes/*.yml,.github/workflows/build.yml,scripts/rebase.sh,docs/ISO_BUILD.md,modules/*",
   "verification_logs": [
@@ -224,6 +224,12 @@
       "timestamp": "2026-07-10T17:07:50Z",
       "agent": "Kimi Code 2.7",
       "action": "GitHub Actions matrix build 29109244740 completed successfully after system tray spacing and WhiteSur SVGZ true-black patch fixes. All three fleet images pushed and signed.",
+      "result": "verified"
+    },
+    {
+      "timestamp": "2026-07-19T02:55:00Z",
+      "agent": "Antigravity 2.0",
+      "action": "Orchestrated Phase 5 transition on bare-metal. Moved workspace to persistent /var/lib, created chrome-installation-logic.sh SPDM, added state_log.json, mapped RTX 5080 passthrough success, resolved Ollama 217/USER loops on live host, and added ollama.conf sysusers.d systemd bootstrap.",
       "result": "verified"
     }
   ]
