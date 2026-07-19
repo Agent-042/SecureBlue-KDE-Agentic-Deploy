@@ -1,0 +1,12 @@
+[Unit]
+Description=Dynamic Hardware Profile Detection and VFIO Binding
+DefaultDependencies=no
+After=systemd-modules-load.service local-fs.target
+Before=display-manager.service libvirtd.service
+
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/dynamic-vfio-bind.sh
+
+[Install]
+WantedBy=sysinit.target
