@@ -23,7 +23,7 @@ PORT=47989               # Sunshine Port on Host B (mapped via socat proxy)
 
 # 1. Verify Tailscale Connectivity
 echo -e "${BLUE}[*] Verifying secure private Tailnet link to Host B (${HOST_B_IP})...${NC}"
-if ! ping -c 1 -W 2 "$HOST_B_IP" >/dev/null 2>&1; then
+if ! timeout 2 bash -c "cat < /dev/null > /dev/tcp/$HOST_B_IP/22" >/dev/null 2>&1; then
     echo -e "${RED}[x] Error: Host B (${HOST_B_IP}) is unreachable over Tailscale!${NC}"
     echo -e "${YELLOW}[!] Action: Please verify that Tailscale is active and logged in on both devices.${NC}"
     exit 1
