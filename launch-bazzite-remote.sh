@@ -70,8 +70,25 @@ echo -e " ${GREEN}[ACTIVE]${NC}"
 echo -e "${CYAN}${BOLD}[*] Launching low-latency Moonlight client...${NC}"
 echo -e "${BLUE}[*] Connecting directly to virtual graphics pipeline over Tailscale.${NC}"
 
-# Set LD_PRELOAD override inline just in case
-flatpak run --env=LD_PRELOAD="" com.moonlight_stream.Moonlight --connect "$HOST_B_IP" 2>/dev/null &
+REAL_USER="agent-042"
+REAL_UID=1000
+
+if [ "$EUID" -eq 0 ]; then
+    if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
+        REAL_USER="$SUDO_USER"
+    else
+        ACTIVE_SESSION_USER=$(loginctl list-sessions | grep -i active | awk '{print $3}' | head -n 1)
+        if [ -n "$ACTIVE_SESSION_USER" ] && [ "$ACTIVE_SESSION_USER" != "root" ]; then
+            REAL_USER="$ACTIVE_SESSION_USER"
+        fi
+    fi
+    REAL_UID=$(id -u "$REAL_USER")
+    
+    echo -e "${CYAN}[*] Routing graphical application execution to user context: ${REAL_USER} (UID ${REAL_UID})${NC}"
+    runuser -l "$REAL_USER" -c "WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/${REAL_UID} flatpak run --env=LD_PRELOAD=\"\" com.moonlight_stream.Moonlight &"
+else
+    flatpak run --env=LD_PRELOAD="" com.moonlight_stream.Moonlight &
+fi
 
 echo -e "${GREEN}${BOLD}======================================================================${NC}"
 echo -e "${GREEN}${BOLD}     🎮  BAZZITE REMOTE SESSION INITIALIZED! HAPPY GAMING!  🎮       ${NC}"

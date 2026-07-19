@@ -110,10 +110,10 @@ if [ "$EUID" -eq 0 ]; then
       XDG_RUNTIME_DIR="/run/user/${REAL_UID}" \
       WAYLAND_DISPLAY="wayland-0" \
       DISPLAY=":0" \
-      flatpak run --env=LD_PRELOAD="" com.moonlight_stream.Moonlight --connect "$VM_IP" 2>/dev/null &
+      flatpak run --env=LD_PRELOAD="" com.moonlight_stream.Moonlight &
 else
     # Running natively as a regular user, run Moonlight directly
-    flatpak run --env=LD_PRELOAD="" com.moonlight_stream.Moonlight --connect "$VM_IP" 2>/dev/null &
+    flatpak run --env=LD_PRELOAD="" com.moonlight_stream.Moonlight &
 fi
 
 echo -e "${GREEN}${BOLD}======================================================================${NC}"
