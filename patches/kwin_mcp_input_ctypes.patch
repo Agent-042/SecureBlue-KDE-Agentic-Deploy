@@ -1,0 +1,13 @@
+diff --git a/kwin_mcp/input.py b/kwin_mcp/input.py
+index a1b2c3d..e4f5g6h 100644
+--- a/kwin_mcp/input.py
++++ b/kwin_mcp/input.py
+@@ -349,6 +349,5 @@ class InputBackend:
+-        # Call variadic ei_seat_bind_capabilities(seat, cap1, ..., NULL)
+         func = _libei.ei_seat_bind_capabilities
+         func.restype = None
+-        args: list[ctypes.c_uint | ctypes.c_void_p] = [ctypes.c_uint(c) for c in bind_list]
+-        args.append(ctypes.c_void_p(None))  # NULL sentinel
++        func.argtypes = [ctypes.c_void_p] + [ctypes.c_uint] * len(bind_list) + [ctypes.c_void_p]
++        args: list[int | None] = list(bind_list) + [None]
+         func(seat, *args)

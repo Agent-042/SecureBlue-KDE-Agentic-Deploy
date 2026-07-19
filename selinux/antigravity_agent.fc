@@ -1,0 +1,1 @@
+/usr/local/bin/antigravity-agent-wrapper\.sh  --  gen_context(system_u:object_r:antigravity_agent_exec_t,s0)

@@ -1,0 +1,21 @@
+policy_module(antigravity_agent, 1.0.1)
+
+type antigravity_agent_t;
+type antigravity_agent_exec_t;
+
+# Declare as a daemon domain
+init_daemon_domain(antigravity_agent_t, antigravity_agent_exec_t)
+
+# Make the domain permissive to log AVC violations without blocking execution
+permissive antigravity_agent_t;
+
+# Allow transitions from unconfined_t and init_t on executing the wrapper
+gen_require(`
+    type unconfined_t;
+    type init_t;
+    role unconfined_r;
+')
+role unconfined_r types antigravity_agent_t;
+domain_auto_trans(unconfined_t, antigravity_agent_exec_t, antigravity_agent_t)
+domain_auto_trans(init_t, antigravity_agent_exec_t, antigravity_agent_t)
+
