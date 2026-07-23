@@ -1,0 +1,13 @@
+policy_module(antigravity_kwin_mcp, 1.0)
+
+gen_require(`
+	type unconfined_t;
+	type user_t;
+	type xdm_t;
+	class dbus send_msg;
+	class unix_stream_socket { connectto read write };
+')
+
+allow unconfined_t user_t:dbus send_msg;
+allow user_t unconfined_t:dbus send_msg;
+allow unconfined_t xdm_t:unix_stream_socket { connectto read write };
