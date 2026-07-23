@@ -1,0 +1,31 @@
+{
+  "control": [
+    { "VTOY_DEFAULT_SEARCH_ROOT": "/ISO" },
+    { "VTOY_MENU_TIMEOUT": "10" },
+    { "VTOY_DEFAULT_IMAGE": "/ISO/SecureBlue-KDE-offline.iso" },
+    { "VTOY_SECONDARY_BOOT_MENU": "1" }
+  ],
+  "auto_install": [
+    {
+      "image": "/ISO/SecureBlue-KDE-offline.iso",
+      "template": "/unattend/secureblue-ks.cfg"
+    },
+    {
+      "image": "/ISO/Bazzite-Nvidia.iso",
+      "template": "/unattend/secureblue-ks.cfg"
+    },
+    {
+      "image": "/ISO/Windows11-enterprise.iso",
+      "template": "/unattend/win11_autounattend.xml"
+    },
+    {
+      "image": "/ISO/Qubes-OS.iso",
+      "template": "/unattend/qubes-dom0-ks.cfg"
+    }
+  ],
+  "theme": {
+    "file": "/ventoy/theme/theme.txt",
+    "gfxmode": "1920x1080",
+    "display_mode": "GUI"
+  }
+}
