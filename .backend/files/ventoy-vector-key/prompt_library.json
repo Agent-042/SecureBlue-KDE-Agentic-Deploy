@@ -1,0 +1,24 @@
+{
+  "project_version": "2026.07.23",
+  "name": "Project Vector-Key Prompt & Agent Directive Library",
+  "prompts": [
+    {
+      "id": "vector-key-deploy",
+      "title": "Autonomous 256GB USB Vector-Key Provisioning",
+      "role": "System Architecture Agent",
+      "prompt": "Execute complete prestaging and provisioning of the attached 256GB PNY USB 3.2 drive into an autonomous, offline-capable, Ventoy-based Fleet Rescue and Automated Deployment Drive. Wipe partitions, build Ventoy GPT layout, generate Anaconda Kickstart and Windows autounattend XML, configure custom verbose GRUB2 submenus with loglevel=7, and stage offline Qwen2.5-7B RAG engine."
+    },
+    {
+      "id": "vfio-secondary-gpu",
+      "title": "NVIDIA RTX 4080 Secondary Passthrough Staging",
+      "role": "VFIO Infrastructure Agent",
+      "prompt": "Unbind secondary NVIDIA RTX 4080 GPU (0000:01:00.0) from host nvidia driver and dynamically register with vfio-pci. Launch Bazzite Gaming VM with vendor-id hidden and host-passthrough CPU mode."
+    },
+    {
+      "id": "airgapped-hid-injector",
+      "title": "Airgapped HID Keystroke & YubiKey OTP Injector",
+      "role": "Security Operations Agent",
+      "prompt": "Read input script and transmit scancodes over /dev/hidg0 USB Gadget interface to simulate physical USB keyboard typing at 120 WPM into an airgapped system."
+    }
+  ]
+}
