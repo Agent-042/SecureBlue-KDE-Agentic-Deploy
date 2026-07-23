@@ -6,7 +6,7 @@
 [![VFIO: RTX 4080 Passthrough](https://img.shields.io/badge/VFIO-NVIDIA%20RTX%204080%20Passthrough-76B900.svg)](https://bazzite.gg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An enterprise-grade, agentic deployment framework for **SecureBlue Kinoite KDE Plasma 6** workstations, featuring **Project Vector-Key (256GB Hybrid Multiboot & Offline AI Rescue USB)**, **Automated Kickstart & Unattend Answer Files**, **Secondary RTX 4080 VFIO Hardware Passthrough**, and **Direct GUI VM Control**.
+An enterprise-grade, agentic deployment framework for **SecureBlue Kinoite KDE Plasma 6** workstations, featuring **Project Vector-Key (256GB Hybrid Multiboot & Offline AI Rescue USB)**, **Automated Kickstart & Unattend Answer Files**, **Secondary RTX 4080 VFIO Hardware Passthrough**, **Permanent Network Authentication Repair**, and **Host & VM "God Mode" Screen Control**.
 
 ---
 
@@ -23,7 +23,8 @@ graph TD
         B --> F["KDE Plasma 6 macOS Tahoe Replica"]
         B --> G["SecureBlue Expert RAG Agent (Qwen2.5)"]
         B --> H["Airgapped HID Keystroke Injector"]
-        B --> I["Direct GUI VM Controller ( virsh / QMP )"]
+        B --> I["Host & VM God Mode Input Controllers (/dev/uinput)"]
+        B --> J["System-Level NetworkManager (KWallet Immunity)"]
     end
 ```
 
@@ -33,6 +34,7 @@ graph TD
 
 | Document / Runbook | Description |
 | :--- | :--- |
+| 🌐 [DEEP_RESEARCH_NETWORK_AUTHENTICATION_AND_GOD_MODE_RUNBOOK.md](.assets/docs/DEEP_RESEARCH_NETWORK_AUTHENTICATION_AND_GOD_MODE_RUNBOOK.md) | **Network Repair & God Mode**: Deep research root cause analysis, KWallet obliteration script, Tailscale-Mullvad split tunnel override, and Host God Mode uinput controller. |
 | 📖 [HUMAN_LOGIC_KONSOLE_ASSEMBLY_GUIDE.md](.assets/docs/HUMAN_LOGIC_KONSOLE_ASSEMBLY_GUIDE.md) | **Human Logic**: 100% copy-pasteable line-by-line manual terminal command sequence to assemble and customize the entire workstation without black-box scripts. |
 | ⚡ [PROJECT_VECTOR_KEY_MANIFEST.md](.assets/docs/PROJECT_VECTOR_KEY_MANIFEST.md) | Complete specification for the 256GB Ventoy-Plus Multiboot USB, Kickstart templates, and zero-touch log harvester. |
 | 🍎 [MACOS_TAHOE_PLASMA6_RUNBOOK.md](.assets/docs/MACOS_TAHOE_PLASMA6_RUNBOOK.md) | macOS Tahoe Plasma 6 visual replica runbook, widget gap optimizer, and cosmetic reset service. |
@@ -43,28 +45,28 @@ graph TD
 
 ## 🚀 Key Tooling & Command Reference
 
-### 1. Provision 256GB Vector-Key USB
-Format and provision a target 256GB USB drive (e.g. `/dev/sdb`) with Ventoy GPT mode and Vector-Key answer files:
+### 1. Host OS "God Mode" Screen & Input Controller
+Synthesize mouse clicks, movements, or keystrokes natively on Wayland / Host OS using `/dev/uinput`:
 ```bash
-sudo bash .backend/files/ventoy-vector-key/install_vector_key_to_usb.sh /dev/sdb
+./.backend/files/ventoy-vector-key/rescue-engine/bin/host_god_screen_controller --move 50 50 --click
 ```
 
-### 2. Query Offline SecureBlue KDE Expert RAG Agent
-Search the offline knowledge engine for any CLI command, SELinux policy syntax, or kernel argument:
+### 2. Obliterate KDE Wallet & Enforce System Connections
+Decouple NetworkManager from KWallet and apply system-level password storage:
 ```bash
-python3 .backend/files/ventoy-vector-key/rescue-engine/bin/secureblue_expert_agent.py "rpm-ostree kargs and selinux"
+sudo bash .backend/files/ventoy-vector-key/rescue-engine/bin/obliterate_kde_wallet.sh agent-42
 ```
 
-### 3. Direct GUI VM Controller (Mouse & Keyboard Control)
+### 3. Direct GUI VM Controller (QEMU / KVM VMs)
 Inject keystrokes, send text payloads, or capture framebuffer screenshots from running `qubes-vm` or `bazzite-gaming` VMs:
 ```bash
 python3 .backend/files/ventoy-vector-key/rescue-engine/bin/gui_vm_controller.py --domain qubes-vm --send-keys "KEY_ENTER" --screenshot /var/roothome/qubes_live.png
 ```
 
-### 4. Airgapped HID Keystroke Injector
-Inject command payloads over `/dev/hidg0` (USB Gadget HID keyboard) into airgapped target machines:
+### 4. Query Offline SecureBlue KDE Expert RAG Agent
+Search the offline knowledge engine for any CLI command, SELinux policy syntax, or kernel argument:
 ```bash
-bash .backend/files/ventoy-vector-key/rescue-engine/bin/otp_keystroke_injector.sh "systemctl reboot" 120
+python3 .backend/files/ventoy-vector-key/rescue-engine/bin/secureblue_expert_agent.py "rpm-ostree kargs and selinux"
 ```
 
 ---
