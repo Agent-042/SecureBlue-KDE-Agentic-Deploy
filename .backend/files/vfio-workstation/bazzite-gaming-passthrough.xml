@@ -1,0 +1,84 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>bazzite-gaming</name>
+  <memory unit='KiB'>16777216</memory>
+  <currentMemory unit='KiB'>16777216</currentMemory>
+  <vcpu placement='static'>12</vcpu>
+  <os firmware='efi'>
+    <type arch='x86_64' machine='q35'>hvm</type>
+    <loader readonly='yes' type='pflash' format='raw'>/usr/share/edk2/ovmf/OVMF_CODE.fd</loader>
+    <nvram format='raw'>/var/lib/libvirt/qemu/nvram/bazzite-gaming_VARS.fd</nvram>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <kvm>
+      <hidden state='on'/>
+    </kvm>
+  </features>
+  <cpu mode='host-passthrough' check='none'>
+    <topology sockets='1' dies='1' cores='6' threads='2'/>
+    <feature policy='require' name='topoext'/>
+  </cpu>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    
+    <!-- High-Performance Virtio Disk -->
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='none' io='native' discard='unmap'/>
+      <source file='/var/lib/libvirt/images/bazzite-vm.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    
+    <!-- High-Performance Virtio Network -->
+    <interface type='network'>
+      <source network='isolated-vm-net'/>
+      <model type='virtio'/>
+    </interface>
+
+    <!-- RTX 4080 GPU Passthrough -->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+      </source>
+    </hostdev>
+
+    <!-- RTX 4080 HDMI Audio Passthrough -->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x01' slot='0x00' function='0x1'/>
+      </source>
+    </hostdev>
+
+    <!-- Omit virtual video controllers -->
+    <video>
+      <model type='none'/>
+    </video>
+
+    <!-- Looking Glass Shmem Device -->
+    <shmem name='looking-glass'>
+      <model type='ivshmem-plain'/>
+      <size unit='M'>128</size>
+    </shmem>
+
+    <memballoon model='none'/>
+  </devices>
+
+  <!-- Physical bits limit workaround to prevent DMA mapping faults on AMD host -->
+  <qemu:commandline>
+    <qemu:arg value='-cpu'/>
+    <qemu:arg value='host,host-phys-bits-limit=39,topoext=on'/>
+  </qemu:commandline>
+</domain>
