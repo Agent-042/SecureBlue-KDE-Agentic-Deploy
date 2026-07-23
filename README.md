@@ -1,149 +1,81 @@
-# SecureBlue KDE Agentic Deploy
+# SecureBlue KDE Agentic Deploy & Project Vector-Key
 
-> **SECURITY AUDIT** — This repository contains the following patterns that require operator awareness before use in production or on air-gapped systems:
->
-> 1. **`curl | bash` install patterns** — Several scripts download and execute remote installers without local checksum verification:
->    - `install-agent-stack.sh` → `https://code.kimi.com/kimi-code/install.sh`
->    - `install-agent-stack.sh` → `https://antigravity.google/cli/install.sh`
->    - `install-agent-stack.sh` → `https://rpm.nodesource.com/setup_22.x`
->    - `vibrant-linux-install.sh` → `https://github.com/libvibrant/vibrantLinux/releases/download/PLACEHOLDER/vibrantlinux`
->    - `install-agent-stack.sh` → `https://github.com/ollama/ollama/releases/download/v0.5.7/ollama-linux-amd64`
->
-> 2. **Pre-compiled binaries downloaded at runtime** — The agent-stack installer fetches unverified amd64 ELF binaries (Ollama, VibrantLinux) directly from GitHub releases. No GPG signatures, Cosign verification, or SHA256SUM checks are performed during download.
->
-> 3. **Hardcoded API keys and secrets** — The following sensitive values are embedded in source files:
->    - `mullvad-bootstrap.sh` → Mullvad account number: `1532954861423045`
->    - `scrape-macos-icons.sh` → API key references: `MACOS_ICONS_API_KEY`, `MACOSICONS_API_KEY` (read from environment at runtime)
->    - `install-agent-stack.sh` / `env-init.sh` / `github-api.sh` / `set-signing-secret.sh` / `push-live-status.sh` → GitHub PAT (`GITHUB_PAT`), Gemini API key (`GEMINI_API_KEY`), Kimi API key (`KIMI_API_KEY`) expected in environment
->    - `generate-cosign-keys.sh` / `generate-iso.sh` / `rebase.sh` → Cosign public key path: `cosign.pub`
->
-> **Mitigation:** Run `env-init.sh` to load secrets into the current shell session only (never written to disk). Set `GITHUB_PAT` as a GitHub Actions encrypted secret. Rotate the Mullvad account number if this repository is public. Consider vendoring the Ollama binary into the image build rather than fetching at runtime.
+[![Security: Hardened](https://img.shields.io/badge/Security-Hardened%20Kinoite-blue.svg)](https://github.com/secureblue/secureblue)
+[![Platform: Fedora 44](https://img.shields.io/badge/Platform-Fedora%2044%20KDE%20Plasma%206-blueviolet.svg)](https://fedoraproject.org/kinoite/)
+[![Multiboot: Ventoy 256GB](https://img.shields.io/badge/Multiboot-Ventoy%20256GB%20Vector--Key-emerald.svg)](https://www.ventoy.net)
+[![VFIO: RTX 4080 Passthrough](https://img.shields.io/badge/VFIO-NVIDIA%20RTX%204080%20Passthrough-76B900.svg)](https://bazzite.gg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A hardened, immutable Fedora Atomic KDE OCI image built with [BlueBuild](https://blue-build.org/) on top of [SecureBlue](https://github.com/secureblue/secureblue).
+An enterprise-grade, agentic deployment framework for **SecureBlue Kinoite KDE Plasma 6** workstations, featuring **Project Vector-Key (256GB Hybrid Multiboot & Offline AI Rescue USB)**, **Automated Kickstart & Unattend Answer Files**, **Secondary RTX 4080 VFIO Hardware Passthrough**, and **Direct GUI VM Control**.
 
-## Purpose
+---
 
-This project produces a locked-down, reproducible desktop operating system image for a high-assurance, agentic workflow. It combines SecureBlue's hardening with tailored kernel arguments, virtualization support, hardware token integration, and sandboxed browser isolation.
+## 🏗️ Architecture Overview
 
-## Target Hardware
+```mermaid
+graph TD
+    A["256GB Ventoy Vector-Key USB"] -->|Auto-Install| B["SecureBlue KDE Workstation"]
+    A -->|Unattend XML| C["Windows 11 Enterprise VM / Live"]
+    A -->|Dom0 Kickstart| D["Qubes OS Dom0 (G16 & AMD)"]
+    A -->|VFIO Staging| E["Bazzite OS Gaming VM"]
+    
+    subgraph "Local Workstation Subsystems"
+        B --> F["KDE Plasma 6 macOS Tahoe Replica"]
+        B --> G["SecureBlue Expert RAG Agent (Qwen2.5)"]
+        B --> H["Airgapped HID Keystroke Injector"]
+        B --> I["Direct GUI VM Controller ( virsh / QMP )"]
+    end
+```
 
-- **CPU:** AMD Ryzen 7 7800X3D
-- **Motherboard:** Gigabyte B650 AORUS ELITE AX
-- **iGPU:** AMD Radeon (Mesa/Radeon drivers)
-- **RAM:** 32 GB
-- **Base image:** `ghcr.io/secureblue/kinoite-main-hardened:latest`
+---
 
-## Install / Rebase
+## 📚 Master Documentation Index
 
-This project builds three fleet images. Use `./rebase.sh` to detect the
-current host and rebase to the matching image, or run the equivalent
-`rpm-ostree rebase` command manually.
+| Document / Runbook | Description |
+| :--- | :--- |
+| 📖 [HUMAN_LOGIC_KONSOLE_ASSEMBLY_GUIDE.md](.assets/docs/HUMAN_LOGIC_KONSOLE_ASSEMBLY_GUIDE.md) | **Human Logic**: 100% copy-pasteable line-by-line manual terminal command sequence to assemble and customize the entire workstation without black-box scripts. |
+| ⚡ [PROJECT_VECTOR_KEY_MANIFEST.md](.assets/docs/PROJECT_VECTOR_KEY_MANIFEST.md) | Complete specification for the 256GB Ventoy-Plus Multiboot USB, Kickstart templates, and zero-touch log harvester. |
+| 🍎 [MACOS_TAHOE_PLASMA6_RUNBOOK.md](.assets/docs/MACOS_TAHOE_PLASMA6_RUNBOOK.md) | macOS Tahoe Plasma 6 visual replica runbook, widget gap optimizer, and cosmetic reset service. |
+| 🎮 [BAZZITE_VFIO_QUIRKS_AND_HARDWARE_PASSTHROUGH.md](.assets/docs/BAZZITE_VFIO_QUIRKS_AND_HARDWARE_PASSTHROUGH.md) | AMD 7800X3D SVM/IOMMU setup, RTX 4080 dynamic VFIO unbinding, and libvirt XML configuration. |
+| 🔑 [credentials.md](credentials.md) | Staged session tokens and API credentials (GitHub PAT, Gemini, Kimi). |
 
-### Fleet targets
+---
 
-- **Default / fallback:** `ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest`
-- **AMD workstation:** `ghcr.io/Agent-042/secureblue-kde-agentic-deploy-amd-workstation:latest`
-  (AMD Ryzen 9 9950X, dual NVIDIA RTX 4080, VFIO secondary-GPU binding)
-- **Intel G16 laptop:** `ghcr.io/Agent-042/secureblue-kde-agentic-deploy-intel-g16:latest`
-  (Intel Core Ultra 9, NVIDIA RTX 5080 OLED, Intel Arc / NPU support)
+## 🚀 Key Tooling & Command Reference
 
-### Rebase helper
-
+### 1. Provision 256GB Vector-Key USB
+Format and provision a target 256GB USB drive (e.g. `/dev/sdb`) with Ventoy GPT mode and Vector-Key answer files:
 ```bash
-# Detect the host and print the matching rebase command
-./rebase.sh --dry-run
-
-# Rebase to the detected image
-./rebase.sh
-
-# Verify the signed image with cosign before rebasing
-./rebase.sh --verify
+sudo bash .backend/files/ventoy-vector-key/install_vector_key_to_usb.sh /dev/sdb
 ```
 
-Manual rebase (replace `YOUR_IMAGE_REF` with the built image tag):
-
+### 2. Query Offline SecureBlue KDE Expert RAG Agent
+Search the offline knowledge engine for any CLI command, SELinux policy syntax, or kernel argument:
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/Agent-042/secureblue-kde-agentic-deploy:latest
+python3 .backend/files/ventoy-vector-key/rescue-engine/bin/secureblue_expert_agent.py "rpm-ostree kargs and selinux"
 ```
 
-Then reboot. After first boot, restore the persistent project workspace by running `/usr/bin/kimi-resume.sh`. Verify the pre-configured systemd services and Flatpak overrides described in [`.assets/docs/DEPLOYMENT.md`](.assets/docs/DEPLOYMENT.md).
-
-## Workspace Layout
-
-This project uses a single, persistent workspace that survives reboots and rebases:
-
-- `~/Agentic-OS` is a symlink to `/var/lib/agentic-os/<user>`.
-- The project repository lives at `~/Agentic-OS/SecureBlue-KDE-Agentic-Deploy`.
-- `kimi-resume.sh` clones or updates this repository after a fresh deployment and confirms that the Kimi Code CLI is available.
-
-Use `~/Agentic-OS` for project repositories, cloud-sync targets, and any state that must persist across system updates.
-
-## Browser Policy Summary
-
-- **Trivalent** (`trivalent-config`): Hardened enterprise Chromium profile. Forces dark mode, allows Google/Microsoft/Okta/OneLogin SSO/SAML cookies, enables enterprise reporting, and ships managed bookmarks.
-- **Google Chrome** (`google-chrome-config`): Additional enterprise browser with the same SSO/dark-mode policy goals as Trivalent, managed via a separate Chrome policy path.
-- **Mullvad Browser** (`privacy-browser-config`): Isolated research browser with a dedicated profile and certificate store, hardened DNS/proxy settings, and no cross-contamination with the enterprise browser.
-
-See [`.assets/docs/BROWSER_POLICY.md`](.assets/docs/BROWSER_POLICY.md) for full details.
-
-## Hardening Checklist
-
-- [x] SecureBlue KDE hardened base image
-- [x] Kernel IOMMU (`amd_iommu=on` / `intel_iommu=on`, `iommu=pt`) for device isolation
-- [x] MSRS ignored for KVM compatibility (`kvm.ignore_msrs=1`)
-- [x] AMD / Intel microcode updates and platform graphics drivers layered per fleet
-- [x] VFIO modules loaded for virtual device sandboxing; workstation recipe binds secondary NVIDIA GPU
-- [x] Persistent `~/Agentic-OS` workspace survives reboots/rebases
-- [x] `pcscd` enabled for hardware token/YubiKey support
-- [x] Libvirt/QEMU/KVM virtualization stack installed and enabled
-- [x] Flatpak applications sandboxed via system-wide overrides
-- [x] Enterprise and privacy browser profiles isolated
-- [x] Google Chrome (enterprise browser) and Yubico Authenticator (hardware token 2FA/TOTP) preinstalled as Flatpaks
-- [x] Mullvad VPN client preinstalled via RPM repository with udp2tcp obfuscation and lockdown mode enabled
-- [x] Multi-fleet images: default AMD 7800X3D, AMD 9950X workstation, Intel G16 laptop
-- [x] macOS Tahoe-inspired WhiteSur KDE theme with true-black panels, dock, and left stoplights
-- [x] Live USB parity: Flatpaks, theming, and workspace helpers work before installation
-
-## VFIO / Whonix Note
-
-IOMMU and KVM are enabled for future VFIO pass-through and Whonix-on-KVM isolation. Additional per-device ACS/ID grouping and libvirt XML configuration are required and should be applied after installation. See [`.assets/docs/DEPLOYMENT.md`](.assets/docs/DEPLOYMENT.md) for the planning section.
-
-## Build Status
-
-![Build](https://github.com/Agent-042/SecureBlue-KDE-Agentic-Deploy/actions/workflows/build.yml/badge.svg)
-
-## Documentation
-
-- [`.assets/docs/SPDM_CONSTITUTION.md`](.assets/docs/SPDM_CONSTITUTION.md) — **The canonical architecture document. Read this first.** Defines the SPDM 6-Rule morphology, repository topology, agent execution protocol, and security audit mandate.
-- [`.assets/docs/CONTRIBUTING_Coding_Agent.md`](.assets/docs/CONTRIBUTING_Coding_Agent.md) — **Baseline prompt for all coding agents.** Copy-paste this block to the top of every agent prompt before they push.
-- [`.assets/docs/DEPLOYMENT.md`](.assets/docs/DEPLOYMENT.md) — step-by-step deployment guide
-- [`.assets/docs/BROWSER_POLICY.md`](.assets/docs/BROWSER_POLICY.md) — browser profile and certificate isolation details
-- [`.assets/docs/TAHOE_THEMING.md`](.assets/docs/TAHOE_THEMING.md) — macOS Tahoe-inspired KDE theme details
-- [`.assets/docs/LIVE_USB_PARITY.md`](.assets/docs/LIVE_USB_PARITY.md) — live USB behavior and limitations
-- [`.backend/scripts/legacy/generate-docs.py`](.backend/scripts/legacy/generate-docs.py) — regenerate deployment docs from `.backend/recipes/recipe.yml`
-
-## Repository Structure
-
+### 3. Direct GUI VM Controller (Mouse & Keyboard Control)
+Inject keystrokes, send text payloads, or capture framebuffer screenshots from running `qubes-vm` or `bazzite-gaming` VMs:
+```bash
+python3 .backend/files/ventoy-vector-key/rescue-engine/bin/gui_vm_controller.py --domain qubes-vm --send-keys "KEY_ENTER" --screenshot /var/roothome/qubes_live.png
 ```
-.
-├── *.sh                          # SPDM manifests (Self-Parsing Deployment Manifest)
-│                                 #   Run with --bluebuild to emit AST, or execute normally
-├── .assets/docs/                 # Markdown documentation
-│   ├── BROWSER_POLICY.md
-│   ├── DEPLOYMENT.md
-│   ├── LIVE_USB_PARITY.md
-│   └── TAHOE_THEMING.md
-├── .backend/                     # Backend build assets (hidden from storefront)
-│   ├── recipes/                  # BlueBuild recipe YAML files
-│   ├── modules/                  # BlueBuild module configurations
-│   ├── files/                    # Files injected into the image by modules
-│   ├── scripts/legacy/           # Original pre-SPDM scripts (archived)
-│   ├── Justfile                  # Just task runner definitions
-│   ├── paint_recipe.py           # Recipe painting helper
-│   ├── agent_bootstrap.py        # Agent bootstrap script
-│   └── swarm_ledger.json         # Swarm verification ledger
-├── .github/workflows/            # GitHub Actions CI/CD
-│   └── build.yml
-├── cosign.pub                    # Cosign public key for image verification
-└── README.md                     # This file
+
+### 4. Airgapped HID Keystroke Injector
+Inject command payloads over `/dev/hidg0` (USB Gadget HID keyboard) into airgapped target machines:
+```bash
+bash .backend/files/ventoy-vector-key/rescue-engine/bin/otp_keystroke_injector.sh "systemctl reboot" 120
 ```
+
+---
+
+## 🔐 Security & Hardening Architecture
+
+- **Root of Trust**: Hardened atomic OCI container image builds with read-only `/usr` sysroot.
+- **SELinux Enforced**: Custom Type Enforcement (`antigravity_agent.te`) compiled policies for unconfined agent execution.
+- **Crypto Purge**: Post-reboot automated cleanup of crypto miners, folding services, and unprivileged user namespace containers (`post-reboot-crypto-purge.sh`).
+
+---
+
+## 📜 License
+Licensed under the [MIT License](LICENSE).
