@@ -1,0 +1,10 @@
+type: rpm-ostree
+repos:
+  # SecureBlue RPM repository provides the hardened Trivalent browser.
+  - https://repo.secureblue.dev/secureblue.repo
+keys:
+  # The SecureBlue repo metadata references secureblue.gpg, not .asc.
+  - https://repo.secureblue.dev/secureblue.gpg
+install:
+  - trivalent
+  - trivalent-qt6-ui

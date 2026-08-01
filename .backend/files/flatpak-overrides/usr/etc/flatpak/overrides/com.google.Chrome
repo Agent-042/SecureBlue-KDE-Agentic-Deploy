@@ -1,0 +1,22 @@
+[Context]
+# Enterprise browser: allow network and selected filesystem access,
+# but strip camera, microphone, background execution, and broad device access.
+shared=network
+# Allow home and Downloads for enterprise filesystem/SSO workflows,
+# but block the broadest host-level access.
+filesystems=!host;home;xdg-download
+# Remove camera/microphone/all device access.
+devices=!all
+# Prevent background execution / autostart.
+features=!background
+
+[Session Bus Policy]
+# Keep browser secrets isolated from the host secret service.
+org.freedesktop.secrets=none
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
+
+[System Bus Policy]
+org.freedesktop.Avahi=none

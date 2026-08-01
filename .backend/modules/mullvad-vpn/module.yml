@@ -1,0 +1,8 @@
+type: rpm-ostree
+repos:
+  # Official Mullvad VPN RPM repository.
+  - https://repository.mullvad.net/rpm/stable/mullvad.repo
+keys:
+  - https://repository.mullvad.net/rpm/mullvad-keyring.asc
+install:
+  - mullvad-vpn

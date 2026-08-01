@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: google-chrome-config/usr
+    destination: /usr

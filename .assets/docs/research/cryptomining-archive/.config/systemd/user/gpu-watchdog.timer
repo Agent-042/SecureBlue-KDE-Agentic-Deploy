@@ -1,0 +1,11 @@
+[Unit]
+Description=Run GPU watchdog every 30 seconds
+
+[Timer]
+OnBootSec=30
+OnCalendar=*:*:0/30
+Persistent=true
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

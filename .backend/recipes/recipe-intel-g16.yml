@@ -1,0 +1,171 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+name: secureblue-kde-agentic-deploy-intel-g16
+description: Hardened SecureBlue KDE atomic image for ASUS ROG Zephyrus G16 with Intel Core Ultra 9, NVIDIA RTX 5080 OLED, Intel Arc / NPU support, and agentic browser policy.
+
+# SecureBlue KDE (Kinoite) with NVIDIA open drivers for the RTX 5080 laptop.
+# Intel Arc graphics and NPU are layered via rpm-ostree and tuned in dedicated modules.
+base-image: ghcr.io/secureblue/kinoite-nvidia-open-hardened
+image-version: latest
+
+modules:
+  # Base package layering
+  - type: rpm-ostree
+    install:
+      # Smartcard / YubiKey support
+      - pcsc-lite
+      - pcsc-lite-ccid
+      # Mesa userspace (shared OpenGL/Vulkan stack)
+      - mesa-dri-drivers
+      # Intel platform firmware, graphics, and NPU compute
+      - intel-npu-driver
+      - libva-intel-media-driver
+      - xorg-x11-drv-intel
+      - intel-compute-runtime
+      - intel-level-zero
+      # Virtualization stack
+      - libvirt
+      - qemu-kvm
+      - virt-manager
+      - virt-install
+      - edk2-ovmf
+      # Core networking / rescue diagnostics (consumed by g16-rescue.sh)
+      - NetworkManager
+      - iproute
+      - iputils
+      # Kernel module tooling and task runner
+      - akmods
+      - just
+      # macOS-style SVG theme engine for KDE Plasma
+      - kvantum
+      # Tahoe theme asset tooling and fonts
+      - rsms-inter-fonts
+      - ImageMagick
+      - libicns-utils
+      - jq
+      - python3-pip
+      - git
+      - rsync
+
+  # Kernel arguments for Intel IOMMU, virtualization, and nouveau blacklist
+  - type: kargs
+    kargs:
+      - intel_iommu=on
+      - iommu=pt
+      - kvm.ignore_msrs=1
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau
+      # Enable GuC/HuC submission on new Intel Arc (Xe) graphics
+      - xe.enable_guc=3
+      # Arrow Lake G16 iGPU: only force-probe i915 if display output fails.
+      # - i915.force_probe=7d51
+      # RTX 5080 GSP firmware assertion workaround (kernel_gsp.c:1447)
+      - nvidia.NVreg_EnableGpuFirmware=0
+
+  # System services
+  - type: systemd
+    system:
+      enabled:
+        - pcscd.service
+        - libvirtd.service
+        - virtlogd.service
+
+  # Default Flatpak applications
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        notify: false
+        install:
+          - net.mullvad.MullvadBrowser
+          - org.keepassxc.KeePassXC
+          - com.google.Chrome
+          - com.yubico.yubioath
+          # Audio equalizer / DSP for PipeWire (preset shipped in audio-eq module)
+          - com.github.wwmm.easyeffects
+          # Productivity, communication, and development tools
+          - org.mozilla.Thunderbird
+          - im.riot.Riot
+          - com.vscodium.codium
+          - com.github.zocker_160.SyncThingy
+
+  # Hardened Trivalent browser (RPM-layered, not a Flatpak)
+  - from-file: ../modules/trivalent-rpm/module.yml
+
+  # Enterprise browser policy (system-level managed policy)
+  - from-file: ../modules/trivalent-config/module.yml
+
+  # Isolated privacy research browser configuration
+  - from-file: ../modules/privacy-browser-config/module.yml
+
+  # Google Chrome enterprise policy (Flatpak install, managed policy applied at image layer)
+  - from-file: ../modules/google-chrome-config/module.yml
+
+  # Mullvad VPN RPM repository and package
+  - from-file: ../modules/mullvad-vpn/module.yml
+
+  # Mullvad udp2tcp + lockdown mode bootstrap service
+  - from-file: ../modules/mullvad-bootstrap/module.yml
+
+  # Enable Mullvad VPN daemon and one-shot bootstrap for udp2tcp + lockdown
+  - type: systemd
+    system:
+      enabled:
+        - mullvad-daemon.service
+        - mullvad-bootstrap.service
+
+  # Flatpak permission lockdown
+  - from-file: ../modules/flatpak-overrides/module.yml
+
+  # G16 emergency rescue tooling
+  - from-file: ../modules/emergency-rescue/module.yml
+
+  # On-image documentation
+  - from-file: ../modules/docs-readme/module.yml
+
+  # Immutability layer: redacted SDDM, powerdevil policies
+  - from-file: ../modules/immutability/module.yml
+
+  # Network lockdown: Mullvad daemon defaults and Chrome split-tunnel routing
+  - from-file: ../modules/network-lockdown/module.yml
+
+  # Audio equalizer: system-wide EasyEffects preset and login autoload for G16
+  - from-file: ../modules/audio-eq/module.yml
+
+  # KDE theming: macOS Tahoe look with true-black panels, dock, stoplights
+  - from-file: ../modules/tahoe-theming/module.yml
+
+  # Intel Arc / NPU udev rules and permissions
+  - from-file: ../modules/intel-arc-npu/module.yml
+
+  # OLED G16 tuning: dimming helper, RGB subpixel, tuning notes
+  - from-file: ../modules/oled-g16-tuning/module.yml
+
+  # Local AI: baked-in Ollama + agent CLI toolchain, pre-seeded for live USB.
+  # For NPU offload use ipex-llm / OpenVINO in a persistent Distrobox.
+  - from-file: ../modules/agent-stack/module.yml
+  - from-file: ../modules/agent-stack-skel/module.yml
+
+  # Enable the baked-in Ollama system service
+  - type: systemd
+    system:
+      enabled:
+        - ollama.service
+
+  # VFIO module loading for virtual device sandboxing / PCI passthrough
+  - from-file: ../modules/vfio-sandbox/module.yml
+
+  # Persistent username-agnostic workspace that survives reboots/rebases
+  - from-file: ../modules/persist-workspace/module.yml
+
+  # Enable the workspace symlink service for every user at login
+  - type: systemd
+    user:
+      enabled:
+        - agentic-workspace-init.service
+        - tahoe-cosmetic-reset.service
+
+  # Kimi Code CLI resume helper (clone repo, verify CLI)
+  - from-file: ../modules/kimi-resume/module.yml
+
+  # Image signing support
+  - type: signing

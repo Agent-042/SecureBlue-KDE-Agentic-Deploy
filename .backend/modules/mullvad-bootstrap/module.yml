@@ -1,0 +1,6 @@
+# One-shot bootstrap service that locks in Mullvad udp2tcp obfuscation and
+# enables lockdown mode after the daemon is reachable.
+type: files
+files:
+  - source: mullvad-bootstrap/usr
+    destination: /usr

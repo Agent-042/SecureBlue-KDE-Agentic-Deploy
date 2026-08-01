@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: privacy-browser-config/usr
+    destination: /usr

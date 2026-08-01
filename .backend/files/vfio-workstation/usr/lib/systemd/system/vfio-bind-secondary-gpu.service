@@ -1,0 +1,12 @@
+[Unit]
+Description=Bind secondary NVIDIA GPU to vfio-pci
+After=multi-user.target
+Wants=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/vfio-bind-secondary-gpu.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

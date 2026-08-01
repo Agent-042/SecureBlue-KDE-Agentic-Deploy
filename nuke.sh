@@ -1,0 +1,1 @@
+/usr/local/bin/obliterate-tailscale-kwallet.sh

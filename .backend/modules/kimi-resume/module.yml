@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: kimi-resume/usr
+    destination: /usr

@@ -1,0 +1,5 @@
+# Intel NPU and DRM render-node permissions.
+# Exposes /dev/accel* (NPU) and /dev/dri/render* to members of the render
+# group; users in the video group are normally also added to render on this image.
+KERNEL=="accel*", SUBSYSTEM=="accel", GROUP="render", MODE="0660", TAG+="uaccess"
+KERNEL=="renderD*", SUBSYSTEM=="drm", GROUP="render", MODE="0660", TAG+="uaccess"

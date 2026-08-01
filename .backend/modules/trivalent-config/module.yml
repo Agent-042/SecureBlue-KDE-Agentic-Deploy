@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: trivalent-config/usr
+    destination: /usr

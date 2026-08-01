@@ -1,0 +1,4 @@
+# Baked-in local AI stack: Ollama binary, Qwen2.5-Coder model, and agent CLIs.
+type: script
+scripts:
+  - install-agent-stack.sh

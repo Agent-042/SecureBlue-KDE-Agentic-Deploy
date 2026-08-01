@@ -1,0 +1,12 @@
+[Unit]
+Description=macOS Tahoe first-login cosmetic reset
+Before=plasma-plasmashell.service
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/tahoe-cosmetic-reset
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical-session.target

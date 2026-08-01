@@ -1,0 +1,22 @@
+{
+ "proc_title": "mm",
+ "miner_host": "127.0.0.1",
+ "miner_port": 3333,
+ "pools": [
+  "gulf.moneroocean.stream:ssl20128"
+ ],
+ "algos": {
+  "autolykos2": "/miner/rigel -a autolykos2 -o stratum+tcp://127.0.0.1:3333 -u YOUR_WALLET_ADDRESS -p YOUR_GPU_WORKER_NAME --no-strict-ssl",
+  "etchash": "/miner/rigel -a etchash -o stratum+tcp://127.0.0.1:3333 -u YOUR_WALLET_ADDRESS -p YOUR_GPU_WORKER_NAME --no-strict-ssl"
+ },
+ "algo_perf": {
+  "autolykos2": 155400000,
+  "etchash": 33280000
+ },
+ "algo_min_time": 600,
+ "user": "YOUR_WALLET_ADDRESS",
+ "pass": "YOUR_GPU_WORKER_NAME",
+ "log_file": null,
+ "watchdog": 600,
+ "hashrate_watchdog": 50
+}

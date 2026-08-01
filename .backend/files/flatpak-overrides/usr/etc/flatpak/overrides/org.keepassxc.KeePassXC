@@ -1,0 +1,16 @@
+[Context]
+# Password manager should not phone home.
+shared=!network
+# Strip broad host access; restrict to Documents and Downloads.
+filesystems=!home;!host;xdg-documents;xdg-download
+# No arbitrary device access (note: USB hardware-key users may need to
+# re-enable device=all or use the pcscd socket instead).
+devices=!all
+# No background sync needed.
+features=!background
+
+[Session Bus Policy]
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none

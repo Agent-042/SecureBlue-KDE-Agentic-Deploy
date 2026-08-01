@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# NetworkManager dispatcher script: route Google Chrome traffic outside the Mullvad tunnel.
+# Traffic originating from the chrome-split-tunnel cgroup is marked 0x100 and routed
+# through the physical interface table instead of the VPN tunnel.
+#
+# To use: launch Chrome inside the cgroup, e.g.:
+#   systemd-run --scope --property=Delegate=yes --slice=chrome-split-tunnel \
+#     -- flatpak run com.google.Chrome
+
+set -euo pipefail
+
+IFACE="${1:-}"
+ACTION="${2:-}"
+
+MARK="0x100"
+TABLE="100"
+CGROUP_PATH="/sys/fs/cgroup/chrome-split-tunnel"
+NFT_TABLE="chrome_split"
+
+log() {
+    logger -t chrome-split-tunnel "$*"
+}
+
+setup_routing() {
+    local device="$1"
+
+    # Only use the physical interface, never the WireGuard tunnel.
+    case "$device" in
+        wg*|mullvad*) return 0 ;;
+    esac
+
+    local gateway
+    gateway="$(ip -4 route show dev "$device" | awk '/default/ {print $3; exit}')" || true
+    if [[ -z "$gateway" ]]; then
+        log "No default gateway on $device; skipping route"
+        return 0
+    fi
+
+    # Route marked traffic through the physical uplink.
+    ip -4 rule del fwmark "$MARK" table "$TABLE" 2>/dev/null || true
+    ip -4 rule add fwmark "$MARK" table "$TABLE" pref 50 || true
+
+    ip -4 route flush table "$TABLE" 2>/dev/null || true
+    ip -4 route add default via "$gateway" dev "$device" table "$TABLE" || true
+
+    log "Installed bypass route via $device -> $gateway (table $TABLE)"
+}
+
+setup_cgroup() {
+    if [[ ! -d "$CGROUP_PATH" ]]; then
+        mkdir -p "$CGROUP_PATH" || {
+            log "Failed to create cgroup $CGROUP_PATH"
+            return 0
+        }
+    fi
+}
+
+setup_nftables() {
+    # Mark traffic that originates from the chrome-split-tunnel cgroup.
+    nft add table ip "$NFT_TABLE" 2>/dev/null || true
+    nft flush chain ip "$NFT_TABLE" output 2>/dev/null || true
+    nft add chain ip "$NFT_TABLE" output '{ type filter hook output priority mangle; policy accept; }' 2>/dev/null || true
+    nft add rule ip "$NFT_TABLE" output cgroupv2 "$CGROUP_PATH" meta mark set "$MARK" 2>/dev/null || {
+        log "nftables cgroupv2 match not available; bypass will require manual socket marking"
+        return 0
+    }
+    log "Installed nftables cgroup mark for $CGROUP_PATH"
+}
+
+teardown_routing() {
+    ip -4 rule del fwmark "$MARK" table "$TABLE" 2>/dev/null || true
+    ip -4 route flush table "$TABLE" 2>/dev/null || true
+    log "Removed bypass route"
+}
+
+case "$ACTION" in
+    up|vpn-up)
+        setup_cgroup
+        setup_routing "$IFACE"
+        setup_nftables
+        ;;
+    down|vpn-down)
+        # Only tear down if the physical interface is going away.
+        case "$IFACE" in
+            eth*|wlan*|enp*|wlp*) teardown_routing ;;
+        esac
+        ;;
+esac
+
+exit 0

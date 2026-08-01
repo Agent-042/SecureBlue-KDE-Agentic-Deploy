@@ -1,0 +1,310 @@
+#!/usr/bin/env bash
+# rebase.sh
+# Detect the host fleet and rebase to the matching SecureBlue KDE Agentic image.
+#
+# Usage:
+#   rebase.sh [--dry-run] [--verify]
+#
+# Detection order:
+#   1. DMI product name (ASUS ROG Zephyrus G16 -> intel-g16).
+#   2. CPU vendor + NVIDIA GPU count (AuthenticAMD with multiple NVIDIA GPUs ->
+#      amd-workstation; GenuineIntel -> intel-g16).
+#   3. Fallback to the default image.
+#
+# With --dry-run the rpm-ostree (and optional cosign) command is printed but not
+# executed. With --verify, cosign verify is run against the public key in the
+# repo root before rebasing.
+# SPDM Manifest: Self-Parsing Deployment Manifest format.
+
+if [[ "$1" == "bluebuild" ]]; then goto_script_logic "$0"; exit 0; fi
+
+# <MANIFEST_START>
+# Runtime/user-facing tool — no build-phase commands required.
+# <MANIFEST_END>
+
+exit 0
+
+# --- SPDM AST Construction Engine ---
+goto_script_logic() {
+  local script_path="$1"
+  awk '
+    BEGIN { in_manifest=0; cmd=""; }
+    /^# <MANIFEST_START>/ { in_manifest=1; next; }
+    /^# <MANIFEST_END>/ { in_manifest=0; next; }
+    in_manifest == 0 { next; }
+    /^[[:space:]]*#/ { next; }
+    /^[[:space:]]*$/ {
+      if (cmd != "") {
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", cmd);
+        if (cmd != "") {
+          if (cmd ~ /^rpm-ostree[[:space:]]+install/ || cmd ~ /^systemctl[[:space:]]+enable/) {
+            print "[BUILD_PHASE] " cmd;
+          } else {
+            print "[RUNTIME_PHASE] " cmd;
+          }
+        }
+        cmd = "";
+      }
+      next;
+    }
+    {
+      if (cmd == "") cmd = $0;
+      else cmd = cmd " " $0;
+      if (substr(cmd, length(cmd), 1) == "\\") {
+        cmd = substr(cmd, 1, length(cmd)-1) " ";
+      } else {
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", cmd);
+        if (cmd != "") {
+          if (cmd ~ /^rpm-ostree[[:space:]]+install/ || cmd ~ /^systemctl[[:space:]]+enable/) {
+            print "[BUILD_PHASE] " cmd;
+          } else {
+            print "[RUNTIME_PHASE] " cmd;
+          }
+        }
+        cmd = "";
+      }
+    }
+    END {
+      if (cmd != "") {
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", cmd);
+        if (cmd != "") {
+          if (cmd ~ /^rpm-ostree[[:space:]]+install/ || cmd ~ /^systemctl[[:space:]]+enable/) {
+            print "[BUILD_PHASE] " cmd;
+          } else {
+            print "[RUNTIME_PHASE] " cmd;
+          }
+        }
+      }
+    }
+  ' "$script_path"
+}
+
+# --- ORIGINAL SCRIPT LOGIC ---
+set -euo pipefail
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT
+
+readonly COSIGN_PUB="${PROJECT_ROOT}/cosign.pub"
+readonly COSIGN_KEY_MARKER="/var/lib/buildblue-cosign-enrolled"
+
+readonly REGISTRY="ghcr.io/agent-042"
+readonly TAG="latest"
+readonly DEFAULT_IMAGE="${REGISTRY}/secureblue-kde-agentic-deploy:${TAG}"
+readonly AMD_WORKSTATION_IMAGE="${REGISTRY}/secureblue-kde-agentic-deploy-amd-workstation:${TAG}"
+readonly INTEL_G16_IMAGE="${REGISTRY}/secureblue-kde-agentic-deploy-intel-g16:${TAG}"
+
+usage() {
+    cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Detect the local hardware fleet and rebase to the corresponding image.
+
+Options:
+  --dry-run      Print the rpm-ostree rebase command instead of running it.
+  --verify       Run cosign verify before rebasing (requires cosign.pub).
+  --enroll-key   Enroll the cosign public key for ostree-image-signed rebase.
+                 Run this once before your first signed rebase.
+  -h, --help     Show this help message.
+
+Detected fleets:
+  amd-workstation -> ${AMD_WORKSTATION_IMAGE}
+  intel-g16       -> ${INTEL_G16_IMAGE}
+  default         -> ${DEFAULT_IMAGE}
+EOF
+}
+
+detect_cpu_vendor() {
+    awk '/^vendor_id/{print $3; exit}' /proc/cpuinfo 2>/dev/null || echo "unknown"
+}
+
+detect_product_name() {
+    cat /sys/class/dmi/id/product_name 2>/dev/null || echo "unknown"
+}
+
+count_nvidia_gpus() {
+    if command -v lspci >/dev/null 2>&1; then
+        lspci -nn 2>/dev/null | grep -ic 'nvidia' || true
+    else
+        echo 0
+    fi
+}
+
+detect_fleet() {
+    local cpu_vendor product_name nvidia_count
+    cpu_vendor="$(detect_cpu_vendor)"
+    product_name="$(detect_product_name)"
+    nvidia_count="$(count_nvidia_gpus)"
+
+    echo "Detected CPU vendor: ${cpu_vendor}" >&2
+    echo "Detected product name: ${product_name}" >&2
+    echo "Detected NVIDIA GPUs: ${nvidia_count}" >&2
+
+    if [[ "${product_name}" =~ (Zephyrus|GU605|G16) ]]; then
+        echo "intel-g16"
+    elif [[ "${cpu_vendor}" == "AuthenticAMD" && "${nvidia_count}" -ge 2 ]]; then
+        echo "amd-workstation"
+    elif [[ "${cpu_vendor}" == "AuthenticAMD" ]]; then
+        echo "amd-workstation"
+    elif [[ "${cpu_vendor}" == "GenuineIntel" ]]; then
+        echo "intel-g16"
+    else
+        echo "default"
+    fi
+}
+
+image_for_fleet() {
+    local fleet="${1}"
+    case "${fleet}" in
+        amd-workstation)
+            echo "${AMD_WORKSTATION_IMAGE}"
+            ;;
+        intel-g16)
+            echo "${INTEL_G16_IMAGE}"
+            ;;
+        default|*)
+            echo "${DEFAULT_IMAGE}"
+            ;;
+    esac
+}
+
+enroll_cosign_key() {
+    local elevate=()
+    if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+        if command -v run0 >/dev/null 2>&1; then
+            elevate=(run0)
+        else
+            echo "error: key enrollment requires root privileges; install run0." >&2
+            return 1
+        fi
+    fi
+
+    if [[ -f "${COSIGN_KEY_MARKER}" ]]; then
+        echo "Cosign key already enrolled (marker: ${COSIGN_KEY_MARKER})"
+        return 0
+    fi
+
+    if [[ ! -f "${COSIGN_PUB}" ]]; then
+        echo "error: cosign public key not found at ${COSIGN_PUB}" >&2
+        echo "       Place cosign.pub from this repository in the same directory as rebase.sh." >&2
+        return 1
+    fi
+
+    echo "Enrolling cosign public key for ostree-image-signed verification..."
+
+    if [[ ${#elevate[@]} -gt 0 ]]; then
+        "${elevate[@]}" mkdir -p /etc/pki/containers
+        "${elevate[@]}" cp "${COSIGN_PUB}" /etc/pki/containers/
+        "${elevate[@]}" touch "${COSIGN_KEY_MARKER}"
+    else
+        mkdir -p /etc/pki/containers
+        cp "${COSIGN_PUB}" /etc/pki/containers/
+        touch "${COSIGN_KEY_MARKER}"
+    fi
+
+    echo "Key enrolled at /etc/pki/containers/cosign.pub"
+    echo ""
+    echo "NOTE: If rpm-ostree still fails with signature errors, your ostree version may"
+    echo "      require additional remote configuration. Consult the project documentation."
+    echo ""
+    return 0
+}
+
+main() {
+    local dry_run=false
+    local verify=false
+    local enroll_key=false
+
+    while [[ $# -gt 0 ]]; do
+        case "${1}" in
+            --dry-run)
+                dry_run=true
+                shift
+                ;;
+            --verify)
+                verify=true
+                shift
+                ;;
+            --enroll-key)
+                enroll_key=true
+                shift
+                ;;
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: ${1}" >&2
+                usage >&2
+                exit 1
+                ;;
+        esac
+    done
+
+    if [[ "${enroll_key}" == true ]]; then
+        enroll_cosign_key
+        exit $?
+    fi
+
+    local elevate_cmd=()
+    if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+        if command -v run0 >/dev/null 2>&1; then
+            elevate_cmd=(run0)
+        else
+            echo "error: rebasing requires root privileges; install run0 to escalate." >&2
+            exit 1
+        fi
+    fi
+
+    local fleet image_ref
+    fleet="$(detect_fleet)"
+    image_ref="$(image_for_fleet "${fleet}")"
+
+    echo ""
+    echo "Detected fleet: ${fleet}"
+    echo "Target image:   ${image_ref}"
+
+    # Pre-flight: warn if cosign key not enrolled for ostree-image-signed
+    if [[ ! -f "${COSIGN_KEY_MARKER}" ]]; then
+        echo ""
+        echo "WARNING: Cosign key not enrolled. ostree-image-signed rebase may fail."
+        echo "         Run: $(basename "$0") --enroll-key"
+        echo ""
+    fi
+
+    if [[ "${verify}" == true ]]; then
+        if ! command -v cosign >/dev/null 2>&1; then
+            echo "error: cosign is not installed. Install cosign to use --verify." >&2
+            exit 1
+        fi
+        if [[ ! -f "${COSIGN_PUB}" ]]; then
+            echo "error: cosign public key not found at ${COSIGN_PUB}" >&2
+            exit 1
+        fi
+        if [[ "${dry_run}" == true ]]; then
+            echo "[dry-run] cosign verify --key ${COSIGN_PUB} ${image_ref}"
+        else
+            echo "Verifying image signature..."
+            cosign verify --key "${COSIGN_PUB}" "${image_ref}"
+        fi
+    fi
+
+    if [[ "${dry_run}" == true ]]; then
+        if [[ ${#elevate_cmd[@]} -gt 0 ]]; then
+            echo "[dry-run] ${elevate_cmd[*]} bash -c 'rpm-ostree rebase \"\$1\"' bash ostree-image-signed:${image_ref}"
+        else
+            echo "[dry-run] rpm-ostree rebase ostree-image-signed:${image_ref}"
+        fi
+        echo "[dry-run] systemctl reboot"
+    else
+        echo "Rebasing..."
+        if [[ ${#elevate_cmd[@]} -gt 0 ]]; then
+            "${elevate_cmd[@]}" bash -c 'rpm-ostree rebase "$1"' bash "ostree-image-signed:${image_ref}"
+        else
+            rpm-ostree rebase "ostree-image-signed:${image_ref}"
+        fi
+        echo "Rebase complete. Run 'systemctl reboot' to boot into the new image."
+    fi
+}
+
+main "$@"

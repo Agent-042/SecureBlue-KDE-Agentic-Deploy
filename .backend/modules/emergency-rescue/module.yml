@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: emergency-rescue/usr
+    destination: /usr

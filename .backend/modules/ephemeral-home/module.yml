@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: ephemeral-home/usr
+    destination: /usr

@@ -1,0 +1,21 @@
+[General]
+# Enforce Breeze Dark globally.
+ColorScheme=BreezeDark
+Name=Breeze Dark
+shadeSortColumn=true
+SingleClick=false
+
+# Font stack.
+font=Noto Sans,10,-1,5,50,0,0,0,0,0
+fixed=JetBrains Mono,10,-1,5,50,0,0,0,0,0
+menuFont=Noto Sans,10,-1,5,50,0,0,0,0,0
+smallestReadableFont=Noto Sans,8,-1,5,50,0,0,0,0,0
+toolBarFont=Noto Sans,10,-1,5,50,0,0,0,0,0
+
+# Subpixel rendering defaults.
+# RGB order is enforced for the G16 OLED laptop panel and any external RGB
+# stripe monitors to improve text clarity.
+XftAntialias=true
+XftHinting=true
+XftHintStyle=hintslight
+XftSubPixel=rgb
