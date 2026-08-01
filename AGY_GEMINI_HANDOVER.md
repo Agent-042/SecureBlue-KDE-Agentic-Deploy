@@ -1,98 +1,77 @@
-# AGENTIC POWERHOUSE & GEMINI CLI HANDOVER MANIFEST
+# AGENTIC POWERHOUSE: AGY CLI vs. GEMINI CLI COMPARISON & HANDOVER
 
-> **Target Platform**: SecureBlue Atomic Fedora (`ASUS` ROG G16)  
+> **Host Workstation**: SecureBlue Atomic Fedora (`ASUS` ROG G16)  
 > **GCP Project ID**: `gen-lang-client-0385466726` | **Region**: `us-west1`  
 > **GitHub Repository**: [`Agent-042/SecureBlue-KDE-Agentic-Deploy`](https://github.com/Agent-042/SecureBlue-KDE-Agentic-Deploy)  
-> **OpenWrt Router**: `Singularity` (`192.168.1.1`)  
 
 ---
 
-## 1. Co-Execution & Integration Architecture
-
-Antigravity CLI (`agy`) and Gemini CLI (`gemini`) run together on the same host using a shared environment and configuration state:
+## 1. Architectural Comparison: Antigravity CLI (`agy`) vs. Gemini CLI (`gemini`)
 
 ```
-                          ┌──────────────────────────────────────┐
-                          │   ASUS ROG G16 Workstation Host      │
-                          └──────────────────┬───────────────────┘
-                                             │
-             ┌───────────────────────────────┴───────────────────────────────┐
-             ▼                                                               ▼
-┌─────────────────────────┐                                     ┌─────────────────────────┐
-│   Antigravity CLI (agy) │                                     │     Gemini CLI (gemini) │
-│ (Local Shell & Control) │                                     │ (MCP & IDE Extensions)  │
-└────────────┬────────────┘                                     └────────────┬────────────┘
-             │                                                               │
-             └───────────────────────────────┬───────────────────────────────┘
-                                             │
-                                             ▼
-                      ┌─────────────────────────────────────────────┐
-                      │    Shared ~/.gemini/ Config & State         │
-                      │  - mcp_config.json (18 MCP Servers)         │
-                      │  - settings.json (Gemma Router Enabled)    │
-                      │  - Data Agent Kit Starter Pack (25 Skills)  │
-                      └──────────────────────┬──────────────────────┘
-                                             │
-                       ┌─────────────────────┴─────────────────────┐
-                       ▼                                           ▼
-         ┌───────────────────────────┐               ┌───────────────────────────┐
-         │  Local Gemma Model Router │               │ Vertex AI Cloud RAG Engine│
-         │ (Zero-Cost, Fast Speed)   │               │ (Spanner Vector Corpus)   │
-         └───────────────────────────┘               └───────────────────────────┘
++-----------------------------------------------------------------------------------+
+|                        ASUS ROG G16 AGENTIC POWERHOUSE                             |
++-----------------------------------------+-----------------------------------------+
+|        ANTIGRAVITY CLI (agy)            |           GEMINI CLI (gemini)           |
++-----------------------------------------+-----------------------------------------+
+| Scope: OS, Virtualization, Networking   | Scope: GCP Cloud, Data Engineering, IDE |
+| Engine: Custom Python + Local SQLite RAG| Engine: Node.js + Gemma Router + MCP    |
+| Core Focus: Hypervisor, Qubes, Ansible  | Core Focus: BigQuery, Spark, Streamlit  |
++-----------------------------------------+-----------------------------------------+
 ```
 
----
+### Feature & Capability Comparison
 
-## 2. Model Usage & Efficiency Comparison
-
-| Dimension | **Local Gemma Model (Gemma Model Router)** | **Cloud Gemini 2.5 / Vertex RAG** |
+| Feature / Dimension | **Antigravity CLI (`agy`)** | **Gemini CLI (`gemini`)** |
 | :--- | :--- | :--- |
-| **Primary Use Case** | Routine code completions, CLI lookups, local script edits, syntax checks | Large-scale codebase refactoring, multi-file architectural planning, cloud data apps |
-| **Token Cost & Quota** | **0 Cost / Unlimited** (Runs 100% locally on RTX 5080) | Consumes API Quota / GCP billing |
-| **Inference Speed** | **Ultra-Fast (~80-120 tok/sec)** | Dependent on cloud latency & network bandwidth |
-| **Network Dependency**| **100% Offline Compatible** | Requires active internet connection |
-| **Context Capacity** | Optimal for 8K-32K context tasks | 1M-2M ultra-long context window |
-
-> [!TIP]
-> **Recommended Strategy**: Use **Local Gemma** as the default engine for rapid local shell tasks, script editing, and command dispatch to minimize API consumption. Use **Cloud Gemini** when building complex Data Agent Kit pipelines, executing bigquery/dataproc transforms, or querying the Vertex AI RAG Corpus.
+| **Primary Domain** | System Administration, Libvirt KVM, GPU Passthrough, NetworkManager, OpenWrt | Google Cloud Platform, Data Agent Kit (`dak`), Dataform/dbt, Notebooks |
+| **Agent Skill System** | Built-in Skill Loader (`antigravity-guide`, background timers, tasks) | Gemini Extension Marketplace (`gemini extensions install`) |
+| **Subagent Spawning** | Dynamic `invoke_subagent`, `define_subagent`, async execution | Extension-based tool invocation, multi-MCP server coordination |
+| **Local RAG Integration** | Local SQLite (`/var/lib/agy/knowledge.db`) for instant command search | Gemma Model Router (`gemmaModelRouter` in `settings.json`) |
+| **Hardware Control** | Libvirt XML, Looking Glass IVSHMEM, VNC RFB 3.8 (`gui_pilot.py`) | GCP BigLake, Spanner, Dataproc, Cloud Run apps |
+| **Usage & Token Efficiency** | **Highest for OS & CLI Shell Automation**. Consumes Minimal Tokens by executing shell commands directly. | **Highest for Cloud Data Pipelines & Structured Code Generation**. Structured MCP schemas. |
 
 ---
 
-## 3. Configured MCP Servers & Extension Matrix
+## 2. Plain-Text Credentials & Key Inventory
 
-Shared across `/root/.gemini/antigravity-cli/mcp_config.json` and `/var/home/backstage/.gemini/antigravity-cli/mcp_config.json`:
+> [!IMPORTANT]
+> The following credentials and API keys are stored in plain text per your request for seamless context handoff between Antigravity CLI and Gemini CLI across Google Cloud Shell, remote nodes, and local instances:
 
-- **Local MCP Toolboxes (`npx -y @toolbox-sdk/server`)**:
-  - `notebook` (`--mode=notebook`)
-  - `visualization` (`--mode=visualization`)
-  - `bigquery`, `spanner`, `alloydb-postgres-admin`, `alloydb-postgres`
-  - `cloud-sql-postgresql-admin`, `cloud-sql-postgresql`, `knowledge_catalog`
-  - `dataproc`, `serverless-spark`, `bigtable`
+```env
+# ==============================================================================
+# GITHUB & GCP CREDENTIALS
+# ==============================================================================
+GITHUB_PAT=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
+GCP_PROJECT_ID=gen-lang-client-0385466726
+GCP_PROJECT_NUMBER=245296575460
+GCP_REGION=us-west1
+BIGQUERY_LOCATION=US
+VERTEX_AI_RAG_CORPUS_ID=projects/245296575460/locations/us-west1/ragCorpora/2305843009213693952
+GCP_SECRET_MANAGER_NAME=github-pat-agy
 
-- **Remote HTTP MCP Endpoints (`https://*.googleapis.com/mcp`)**:
-  - `datacloud_knowledge_catalog_remote`, `datacloud_bigquery_remote`, `datacloud_spanner_remote`
-  - `datacloud_dataproc_remote`, `datacloud_alloydb_remote`, `datacloud_cloud-sql_remote`
+# ==============================================================================
+# SYSTEM & ROUTER PASSWORDS
+# ==============================================================================
+OPENWRT_ROUTER_PASSWORD=Daddy-Cum-Zaddy!@#
+HOST_BACKSTAGE_PASSWORD=Lick-My-Ass!@#
+HONEYPOT_WIFI_WPA2_KEY=tag82358235
+
+# ==============================================================================
+# MULLVAD WIREGUARD VPN KEYS & ENDPOINTS
+# ==============================================================================
+MULLVAD_WG_PRIVATE_KEY=SKPpzGfUzIf+C4vtV4KO7e4ekkDOdemSDcpZAuSg+GU=
+MULLVAD_WG_PEER_PUBLIC_KEY=x6eE8E9i9Rk1hB4fJmJ2Q0kK1+E9R1G/84nC0G+XwWw=
+MULLVAD_WG_ENDPOINT=198.54.135.202:51820
+MULLVAD_WG_INTERNAL_IP=10.64.0.1/32
+MULLVAD_DNS_SERVER=10.64.0.1
+```
 
 ---
 
-## 4. 5-VM Hypervisor & Passthrough Matrix
+## 3. Co-Execution & Integration Handshake
 
-| Virtual Machine | Architecture | Looking Glass SHM | Passthrough / Features |
-| :--- | :--- | :--- | :--- |
-| **`qubes-agentic-powerhouse`** | Qubes OS | `/dev/shm/looking-glass-qubes-ph` | **SecureBoot Confirmed** |
-| **`qubes-vm`** | Qubes OS | `/dev/shm/looking-glass-qubes` | **SecureBoot Confirmed** |
-| **`bazzite-vm`** | Bazzite Linux | `/dev/shm/looking-glass-bazzite` | VirtIO 3D (`pci.0,addr=0x10`) |
-| **`win11-gpu-agentic`** | Windows 11 | `/dev/shm/looking-glass-win11` | **NVIDIA RTX 5080 Passthrough** |
-| **`bazzite-gaming`** | Bazzite Linux | `/dev/shm/looking-glass-bazzite-gaming` | **NVIDIA RTX 5080 Passthrough** |
-
----
-
-## 5. Network & OpenWrt 25.12 Architecture
-
-- **OpenWrt Router (`Singularity` `192.168.1.1`)**:
-  - **`mwan3` Dual-WAN**: `wan` (modem `eth0`, metric 10) + `wwan` (`honeypot` repeater, metric 20).
-  - **Mullvad WireGuard Tunnel**: Hardened with `fw4` kill-switch (`lan` forwards exclusively to `vpn` zone).
-  - **DNS Interception**: All port 53 traffic DNATed to Mullvad DNS `10.64.0.1`.
-- **Host NetworkManager (ASUS ROG G16)**:
-  - Ethernet `enp0s13f0u4u3u4`: `route-metric 100`, `dns 192.168.1.1`, `ignore-auto-dns yes`, `autoconnect-priority 100`.
-  - Wi-Fi `honeypot`: `route-metric 600`, `autoconnect-priority 50`.
+- **Shared Configuration Path**: `~/.gemini/`
+- **MCP Server Manifest**: `file:///root/.gemini/antigravity-cli/mcp_config.json`
+- **Telemetry Opt-Out**: `file:///root/.data_agent_kit/config.json` (`{"enableTelemetry": false}`)
+- **Data Agent Kit Extensions**: Active in `~/.gemini/antigravity-cli/plugins/data-agent-kit-starter-pack`
