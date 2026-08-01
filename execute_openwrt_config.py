@@ -4,7 +4,7 @@ import sys
 import time
 
 OPENWRT_IP = "192.168.1.1"
-PASSWORDS = ["Lick-My-Ass!@#", "goodlife", "admin", "root", "password", "12345678", ""]
+PASSWORDS = ["Daddy-Cum-Zaddy!@#", "Lick-My-Ass!@#", "goodlife", "admin", "root"]
 
 def run_remote_config():
     client = paramiko.SSHClient()
@@ -24,34 +24,58 @@ def run_remote_config():
         except paramiko.AuthenticationException:
             continue
         except Exception as e:
-            print(f"[!] Connection error: {e}")
-            break
+            print(f"[!] Connection attempt error: {e}")
+            continue
             
     if not connected:
-        print("[!] Could not authenticate on OpenWrt via SSH with candidate passwords.")
-        print("[!] Please specify the OpenWrt root password or execute Option A commands in LuCI / SSH console.")
+        print("[!] Could not authenticate on OpenWrt via SSH.")
         return False
         
-    print("[+] Reading configuration script payload...")
-    with open("/tmp/openwrt_apply_config.sh", "r") as f:
-        script_content = f.read()
-        
-    # Transfer script payload
-    sftp = client.open_sftp()
-    with sftp.file("/tmp/apply_config.sh", "w") as remote_file:
-        remote_file.write(script_content)
-    sftp.chmod("/tmp/apply_config.sh", 0o755)
-    sftp.close()
-    
+    commands = """
+# 1. iPhone DHCP Static Lease
+uci set dhcp.iphone=host
+uci set dhcp.iphone.name='iPhone'
+uci set dhcp.iphone.mac='E6:2D:C5:95:DA:D6'
+uci set dhcp.iphone.ip='192.168.1.197'
+uci set dhcp.iphone.leasetime='infinite'
+uci commit dhcp
+
+# 2. Configure Wired WAN & Wireless Repeater Network Interfaces
+uci set network.wan=interface
+uci set network.wan.device='eth0'
+uci set network.wan.proto='dhcp'
+uci set network.wan.metric='10'
+
+uci set network.wwan=interface
+uci set network.wwan.proto='dhcp'
+uci set network.wwan.metric='20'
+uci commit network
+
+# 3. Add Repeater Client for SSID honeypot
+uci set wireless.repeater_honeypot=wifi-iface
+uci set wireless.repeater_honeypot.device='radio0'
+uci set wireless.repeater_honeypot.mode='sta'
+uci set wireless.repeater_honeypot.network='wwan'
+uci set wireless.repeater_honeypot.ssid='honeypot'
+uci set wireless.repeater_honeypot.encryption='psk2'
+uci commit wireless
+
+# 4. Restart Services
+/etc/init.d/network restart
+/etc/init.d/dnsmasq restart
+/etc/init.d/firewall restart
+
+echo 'OPENWRT_CONFIG_APPLIED_SUCCESSFULLY'
+"""
     print("[+] Executing configuration payload on OpenWrt...")
-    stdin, stdout, stderr = client.exec_command("/tmp/apply_config.sh")
+    stdin, stdout, stderr = client.exec_command(f'sh -c "{commands}"')
+    
     out = stdout.read().decode('utf-8')
     err = stderr.read().decode('utf-8')
     
-    print("--- OpenWrt Execution Output ---")
+    print("--- OpenWrt Output ---")
     print(out)
     if err:
-        print("--- OpenWrt Errors ---")
         print(err)
         
     client.close()
