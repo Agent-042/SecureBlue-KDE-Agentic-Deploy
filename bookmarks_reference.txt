@@ -1,0 +1,112 @@
+===============================================================================
+                       BOOKMARKS & TECHNICAL REFERENCE INDEX
+===============================================================================
+
+-------------------------------------------------------------------------------
+QubesOS
+-------------------------------------------------------------------------------
+HOWTO: Compiling Kernels for dom0: https://dev.qubes-os.org/wiki/BuildingQt5
+qubes.tools - core-admin mm_dc50b554-0-gdc50b55 documentation: https://dev.qubes-os.org/projects/core-admin/en/latest/manpages/qubes.tools.html
+qubes.tools.qmemmand - qmemman daemon - core-admin mm_dc50b554-0-gdc50b55 documentation: https://dev.qubes-os.org/projects/core-admin/en/latest/manpages/qubes.tools.qmemmand.html
+Qubes OS Project · GitHub: https://github.com/QubesOS
+Dev/Qubes: https://kicksecure.com/wiki/Dev/Qubes
+Live mode in Qubes 4.3? - Qubes - Kicksecure Forums: https://forums.kicksecure.com/t/live-mode-in-qubes-4-3/1209
+Improve support for booting qubes with custom kernel command line parameters: https://github.com/QubesOS/qubes-issues/issues/9750
+Qubes OS Security Hardening Guide: https://forum.qubes-os.org/t/qubes-os-security-hardening-guide-11-tabs-automated-helper-script/15234
+dm-crypt/Specialties - ArchWiki: https://wiki.archlinux.org/title/dm-crypt/Specialties#Encrypted_device_using_a_header_file
+Hardware information masking and spoofing with hypervisor: https://forum.qubes-os.org/t/hardware-information-masking-and-spoofing-with-hypervisor/28822
+Use Wayland instead of X11 to increase performance and improve security: https://github.com/QubesOS/qubes-issues/issues/3366
+enable linux kernel gpg verification in grub and/or enable EFI Secure Boot for Qubes / Xen guests: https://github.com/QubesOS/qubes-issues/issues/5241
+qubes-template-kicksecure/kicksecure/04_install_qubes_post.sh: https://github.com/Kicksecure/qubes-template-kicksecure/blob/master/usr/builder/qubes-template-kicksecure/kicksecure/04_install_qubes_post.sh
+Kicksecure/qubes-template-kicksecure: Kicksecure-Qubes: https://github.com/Kicksecure/qubes-template-kicksecure
+Articles | Madaidan's Insecurities: https://madaidan.github.io/articles/index.html
+How to install Windows qubes in Qubes OS: https://www.qubes-os.org/doc/windows-qubes/
+Kicksecure for Qubes: https://www.kicksecure.com/wiki/Qubes
+Passwordless root access in qubes: https://www.qubes-os.org/doc/vm-sudo/
+Use in-vm kernel for Whonix (and possibly Kicksecure): https://github.com/QubesOS/qubes-issues/issues/9570
+Qubes OS live mode. dom0 in RAM. Non-persistent Boot: https://forum.qubes-os.org/t/qubes-os-live-mode-dom0-in-ram-non-persistent-boot-ram-wipe-protection-against-forensics-tails-mode-hardening-dom0-root-read-only-paranoid-security-ephemeral-environment/
+
+-------------------------------------------------------------------------------
+Kicksecure
+-------------------------------------------------------------------------------
+Secure Boot: https://www.kicksecure.com/wiki/Secure_Boot
+grub bootloader Configuration Changes: https://www.kicksecure.com/wiki/GRUB
+Kicksecure - A Security Hardened Linux Distribution: https://www.kicksecure.com/
+Kicksecure inside Debian Template sdwdate qrexec Denied message: https://github.com/QubesOS/qubes-issues/issues/7447
+Latest Qubes topics - Kicksecure Forums: https://forums.kicksecure.com/c/qubes/14
+Kdenlive monitor issue solved by AI - Debian 13 KDE Plasma / Kicksecure_cli Hardened: https://forums.kicksecure.com/t/kdenlive-monitor-issue-solved-by-ai-debian-13-kde-plasma-kicksecure-cli-hardened/1231
+Virtualization Platform Security: https://www.kicksecure.com/wiki/Virtualization_Platform_Security
+Comparison of secureblue with Kicksecure and Development Notes: https://www.kicksecure.com/wiki/Dev/secureblue
+
+-------------------------------------------------------------------------------
+GrapheneOS & Android
+-------------------------------------------------------------------------------
+GrapheneOS: the private and secure mobile OS: https://grapheneos.org/
+Usage guide | GrapheneOS: https://grapheneos.org/usage
+Hardware-backed Keystore | Android Open Source Project: https://source.android.com/docs/security/features/keystore
+Android Virtualization Framework (AVF) overview: https://source.android.com/docs/core/virtualization
+AVF architecture | Android Open Source Project: https://source.android.com/docs/core/virtualization/architecture
+Running Android Apps inside Kicksecure Waydroid: https://forums.kicksecure.com/t/running-android-apps-inside-kicksecure-waydroid/304/5
+
+-------------------------------------------------------------------------------
+CLI & Agent Tools
+-------------------------------------------------------------------------------
+google/agents-cli: https://github.com/google/agents-cli
+sigoden/aichat: All-in-one LLM CLI tool: https://github.com/sigoden/aichat
+Creating a USB Composite Multi-Function Gadget on Raspberry Pi using ConfigFS: https://ohyaan.github.io/tips/creating_a_usb_composite_multi-function_gadget_on_raspberry_pi_using_configfs/#troubleshooting
+Reproducing | OSS-Fuzz: https://google.github.io/oss-fuzz/advanced-topics/reproducing/#building-using-docker
+AI patches (beta) | OSS-Fuzz: https://google.github.io/oss-fuzz/ai-patches-beta/
+OAuth | Old Open Collective Docs: https://docs.opencollective.com/help/developers/oauth
+webmachinelearning/webnncp: https://github.com/webmachinelearning/webnncp
+GoogleChromeLabs/webnncp-tools: https://github.com/GoogleChromeLabs/webnncp-tools/
+Google Open Source Software Vulnerability Reward Program Rules: https://bughunters.google.com/about/rules/open-source/google-open-source-software-vulnerability-reward-program-rules
+Tree - koji - Pagure.io: https://pagure.io/koji/blob/master/f/koji/_init_.py
+Using the koji build system documentation: https://docs.pagure.org/koji/using_the_koji_build_system/#koji-xmlrpc-api
+
+-------------------------------------------------------------------------------
+OS Docs & Packaging (Universal Blue / Copr / Fedora)
+-------------------------------------------------------------------------------
+Universal Blue: https://github.com/ublue-os
+Copr Project List (ublue-os): https://copr.fedorainfracloud.org/coprs/ublue-os
+ublue-os/aurora: https://github.com/ublue-os/aurora
+ublue-os/bazzite: https://github.com/ublue-os/bazzite
+ublue-os/bluefin: https://github.com/ublue-os/bluefin
+BlueBuild: https://github.com/blue-build
+Fedora Copr Main: https://copr.fedorainfracloud.org/coprs/
+fedora-copr/copr GitHub: https://github.com/fedora-copr/copr
+Copr API v3: https://copr.fedorainfracloud.org/api_3/docs
+Log Detective MCP server: https://fedora-copr.github.io/posts/log-detective-mcp
+About python-copr documentation: https://python-copr.readthedocs.io/en/latest/index.html
+krunner-bazaar spec file: https://github.com/ublue-os/packages/blob/0b919caf3bae666b704017c4e533e25db8f8a9a2/packages/krunner-bazaar/krunner-bazaar.spec
+ublue-builder mock-wrapper: https://github.com/ublue-os/packages/blob/0b919caf3bae666b704017c4e533e25db8f8a9a2/ublue-builder/mock-wrapper
+
+-------------------------------------------------------------------------------
+Cloud Infrastructure & AI SDKs
+-------------------------------------------------------------------------------
+Cloud Run Revision Console: https://console.cloud.google.com/run/detail/us-central1/secureblue-kde-agentic-deploy-git/revisions?chat=true&project=gen-lang-client-0385466726
+google-gemini/gemini-cli: https://github.com/google-gemini/gemini-cli
+Deploy to Cloud Run from a Git repository: https://docs.cloud.google.com/run/docs/quickstarts/deploy-continuously
+Host AI agents on Cloud Run: https://docs.cloud.google.com/run/docs/ai-agents
+Google Cloud MCP servers overview: https://docs.cloud.google.com/mcp/overview
+Vertex Generative AI SDK for Python: https://docs.cloud.google.com/python/docs/reference/agentplatform/latest
+Vertex AI SDK for Python: https://docs.cloud.google.com/python/docs/reference/aiplatform/latest
+Deploy an agent | Gemini Enterprise Agent Platform: https://docs.cloud.google.com/gemini-enterprise-agent-platform/scale/runtime/deploy-an-agent
+Agent Development Kit (ADK): https://adk.dev/tutorials/coding-with-ai/
+googleapis/python-genai: https://github.com/googleapis/python-genai
+Get started with Gemini Enterprise Agent Platform: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/start
+Quickstart: Install the Google Cloud CLI: https://docs.cloud.google.com/sdk/docs/install-sdk
+Initialize the gcloud CLI: https://docs.cloud.google.com/sdk/docs/initialize
+The gcloud CLI cheat sheet: https://docs.cloud.google.com/sdk/docs/cheatsheet
+Scripting with gcloud blog: https://cloud.google.com/blog/products/management-tools/scripting-with-gcloud-a-beginners-guide-to-automating-gcp-tasks
+Gemini API Documentation: https://ai.google.dev/gemini-api/docs
+Configure Gemini Code Assist code customization: https://docs.cloud.google.com/gemini/docs/codeassist/code-customization
+
+-------------------------------------------------------------------------------
+Research & Bug Hunters / GSoC
+-------------------------------------------------------------------------------
+GSoC 2026: Application Guide (api-dash): https://github.com/foss42/apidash/discussions/1048
+Open Source Security VRP - Google Bug Hunters: https://bughunters.google.com/open-source-security
+From Naptime to Big Sleep (Project Zero): https://projectzero.google/2024/10/from-naptime-to-big-sleep.html
+Built-in AI Early Preview Program Context Index: https://docs.google.com/document/d/18otm-D9xhn_XyObbQrc1v7SI-718X3ynZkjEpiS1V04/edit
+Program Organization | Google Summer of Code: https://summerofcode.withgoogle.com/programs/2026/organizations/librecube-initiative
+The Prompt API | Chrome for Developers: https://developer.chrome.com/docs/ai/prompt-api
