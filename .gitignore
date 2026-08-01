@@ -1,0 +1,8 @@
+# Ignore large binary executables
+node
+tmate
+ngrok
+kwallet*
+__pycache__/
+*.pyc
+*.so

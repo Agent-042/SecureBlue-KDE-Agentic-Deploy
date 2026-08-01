@@ -1,0 +1,53 @@
+---
+- name: Multi-Distro Fleet Provisioning & Hardening
+  hosts: all
+  gather_facts: true
+  tasks:
+
+    # -------------------------------------------------------------------
+    # Task Group 1: SecureBlue / Fedora Atomic (Immutable OSTree System)
+    # -------------------------------------------------------------------
+    - name: SecureBlue - Install CLI tool dependencies via rpm-ostree
+      when: ansible_distribution in ['Fedora', 'SecureBlue'] and (ansible_cmdline.ostree is defined or ansible_distribution == 'SecureBlue')
+      block:
+        - name: Layer base system utilities
+          ansible.builtin.command:
+            cmd: "run0 rpm-ostree install -y git curl python3-pip ansible"
+          register: ostree_result
+          changed_when: "'Changes queued' in ostree_result.stdout"
+
+        - name: Ensure Flathub is enabled for applications
+          ansible.builtin.command:
+            cmd: "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
+          register: flatpak_result
+          changed_when: "'added' in flatpak_result.stdout"
+
+    # -------------------------------------------------------------------
+    # Task Group 2: Debian / Kicksecure Infrastructure
+    # -------------------------------------------------------------------
+    - name: Debian / Kicksecure - Provision via APT
+      when: ansible_distribution in ['Debian', 'Kicksecure']
+      block:
+        - name: Update apt cache and install core packages
+          ansible.builtin.apt:
+            name:
+              - git
+              - curl
+              - python3-full
+              - python3-pip
+              - ansible
+            state: present
+            update_cache: true
+
+    # -------------------------------------------------------------------
+    # Task Group 3: QubesOS Template Provisioning
+    # -------------------------------------------------------------------
+    - name: QubesOS - Configure TemplateVM Environment
+      when: "'qubes' in ansible_kernel or ansible_distribution == 'Qubes'"
+      block:
+        - name: Install Qubes agent tools
+          ansible.builtin.package:
+            name:
+              - qubes-core-agent-networking
+              - qubes-core-agent-passwordless-root
+            state: present
