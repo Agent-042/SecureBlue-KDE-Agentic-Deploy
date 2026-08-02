@@ -43,8 +43,6 @@ jobs:
     env:
       # The cosign-generated signing key in COSIGN_PRIVATE_KEY has no password.
       COSIGN_PASSWORD: ""
-      # Force podman driver to pass container=oci to avoid "not booted via libostree" error inside rpm-ostree
-      BB_SQUASH: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,3 +57,4 @@ jobs:
           registry_token: ${{ github.token }}
           cosign_private_key: ${{ secrets.COSIGN_PRIVATE_KEY }}
           pr_event_number: ${{ github.event.number }}
+          squash: true
