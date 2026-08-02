@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+import os
 import paramiko
 
 OPENWRT_IP = "192.168.1.1"
-PASSWORD = "Daddy-Cum-Zaddy!@#"
+PASSWORD = os.environ.get("OPENWRT_ROUTER_PASSWORD")
 
 def run_openwrt_mullvad_blueprint():
+    if not PASSWORD:
+        raise ValueError("Security Error: OPENWRT_ROUTER_PASSWORD environment variable is not set.")
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     

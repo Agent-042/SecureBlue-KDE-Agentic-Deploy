@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
+import os
 import paramiko
 import sys
 
 OPENWRT_IP = "192.168.1.1"
-PASSWORD = "Daddy-Cum-Zaddy!@#"
+PASSWORD = os.environ.get("OPENWRT_ROUTER_PASSWORD")
 
 def deploy_hardened_openwrt_appliance():
+    if not PASSWORD:
+        raise ValueError("Security Error: OPENWRT_ROUTER_PASSWORD environment variable is not set.")
     print(f"[*] Connecting to OpenWrt router {OPENWRT_IP} via SSH...")
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

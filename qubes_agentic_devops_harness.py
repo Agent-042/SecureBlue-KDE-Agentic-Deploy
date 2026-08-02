@@ -187,9 +187,12 @@ def stage_5_openwrt_vpn_verification():
     
     import paramiko
     try:
+        password = os.environ.get("OPENWRT_ROUTER_PASSWORD")
+        if not password:
+            raise ValueError("Security Error: OPENWRT_ROUTER_PASSWORD environment variable is not set.")
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(OPENWRT_IP, username="root", password="Daddy-Cum-Zaddy!@#", timeout=5)
+        client.connect(OPENWRT_IP, username="root", password=password, timeout=5)
         
         stdin, stdout, stderr = client.exec_command(
             "uci show dhcp.workstation; uci show firewall.lan_vpn; uci show mwan3.failover; network.mullvad"
