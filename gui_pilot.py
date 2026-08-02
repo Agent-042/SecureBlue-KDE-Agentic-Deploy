@@ -17,8 +17,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 import logging
 
-# Configure logging to output warnings and errors to stderr by default
-logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+# Get logger instance
 logger = logging.getLogger("gui_pilot")
 
 KEYSYM_MAP = {
@@ -356,4 +355,6 @@ def main():
         parser.print_help()
 
 if __name__ == '__main__':
+    # Configure logging to output warnings and errors to stderr by default when run as a script
+    logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
     main()

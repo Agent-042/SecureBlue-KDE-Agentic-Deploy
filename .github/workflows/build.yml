@@ -51,10 +51,10 @@ jobs:
         uses: blue-build/github-action@v1
         env:
           MACOS_ICONS_API_KEY: ${{ secrets.MACOS_ICONS_API_KEY }}
-          BB_SQUASH: true
         with:
           recipe: ${{ matrix.recipe }}
           working_directory: .backend
           registry_token: ${{ github.token }}
           cosign_private_key: ${{ secrets.COSIGN_PRIVATE_KEY }}
           pr_event_number: ${{ github.event.number }}
+          squash: true
