@@ -36,7 +36,7 @@ def run_cmd(cmd, check=False):
     try:
         res = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         return res.returncode, res.stdout.strip(), res.stderr.strip()
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         return -1, "", str(e)
 
 def stage_1_hypervisor_inventory():
