@@ -5,13 +5,10 @@ Provides real-time Wi-Fi AP Hotspot status, reverse Internet routing,
 Hardware USB KVM Keyboard & Mouse injection, and HDMI Virtual Monitor stream portal.
 """
 
-import sys
-import os
-import time
 import subprocess
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk, Gdk
 
 class ChromecastPortalWindow(Gtk.ApplicationWindow):
     def __init__(self, app):
