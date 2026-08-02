@@ -15,6 +15,11 @@ import struct
 import argparse
 import subprocess
 import xml.etree.ElementTree as ET
+import logging
+
+# Configure logging to output warnings and errors to stderr by default
+logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+logger = logging.getLogger("gui_pilot")
 
 KEYSYM_MAP = {
     'Return': 0xFF0D,
@@ -138,21 +143,28 @@ def get_vm_vnc_port(vm_name):
         xml_str = subprocess.check_output(['virsh', 'dumpxml', vm_name], stderr=subprocess.DEVNULL).decode()
         root = ET.fromstring(xml_str)
         devices = root.find('devices')
-        for g in devices.findall('graphics'):
-            if g.attrib.get('type') == 'vnc':
-                port_str = g.attrib.get('port')
-                if port_str and port_str != '-1':
-                    return int(port_str)
-    except Exception:
-        pass
+        if devices is not None:
+            for g in devices.findall('graphics'):
+                if g.attrib.get('type') == 'vnc':
+                    port_str = g.attrib.get('port')
+                    if port_str and port_str != '-1':
+                        return int(port_str)
+    except subprocess.CalledProcessError as e:
+        logger.debug("Failed to get VM XML from virsh for %s: %s", vm_name, e)
+    except ET.ParseError as e:
+        logger.warning("Failed to parse VM XML for %s: %s", vm_name, e)
+    except Exception as e:
+        logger.error("Unexpected error getting VNC port for %s: %s", vm_name, e, exc_info=True)
     
     try:
         disp = subprocess.check_output(['virsh', 'domdisplay', vm_name], stderr=subprocess.DEVNULL).decode().strip()
         if 'vnc://' in disp:
             port_part = disp.split(':')[-1]
             return int(port_part)
-    except:
-        pass
+    except subprocess.CalledProcessError as e:
+        logger.debug("Failed to get domdisplay from virsh for %s: %s", vm_name, e)
+    except Exception as e:
+        logger.error("Unexpected error getting domdisplay for %s: %s", vm_name, e, exc_info=True)
     return None
 
 
