@@ -47,6 +47,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Copy cosign.pub to working directory
+        run: cp cosign.pub .backend/cosign.pub
+
       - name: Build and push image
         uses: blue-build/github-action@v1
         env:
