@@ -170,8 +170,8 @@ def get_all_vms():
                     state = " ".join(parts[2:])
                 else:
                     vmid = "-"
-                    name = parts[0]
-                    state = " ".join(parts[1:])
+                    name = parts[1]
+                    state = " ".join(parts[2:])
                 vnc_port = get_vm_vnc_port(name)
                 vms.append({'id': vmid, 'name': name, 'state': state, 'vnc_port': vnc_port})
         return vms

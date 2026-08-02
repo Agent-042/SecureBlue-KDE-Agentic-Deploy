@@ -9,7 +9,7 @@ class TestGuiPilot(unittest.TestCase):
 
     @patch('subprocess.check_output')
     def test_get_vm_vnc_port_xml_success(self, mock_check_output):
-        # Mock XML output from virsh dumpxml
+        # XML parsing test matches the first try block in get_vm_vnc_port() which calls virsh dumpxml
         xml_content = """
         <domain type='kvm'>
           <devices>
@@ -25,7 +25,8 @@ class TestGuiPilot(unittest.TestCase):
 
     @patch('subprocess.check_output')
     def test_get_vm_vnc_port_domdisplay_fallback(self, mock_check_output):
-        # Let's say dumpxml raises an Exception, and fallback to domdisplay succeeds
+        # Fallback test matches the second try block in get_vm_vnc_port() which is executed
+        # when the first try block (virsh dumpxml) raises an exception.
         def check_output_side_effect(args, **kwargs):
             if 'dumpxml' in args:
                 raise subprocess.CalledProcessError(1, args)
@@ -40,7 +41,7 @@ class TestGuiPilot(unittest.TestCase):
 
     @patch('subprocess.check_output')
     def test_get_vm_vnc_port_all_fails(self, mock_check_output):
-        # All virsh commands fail
+        # Fallback test when both try blocks in get_vm_vnc_port() raise exception.
         mock_check_output.side_effect = Exception("virsh command failed")
 
         port = gui_pilot.get_vm_vnc_port('test_vm')
@@ -49,7 +50,8 @@ class TestGuiPilot(unittest.TestCase):
     @patch('gui_pilot.get_vm_vnc_port')
     @patch('subprocess.check_output')
     def test_get_all_vms(self, mock_check_output, mock_get_vnc_port):
-        # Mock virsh list --all
+        # Test get_all_vms() parsing of virsh list --all output.
+        # This successfully tests the logic fix in get_all_vms() parsing logic.
         virsh_list_output = (
             " Id    Name                           State\n"
             "----------------------------------------------------\n"
@@ -66,15 +68,16 @@ class TestGuiPilot(unittest.TestCase):
         self.assertEqual(vms[0]['state'], 'running')
         self.assertEqual(vms[0]['vnc_port'], 5901)
 
-        self.assertEqual(vms[1]['name'], '-')
+        self.assertEqual(vms[1]['name'], 'shut_vm')
         self.assertEqual(vms[1]['id'], '-')
-        self.assertEqual(vms[1]['state'], 'shut_vm shut off')
+        self.assertEqual(vms[1]['state'], 'shut off')
         self.assertIsNone(vms[1]['vnc_port'])
 
     @patch('subprocess.check_output')
     @patch('os.remove')
     @patch('os.path.exists')
     def test_vm_screenshot(self, mock_exists, mock_remove, mock_check_output):
+        # Test vm_screenshot() dimension parsing logic with file output.
         mock_exists.return_value = True
         mock_check_output.side_effect = [
             b"", # virsh screenshot success
