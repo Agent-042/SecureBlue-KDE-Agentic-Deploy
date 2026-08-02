@@ -12,9 +12,7 @@ Automates:
 """
 
 import os
-import sys
 import time
-import json
 import sqlite3
 import subprocess
 import shutil
