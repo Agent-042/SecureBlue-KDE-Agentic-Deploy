@@ -41,10 +41,27 @@ if res.returncode != 0:
 
 echo "[$(date -Iseconds)] Starting Resumable Proton -> SSD Downloader Engine..."
 
+# Performance Optimization:
+# Only refresh the Proton session initially if the rclone config doesn't exist
+# or does not contain a '[protondrive]' section. This avoids performing a redundant
+# 2FA code generation and rclone setup. During operation, we only refresh on demand
+# if the sync copy command fails (e.g., token expired or revoked).
+FORCE_REFRESH=true
+if grep -q "\[protondrive\]" /root/.config/rclone/rclone.conf 2>/dev/null; then
+  echo "[$(date -Iseconds)] Found existing 'protondrive' rclone configuration. Starting cached-first."
+  FORCE_REFRESH=false
+else
+  echo "[$(date -Iseconds)] 'protondrive' rclone configuration not found. Will perform initial login."
+fi
+
 while true; do
-  refresh_proton_session
+  if [ "$FORCE_REFRESH" = true ]; then
+    refresh_proton_session
+    FORCE_REFRESH=false
+  fi
+
   echo "[$(date -Iseconds)] Streaming Proton Drive files to local NVMe SSD..."
-  rclone copy protondrive: "$LOCAL_STAGE" \
+  if rclone copy protondrive: "$LOCAL_STAGE" \
     --transfers=12 \
     --checkers=12 \
     --tpslimit=3 \
@@ -58,10 +75,13 @@ while true; do
     --low-level-retries=5 \
     --log-file=/var/log/fast_migration_download.log \
     --stats=10s \
-    -v || true
+    -v; then
+    echo "[$(date -Iseconds)] Sync pass completed successfully."
+  else
+    echo "[$(date -Iseconds)] Sync pass failed. Will refresh session on next iteration."
+    FORCE_REFRESH=true
+  fi
 
-  echo "[$(date -Iseconds)] Sync pass completed. Next verification pass in 30s..."
+  echo "[$(date -Iseconds)] Next verification pass in 30s..."
   sleep 30
 done
-
-
