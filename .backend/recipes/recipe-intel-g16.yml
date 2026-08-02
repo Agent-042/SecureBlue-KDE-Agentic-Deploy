@@ -9,6 +9,9 @@ base-image: ghcr.io/secureblue/kinoite-nvidia-open-hardened
 image-version: latest
 
 modules:
+  # Fix ostree environment for container builds
+  - from-file: ../modules/fix-ostree/module.yml
+
   # Base package layering
   - type: rpm-ostree
     install:
