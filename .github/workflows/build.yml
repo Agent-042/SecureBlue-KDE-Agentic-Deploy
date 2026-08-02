@@ -58,3 +58,4 @@ jobs:
           cosign_private_key: ${{ secrets.COSIGN_PRIVATE_KEY }}
           pr_event_number: ${{ github.event.number }}
           build_opts: "--build-driver podman"
+          rechunk: true
