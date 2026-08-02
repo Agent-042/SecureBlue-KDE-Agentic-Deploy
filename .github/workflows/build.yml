@@ -43,6 +43,8 @@ jobs:
     env:
       # The cosign-generated signing key in COSIGN_PRIVATE_KEY has no password.
       COSIGN_PASSWORD: ""
+      # Force use of podman build driver to prevent 'not booted via libostree' errors inside container
+      BB_SQUASH: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
