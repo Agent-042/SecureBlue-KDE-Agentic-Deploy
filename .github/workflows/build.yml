@@ -51,6 +51,7 @@ jobs:
         uses: blue-build/github-action@v1
         env:
           MACOS_ICONS_API_KEY: ${{ secrets.MACOS_ICONS_API_KEY }}
+          BB_SQUASH: true
         with:
           recipe: ${{ matrix.recipe }}
           working_directory: .backend
