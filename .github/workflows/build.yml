@@ -43,6 +43,7 @@ jobs:
     env:
       # The cosign-generated signing key in COSIGN_PRIVATE_KEY has no password.
       COSIGN_PASSWORD: ""
+      BB_SQUASH: "true"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
