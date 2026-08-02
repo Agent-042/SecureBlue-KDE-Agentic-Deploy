@@ -78,7 +78,7 @@ class VncClient:
         if self.sock:
             try:
                 self.sock.close()
-            except:
+            except Exception:
                 pass
             self.sock = None
 
@@ -151,7 +151,7 @@ def get_vm_vnc_port(vm_name):
         if 'vnc://' in disp:
             port_part = disp.split(':')[-1]
             return int(port_part)
-    except:
+    except Exception:
         pass
     return None
 
@@ -200,7 +200,7 @@ def vm_screenshot(vm_name, out_path):
                 if 'x' in p and any(c.isdigit() for c in p):
                     dim = p.strip().split()[0]
                     break
-    except:
+    except Exception:
         pass
     return {'status': 'success', 'vm': vm_name, 'filepath': out_path, 'dimensions': dim}
 
