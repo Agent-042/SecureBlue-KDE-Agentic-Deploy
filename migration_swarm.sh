@@ -51,6 +51,7 @@ ATTEMPT=1
 
 # Fault-Recovery Loop: Loops until rclone exits with code 0
 until rclone sync "${SRC_REMOTE}" "${DST_REMOTE}" \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --drive-chunk-size=128M \

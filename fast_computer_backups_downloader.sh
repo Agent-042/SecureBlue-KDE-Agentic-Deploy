@@ -16,6 +16,7 @@ echo "[$(date -Iseconds)] Starting Parallel Extraction for Computer Backup 1 & 2
 
 # Launch Computer Backup 1 downloader
 /root/rclone-custom copy proton_computer1: /var/tmp/Proton_Drive_Local_Staging/Computer_Backup_1 \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --tpslimit=12 \
@@ -34,6 +35,7 @@ PID1=$!
 
 # Launch Computer Backup 2 downloader
 /root/rclone-custom copy proton_computer2: /var/tmp/Proton_Drive_Local_Staging/Computer_Backup_2 \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --tpslimit=12 \

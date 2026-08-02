@@ -1,0 +1,3 @@
+## 2024-05-24 - [Rclone API Call Batching with fast-list]
+**Learning:** Rclone traverses directories one by one by default, leading to an N+1 query problem during the checking phase (1 API call per directory). This causes massive performance bottlenecks and API rate limits on cloud remotes like Google Drive when syncing large datasets.
+**Action:** Always apply the `--fast-list` flag when doing large copies or syncs to/from supported cloud remotes. This batches directory listings (e.g. 1000 items per API call on Google Drive), drastically speeding up the checking phase and preventing API throttling at the cost of slightly more memory usage.

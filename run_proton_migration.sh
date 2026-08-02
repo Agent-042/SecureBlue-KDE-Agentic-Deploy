@@ -63,6 +63,7 @@ ATTEMPT=1
 until {
     update_proton_config
     rclone copy protondrive: "${DEST_FOLDER}" \
+        --fast-list \
         --transfers=16 \
         --checkers=16 \
         --drive-chunk-size=128M \

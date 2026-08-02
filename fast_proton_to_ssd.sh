@@ -45,6 +45,7 @@ while true; do
   refresh_proton_session
   echo "[$(date -Iseconds)] Streaming Proton Drive files to local NVMe SSD..."
   rclone copy protondrive: "$LOCAL_STAGE" \
+    --fast-list \
     --transfers=12 \
     --checkers=12 \
     --tpslimit=3 \
