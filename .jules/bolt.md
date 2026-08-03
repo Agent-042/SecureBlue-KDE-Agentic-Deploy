@@ -1,0 +1,3 @@
+## 2024-05-24 - Rclone API Rate Limit Bottleneck on Cloud Remotes
+**Learning:** Using `rclone copy` or `rclone sync` on cloud remotes (like Google Drive or Proton Drive) without the `--fast-list` flag causes an N+1 query problem for directory listings. This severely bottlenecks performance and rapidly hits API rate limits because it makes individual API calls for every directory instead of batching them.
+**Action:** Always include the `--fast-list` flag when configuring `rclone` operations against cloud remotes to batch directory listings, reduce API calls, and significantly improve metadata processing speed.

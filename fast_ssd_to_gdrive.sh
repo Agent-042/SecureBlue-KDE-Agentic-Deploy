@@ -12,6 +12,7 @@ echo "[$(date -Iseconds)] Starting Max-Speed Resumable SSD -> Google Drive Uploa
 
 while true; do
   rclone copy "$LOCAL_STAGE" gdrive:Proton_Drive_Migration \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --drive-chunk-size=256M \

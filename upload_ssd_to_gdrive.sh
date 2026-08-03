@@ -7,6 +7,7 @@ mkdir -p "$LOCAL_STAGE"
 echo "Starting local SSD to Google Drive upload ($LOCAL_STAGE -> gdrive:Proton_Drive_Migration)..."
 
 exec rclone copy "$LOCAL_STAGE" gdrive:Proton_Drive_Migration \
+  --fast-list \
   --transfers=16 \
   --checkers=16 \
   --drive-chunk-size=128M \

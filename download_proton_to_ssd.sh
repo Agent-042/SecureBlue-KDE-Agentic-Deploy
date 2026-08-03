@@ -26,6 +26,7 @@ echo "Starting secondary parallel download from Proton Drive to local SSD ($LOCA
 
 # Run rclone copy from protondrive to local SSD
 exec rclone copy protondrive: "$LOCAL_STAGE" \
+  --fast-list \
   --transfers=16 \
   --checkers=16 \
   --buffer-size=64M \
