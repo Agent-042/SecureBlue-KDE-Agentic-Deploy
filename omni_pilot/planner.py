@@ -31,10 +31,14 @@ class VisualMCTSExplorer:
         best_candidate = None
         highest_score = -1.0
 
+        # Lift loop-invariants outside the candidate loop
+        goal_terms = goal_description.lower().split()
+
         for roi in rois:
             # Score candidate based on label similarity & confidence
             score = roi.get("confidence", 0.5)
-            if any(term in roi["label"].lower() for term in goal_description.lower().split()):
+            roi_label_lower = roi.get("label", "").lower()
+            if any(term in roi_label_lower for term in goal_terms):
                 score += 0.4
             
             if score > highest_score:

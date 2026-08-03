@@ -9,7 +9,11 @@ import ctypes
 import os
 import time
 
-LIB_PATH = "/root/omni_pilot/libomni_core.so"
+LIB_PATH = os.environ.get("LIB_PATH", "/root/omni_pilot/libomni_core.so")
+if not os.path.exists(LIB_PATH):
+    local_path = os.path.join(os.path.dirname(__file__), "libomni_core.so")
+    if os.path.exists(local_path):
+        LIB_PATH = local_path
 
 class OmniFrameMetadata(ctypes.Structure):
     _fields_ = [
