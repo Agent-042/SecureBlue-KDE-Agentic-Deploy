@@ -1,0 +1,158 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+name: secureblue-kde-agentic-deploy-amd-workstation
+description: Hardened SecureBlue KDE atomic image for AMD Ryzen 9 9950X workstation with dual NVIDIA RTX 4080 and VFIO secondary-GPU passthrough.
+
+# SecureBlue KDE (Kinoite) with NVIDIA open drivers for dual RTX 4080 setup.
+base-image: ghcr.io/secureblue/kinoite-nvidia-open-hardened
+image-version: latest
+
+modules:
+  # Base package layering
+  - type: rpm-ostree
+    install:
+      # Smartcard / YubiKey support
+      - pcsc-lite
+      - pcsc-lite-ccid
+      # AMD platform firmware and Radeon iGPU drivers
+      - amd-ucode-firmware
+      - mesa-dri-drivers
+      - xorg-x11-drv-amdgpu
+      # NVIDIA kernel module layering for Atomic open-driver rebuilds
+      - akmod-nvidia
+      # Virtualization stack
+      - libvirt
+      - qemu-kvm
+      - virt-manager
+      - virt-install
+      - edk2-ovmf
+      # Core networking / rescue diagnostics
+      - NetworkManager
+      - iproute
+      - iputils
+      # Kernel module tooling and task runner
+      - akmods
+      - just
+      # macOS-style SVG theme engine for KDE Plasma
+      - kvantum
+      # Tahoe theme asset tooling and fonts
+      - rsms-inter-fonts
+      - ImageMagick
+      - libicns-utils
+      - jq
+      - python3-pip
+      - git
+      - rsync
+
+  # Kernel arguments for AMD IOMMU, VFIO, and virtualization
+  - type: kargs
+    kargs:
+      - amd_iommu=on
+      - iommu=pt
+      - kvm.ignore_msrs=1
+      - kvm_amd.npt=1
+      - kvm_amd.avic=1
+      - rd.driver.pre=vfio-pci
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau
+
+  # System services
+  - type: systemd
+    system:
+      enabled:
+        - pcscd.service
+        - libvirtd.service
+        - virtlogd.service
+
+  # Default Flatpak applications
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        notify: false
+        install:
+          - net.mullvad.MullvadBrowser
+          - org.keepassxc.KeePassXC
+          - com.google.Chrome
+          - com.yubico.yubioath
+          # Audio equalizer / DSP for PipeWire
+          - com.github.wwmm.easyeffects
+          # Productivity, communication, and development tools
+          - org.mozilla.Thunderbird
+          - im.riot.Riot
+          - com.vscodium.codium
+          - com.github.zocker_160.SyncThingy
+
+  # Hardened Trivalent browser (RPM-layered, not a Flatpak)
+  - from-file: ../modules/trivalent-rpm/module.yml
+
+  # Enterprise browser policy (system-level managed policy)
+  - from-file: ../modules/trivalent-config/module.yml
+
+  # Isolated privacy research browser configuration
+  - from-file: ../modules/privacy-browser-config/module.yml
+
+  # Google Chrome enterprise policy (Flatpak install, managed policy applied at image layer)
+  - from-file: ../modules/google-chrome-config/module.yml
+
+  # Mullvad VPN RPM repository and package
+  - from-file: ../modules/mullvad-vpn/module.yml
+
+  # Mullvad udp2tcp + lockdown mode bootstrap service
+  - from-file: ../modules/mullvad-bootstrap/module.yml
+
+  # Enable Mullvad VPN daemon and one-shot bootstrap for udp2tcp + lockdown
+  - type: systemd
+    system:
+      enabled:
+        - mullvad-daemon.service
+        - mullvad-bootstrap.service
+
+  # Flatpak permission lockdown
+  - from-file: ../modules/flatpak-overrides/module.yml
+
+  # G16 emergency rescue tooling
+  - from-file: ../modules/emergency-rescue/module.yml
+
+  # On-image documentation
+  - from-file: ../modules/docs-readme/module.yml
+
+  # Immutability layer
+  - from-file: ../modules/immutability/module.yml
+
+  # Network lockdown
+  - from-file: ../modules/network-lockdown/module.yml
+
+  # Audio equalizer
+  - from-file: ../modules/audio-eq/module.yml
+
+  # KDE theming: macOS Tahoe look with true-black panels, dock, stoplights
+  - from-file: ../modules/tahoe-theming/module.yml
+
+  # Local AI: baked-in Ollama + agent CLI toolchain, pre-seeded for live USB
+  - from-file: ../modules/agent-stack/module.yml
+  - from-file: ../modules/agent-stack-skel/module.yml
+
+  # Enable the baked-in Ollama system service
+  - type: systemd
+    system:
+      enabled:
+        - ollama.service
+
+  # VFIO workstation module: bind secondary NVIDIA GPU to vfio-pci at boot
+  - from-file: ../modules/vfio-workstation/module.yml
+
+  # Persistent workspace
+  - from-file: ../modules/persist-workspace/module.yml
+
+  # Enable the workspace symlink service for every user at login
+  - type: systemd
+    user:
+      enabled:
+        - agentic-workspace-init.service
+        - tahoe-cosmetic-reset.service
+
+  # Kimi Code CLI resume helper
+  - from-file: ../modules/kimi-resume/module.yml
+
+  # Image signing support
+  - type: signing

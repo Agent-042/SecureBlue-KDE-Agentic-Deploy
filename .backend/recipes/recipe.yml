@@ -1,0 +1,159 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+name: secureblue-kde-agentic-deploy
+description: Hardened SecureBlue KDE atomic image for AMD Ryzen 7 7800X3D with agentic browser policy and rescue tooling.
+
+# SecureBlue KDE (Kinoite) with Mesa/Radeon drivers for AMD Ryzen 7 7800X3D.
+# For NVIDIA targets, switch back to ghcr.io/secureblue/kinoite-nvidia-open-hardened.
+base-image: ghcr.io/secureblue/kinoite-main-hardened
+image-version: latest
+
+modules:
+  # Base package layering
+  - type: rpm-ostree
+    install:
+      # Smartcard / YubiKey support
+      - pcsc-lite
+      - pcsc-lite-ccid
+      # AMD platform firmware and graphics
+      - amd-ucode-firmware
+      - mesa-dri-drivers
+      - xorg-x11-drv-amdgpu
+      # Virtualization stack
+      - libvirt
+      - qemu-kvm
+      - virt-manager
+      - virt-install
+      - edk2-ovmf
+      # Core networking / rescue diagnostics (consumed by g16-rescue.sh)
+      - NetworkManager
+      - iproute
+      - iputils
+      # Kernel module tooling and task runner
+      - akmods
+      - just
+      # macOS-style SVG theme engine for KDE Plasma
+      - kvantum
+      # Tahoe theme asset tooling and fonts
+      - rsms-inter-fonts
+      - ImageMagick
+      - libicns-utils
+      - jq
+      - python3-pip
+      - git
+      - rsync
+
+  # Kernel arguments for AMD VFIO/IOMMU and virtualization
+  - type: kargs
+    kargs:
+      - amd_iommu=on
+      - iommu=pt
+      - kvm.ignore_msrs=1
+      - kvm_amd.npt=1
+      - kvm_amd.avic=1
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau
+
+  # System services
+  - type: systemd
+    system:
+      enabled:
+        - pcscd.service
+        - libvirtd.service
+        - virtlogd.service
+
+  # Default Flatpak applications
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        notify: false
+        install:
+          - net.mullvad.MullvadBrowser
+          - org.keepassxc.KeePassXC
+          - com.google.Chrome
+          - com.yubico.yubioath
+          # Audio equalizer / DSP for PipeWire (preset shipped in audio-eq module)
+          - com.github.wwmm.easyeffects
+          # Productivity, communication, and development tools
+          - org.mozilla.Thunderbird
+          - im.riot.Riot
+          - com.vscodium.codium
+          - com.github.zocker_160.SyncThingy
+
+  # Hardened Trivalent browser (RPM-layered, not a Flatpak)
+  - from-file: ../modules/trivalent-rpm/module.yml
+
+  # Enterprise browser policy (system-level managed policy)
+  - from-file: ../modules/trivalent-config/module.yml
+
+  # Isolated privacy research browser configuration
+  - from-file: ../modules/privacy-browser-config/module.yml
+
+  # Google Chrome enterprise policy (Flatpak install, managed policy applied at image layer)
+  - from-file: ../modules/google-chrome-config/module.yml
+
+  # Mullvad VPN RPM repository and package
+  - from-file: ../modules/mullvad-vpn/module.yml
+
+  # Mullvad udp2tcp + lockdown mode bootstrap service
+  - from-file: ../modules/mullvad-bootstrap/module.yml
+
+  # Enable Mullvad VPN daemon and one-shot bootstrap for udp2tcp + lockdown
+  - type: systemd
+    system:
+      enabled:
+        - mullvad-daemon.service
+        - mullvad-bootstrap.service
+
+  # Flatpak permission lockdown
+  - from-file: ../modules/flatpak-overrides/module.yml
+
+  # G16 emergency rescue tooling
+  - from-file: ../modules/emergency-rescue/module.yml
+
+  # On-image documentation
+  - from-file: ../modules/docs-readme/module.yml
+
+  # Immutability layer: redacted SDDM, powerdevil policies
+  # (tmpfs /var/home moved to modules/ephemeral-home for optional future use)
+  - from-file: ../modules/immutability/module.yml
+
+  # Network lockdown: Mullvad daemon defaults and Chrome split-tunnel routing
+  - from-file: ../modules/network-lockdown/module.yml
+
+  # Audio equalizer: system-wide EasyEffects preset and login autoload for G16
+  - from-file: ../modules/audio-eq/module.yml
+
+  # KDE theming: macOS Tahoe look with true-black panels, dock, stoplights
+  - from-file: ../modules/tahoe-theming/module.yml
+
+  # Local AI: baked-in Ollama + agent CLI toolchain, pre-seeded for live USB
+  - from-file: ../modules/agent-stack/module.yml
+  - from-file: ../modules/agent-stack-skel/module.yml
+
+  # Enable the baked-in Ollama system service
+  - type: systemd
+    system:
+      enabled:
+        - ollama.service
+
+  # VFIO module loading for virtual device sandboxing / PCI passthrough
+  - from-file: ../modules/vfio-sandbox/module.yml
+
+  # Persistent username-agnostic workspace that survives reboots/rebases
+  - from-file: ../modules/persist-workspace/module.yml
+
+  # Enable the workspace symlink service for every user at login
+  - type: systemd
+    user:
+      enabled:
+        - agentic-workspace-init.service
+        - tahoe-cosmetic-reset.service
+
+  # Kimi Code CLI resume helper (clone repo, verify CLI)
+  - from-file: ../modules/kimi-resume/module.yml
+
+  # Image signing support
+  - type: signing
+
+

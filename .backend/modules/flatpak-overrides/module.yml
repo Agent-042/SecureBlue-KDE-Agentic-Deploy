@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: flatpak-overrides/usr
+    destination: /usr

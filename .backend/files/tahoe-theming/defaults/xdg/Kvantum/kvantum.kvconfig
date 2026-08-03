@@ -1,0 +1,7 @@
+[General]
+theme=WhiteSur-Dark
+# Disable Kvantum compositing by default to avoid a known crash with
+# Kvantum 1.1.7 + Qt 6.11+ on Plasma 6 Wayland. Translucency can be
+# re-enabled manually once the upstream bug is resolved.
+composite=false
+translucent_windows=false

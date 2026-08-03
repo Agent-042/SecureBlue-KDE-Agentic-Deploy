@@ -1,0 +1,419 @@
+#!/usr/bin/env python3
+"""
+agy - Universal Agentic CLI Assistant, Plugin Manager & RAG Engine for SecureBlue, Qubes OS & Kicksecure
+Part of the Agentic Powerhouse Architecture.
+"""
+
+import sys
+import os
+import json
+import sqlite3
+import argparse
+import subprocess
+import re
+import shutil
+from typing import List, Dict, Any, Tuple
+
+# Pre-populated RAG Knowledge Base of CLI Commands across SecureBlue, QubesOS, Kicksecure, Koji, Copr, and Virt tools
+COMMAND_KNOWLEDGE_BASE = [
+    # Qubes OS Domain & Lifecycle Commands
+    {
+        "subsystem": "qubes-dom0",
+        "command": "qvm-create --class AppVM --template <template> --label <color> <vm_name>",
+        "keywords": ["qubes", "create vm", "new qube", "appvm", "qvm-create"],
+        "summary": "Creates a new Qubes OS AppVM with specified template and label color.",
+        "example": "qvm-create --class AppVM --template kicksecure-minimal --label black sys-agent"
+    },
+    {
+        "subsystem": "qubes-dom0",
+        "command": "qvm-start <vm_name>",
+        "keywords": ["qubes", "start vm", "boot qube", "qvm-start"],
+        "summary": "Boots up a specified Qubes OS VM.",
+        "example": "qvm-start sys-agent"
+    },
+    {
+        "subsystem": "qubes-dom0",
+        "command": "qvm-prefs <vm_name> <property> [value]",
+        "keywords": ["qubes", "vm memory", "vcpu", "qube settings", "qvm-prefs", "autostart"],
+        "summary": "Gets or sets configuration properties for a qube (e.g. memory, vcpus, autostart).",
+        "example": "qvm-prefs sys-agent memory 2048"
+    },
+    {
+        "subsystem": "qubes-dom0",
+        "command": "qvm-run -p -u root <vm_name> '<command>'",
+        "keywords": ["qubes", "execute in vm", "run command qube", "qvm-run", "root in qube"],
+        "summary": "Runs a command inside a target qube with specified user privileges.",
+        "example": "qvm-run -p -u root sys-agent 'apt-get update'"
+    },
+    {
+        "subsystem": "qubes-qrexec",
+        "command": "qrexec-client-vm <target_vm> <rpc_service_name>",
+        "keywords": ["qrexec", "rpc", "cross vm command", "dom0 rpc"],
+        "summary": "Dispatches a Qrexec RPC call from client VM to target VM or Dom0.",
+        "example": "echo 'uptime' | qrexec-client-vm dom0 agent.Dom0Exec"
+    },
+    {
+        "subsystem": "qubes-dom0",
+        "command": "qubesctl state.apply <state>",
+        "keywords": ["qubesctl", "saltstack", "apply salt", "dom0 salt", "qubes configuration"],
+        "summary": "Applies SaltStack state management configurations in Qubes Dom0.",
+        "example": "qubesctl state.apply qvm.sys-net"
+    },
+    # SecureBlue & Fedora Atomic Commands
+    {
+        "subsystem": "secureblue-atomic",
+        "command": "rpm-ostree status",
+        "keywords": ["rpm-ostree", "secureblue status", "atomic version", "ostree deployments"],
+        "summary": "Displays current ostree deployment status, layered packages, and booted commit.",
+        "example": "rpm-ostree status"
+    },
+    {
+        "subsystem": "secureblue-atomic",
+        "command": "rpm-ostree upgrade",
+        "keywords": ["rpm-ostree", "upgrade secureblue", "update system", "ostree pull"],
+        "summary": "Downloads and stages the latest atomic ostree commit for SecureBlue.",
+        "example": "rpm-ostree upgrade"
+    },
+    {
+        "subsystem": "secureblue-atomic",
+        "command": "ujust <recipe>",
+        "keywords": ["ujust", "bluefin", "secureblue helper", "just recipe", "system toggle"],
+        "summary": "Executes predefined uBlue/SecureBlue user maintenance recipes.",
+        "example": "ujust update"
+    },
+    {
+        "subsystem": "flatpak",
+        "command": "flatpak install <remote> <package>",
+        "keywords": ["flatpak", "install app", "flathub", "desktop app"],
+        "summary": "Installs sandboxed container desktop application via Flatpak.",
+        "example": "flatpak install flathub org.mozilla.firefox"
+    },
+    # Kicksecure Security & Repository Commands
+    {
+        "subsystem": "kicksecure",
+        "command": "repository-dist --enable --repository stable",
+        "keywords": ["kicksecure", "enable repository", "kicksecure repo", "apt repo"],
+        "summary": "Enables official Kicksecure APT repositories in Debian/Kicksecure templates.",
+        "example": "repository-dist --enable --repository stable"
+    },
+    {
+        "subsystem": "kicksecure",
+        "command": "systemcheck",
+        "keywords": ["kicksecure", "systemcheck", "security audit", "hardening verify"],
+        "summary": "Runs comprehensive Kicksecure security and privacy verification audit.",
+        "example": "systemcheck"
+    },
+    # Koji & Copr Build Commands
+    {
+        "subsystem": "koji",
+        "command": "koji build --scratch <target> <src_rpm>",
+        "keywords": ["koji", "fedora build", "scratch build", "rpm build", "koji build"],
+        "summary": "Submits a scratch build job to Fedora Koji build infrastructure.",
+        "example": "koji build --scratch rawdoc mypackage-1.0-1.src.rpm"
+    },
+    {
+        "subsystem": "copr",
+        "command": "copr-cli build <project> <src_rpm>",
+        "keywords": ["copr", "copr build", "fedora copr", "custom rpm repo"],
+        "summary": "Submits RPM package build job to Fedora Copr repository.",
+        "example": "copr-cli build ublue-os/staging mypackage.src.rpm"
+    },
+    # Libvirt / KVM / Passthrough Commands
+    {
+        "subsystem": "libvirt-kvm",
+        "command": "virsh list --all",
+        "keywords": ["virsh", "list vms", "kvm domains", "libvirt vms"],
+        "summary": "Lists all defined libvirt virtual machines and their current state.",
+        "example": "virsh list --all"
+    },
+    {
+        "subsystem": "libvirt-kvm",
+        "command": "virsh start <domain>",
+        "keywords": ["virsh", "start vm", "boot domain", "libvirt start"],
+        "summary": "Powers on a libvirt KVM virtual machine domain.",
+        "example": "virsh start win11-gpu-agentic"
+    },
+    {
+        "subsystem": "libvirt-kvm",
+        "command": "virsh dumpxml <domain>",
+        "keywords": ["virsh", "dumpxml", "vm xml", "domain config"],
+        "summary": "Exports XML domain configuration for a libvirt virtual machine.",
+        "example": "virsh dumpxml win11-gpu-agentic"
+    },
+    {
+        "subsystem": "virt-tools",
+        "command": "virt-install --name <name> --memory <ram_mb> --vcpus <count> --disk <path> --import --os-variant <os>",
+        "keywords": ["virt-install", "create kvm vm", "new domain", "libvirt install"],
+        "summary": "Provisions new KVM virtual machine via libvirt CLI.",
+        "example": "virt-install --name test-vm --memory 2048 --vcpus 2 --disk /var/lib/libvirt/images/test.qcow2 --import --os-variant fedora-unknown"
+    },
+    # Waydroid / Mobile Agent Commands
+    {
+        "subsystem": "waydroid",
+        "command": "waydroid session start",
+        "keywords": ["waydroid", "android session", "start waydroid", "mobile container"],
+        "summary": "Starts the Waydroid Android LXC container session.",
+        "example": "waydroid session start"
+    },
+    {
+        "subsystem": "waydroid",
+        "command": "waydroid app launch <package_name>",
+        "keywords": ["waydroid", "launch android app", "android pkg", "waydroid app"],
+        "summary": "Launches Android APK application inside Waydroid session.",
+        "example": "waydroid app launch com.android.settings"
+    }
+]
+
+DB_PATH = "/var/lib/agy/knowledge.db"
+PLUGIN_DIRS = [
+    "/root/.gemini/antigravity-cli/plugins",
+    "/var/home/backstage/.gemini/antigravity-cli/plugins",
+    "/root/.gemini/plugins"
+]
+
+def init_db():
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS commands (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subsystem TEXT,
+            command TEXT,
+            keywords TEXT,
+            summary TEXT,
+            example TEXT
+        )
+    """)
+    
+    cursor.execute("SELECT COUNT(*) FROM commands")
+    if cursor.fetchone()[0] == 0:
+        for entry in COMMAND_KNOWLEDGE_BASE:
+            cursor.execute("""
+                INSERT INTO commands (subsystem, command, keywords, summary, example)
+                VALUES (?, ?, ?, ?, ?)
+            """, (entry["subsystem"], entry["command"], json.dumps(entry["keywords"]), entry["summary"], entry["example"]))
+        conn.commit()
+    conn.close()
+
+def search_commands(query: str, limit: int = 5) -> List[Dict[str, Any]]:
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT subsystem, command, keywords, summary, example FROM commands")
+    rows = cursor.fetchall()
+    conn.close()
+
+    query_tokens = set(re.findall(r'\w+', query.lower()))
+    results = []
+
+    for row in rows:
+        subsystem, cmd, keywords_json, summary, example = row
+        keywords = json.loads(keywords_json)
+        all_text = f"{subsystem} {cmd} {' '.join(keywords)} {summary}".lower()
+        score = 0
+        for token in query_tokens:
+            if token in all_text:
+                score += 1
+                if token in cmd.lower():
+                    score += 2
+                if any(token in kw for kw in keywords):
+                    score += 2
+
+        if score > 0:
+            results.append({
+                "subsystem": subsystem,
+                "command": cmd,
+                "keywords": keywords,
+                "summary": summary,
+                "example": example,
+                "score": score
+            })
+
+    results.sort(key=lambda x: x["score"], reverse=True)
+    return results[:limit]
+
+def handle_plugin_command(args_list: List[str]):
+    if not args_list or args_list[0] in ["list", "show"]:
+        print("[+] Installed Gemini / AGY CLI Extensions:")
+        found = False
+        for pdir in PLUGIN_DIRS:
+            if os.path.exists(pdir):
+                for item in os.listdir(pdir):
+                    full_path = os.path.join(pdir, item)
+                    if os.path.isdir(full_path):
+                        print(f"  - {item} [{full_path}]")
+                        found = True
+        if not found:
+            print("  (No plugins currently installed)")
+        return 0
+
+    sub = args_list[0]
+    if sub == "install":
+        if len(args_list) < 2:
+            print("Error: Usage: agy plugin install <git-url-or-package>")
+            return 1
+        url = args_list[1]
+        plugin_name = url.rstrip("/").split("/")[-1].replace(".git", "")
+        print(f"[*] Installing extension plugin '{plugin_name}' from {url}...")
+        
+        success = False
+        for pdir in PLUGIN_DIRS:
+            target_dir = os.path.join(pdir, plugin_name)
+            os.makedirs(pdir, exist_ok=True)
+            if os.path.exists(target_dir):
+                shutil.rmtree(target_dir, ignore_errors=True)
+            
+            res = subprocess.run(f"git clone {url} {target_dir}", shell=True, capture_output=True, text=True)
+            if res.returncode == 0:
+                print(f"[+] Plugin '{plugin_name}' successfully installed to {target_dir}")
+                success = True
+            else:
+                print(f"[!] Warning git clone to {target_dir}: {res.stderr.strip()}")
+                
+        if success:
+            print(f"[+] Extension plugin '{plugin_name}' is active across all environments.")
+            return 0
+        else:
+            print(f"[-] Failed to install plugin from {url}.")
+            return 1
+
+    elif sub in ["remove", "uninstall", "delete"]:
+        if len(args_list) < 2:
+            print("Error: Usage: agy plugin remove <plugin_name>")
+            return 1
+        name = args_list[1]
+        for pdir in PLUGIN_DIRS:
+            target_dir = os.path.join(pdir, name)
+            if os.path.exists(target_dir):
+                shutil.rmtree(target_dir, ignore_errors=True)
+                print(f"[+] Removed plugin '{name}' from {target_dir}")
+        return 0
+    else:
+        print(f"[-] Unknown plugin command: {sub}")
+        return 1
+
+def dispatch_command(target: str, cmd: str):
+    print(f"[*] Dispatching command to target [{target}]: {cmd}")
+    if target == "local":
+        res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        print("--- Output ---")
+        print(res.stdout)
+        if res.stderr:
+            print("--- Stderr ---")
+            print(res.stderr)
+        return res.returncode
+    elif target in ["dom0", "sys-agent"] or target.startswith("qube:"):
+        qube_target = target.replace("qube:", "")
+        has_qrexec = shutil.which("qrexec-client-vm") is not None
+        if not has_qrexec:
+            print(f"[*] Note: 'qrexec-client-vm' not present on host. Routing execution via virsh / local host...")
+            res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            print("--- Output ---")
+            print(res.stdout)
+            if res.stderr:
+                print("--- Stderr ---")
+                print(res.stderr)
+            return res.returncode
+        else:
+            qrexec_cmd = f"echo {json.dumps(cmd)} | qrexec-client-vm {qube_target} agent.Dom0Exec"
+            print(f"[*] Executing via Qrexec: {qrexec_cmd}")
+            res = subprocess.run(qrexec_cmd, shell=True, capture_output=True, text=True)
+            print(res.stdout)
+            if res.stderr:
+                print(res.stderr)
+            return res.returncode
+    else:
+        print(f"[-] Unknown target: {target}")
+        return 1
+
+def main():
+    parser = argparse.ArgumentParser(description="Agy - Universal Agentic CLI & RAG Assistant")
+    parser.add_argument("query", nargs="*", help="Natural language query or command search")
+    parser.add_argument("--json", action="store_true", help="Output results in JSON format")
+    parser.add_argument("--exec", action="store_true", help="Automatically execute top matched command")
+    parser.add_argument("--target", default="local", help="Target host/qube for execution (local, dom0, sys-agent, qube:<name>)")
+    parser.add_argument("--learn", action="store_true", help="Add new command entry to RAG database")
+    parser.add_argument("--cmd", help="Command string for --learn")
+    parser.add_argument("--summary", help="Summary for --learn")
+    parser.add_argument("--subsystem", default="custom", help="Subsystem for --learn")
+
+    args = parser.parse_args()
+    init_db()
+
+    if args.learn:
+        if not args.cmd or not args.summary:
+            print("Error: --cmd and --summary are required for --learn")
+            sys.exit(1)
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        keywords = re.findall(r'\w+', args.cmd.lower() + " " + args.summary.lower())
+        cursor.execute("""
+            INSERT INTO commands (subsystem, command, keywords, summary, example)
+            VALUES (?, ?, ?, ?, ?)
+        """, (args.subsystem, args.cmd, json.dumps(keywords), args.summary, args.cmd))
+        conn.commit()
+        conn.close()
+        print(f"[+] Learned new command in '{args.subsystem}': {args.cmd}")
+        sys.exit(0)
+
+    if not args.query:
+        parser.print_help()
+        sys.exit(0)
+
+    # Subcommand Interception for plugins
+    if args.query[0] == "plugin":
+        sys.exit(handle_plugin_command(args.query[1:]))
+
+    query_str = " ".join(args.query)
+    
+    # Check if direct command was passed
+    if args.query[0] in ["exec", "run"]:
+        dispatch_command(args.target, " ".join(args.query[1:]))
+        sys.exit(0)
+
+    matches = search_commands(query_str)
+
+    if args.json:
+        print(json.dumps(matches, indent=2))
+        sys.exit(0)
+
+    if not matches:
+        print(f"[-] No exact RAG match for: '{query_str}'")
+        print(f"[*] Fallback: Executing direct shell query...")
+        dispatch_command(args.target, query_str)
+        sys.exit(0)
+
+    top_match = matches[0]
+    print("\n=================================================================")
+    print(f" 🤖 AGY CLI RAG MATCH [Subsystem: {top_match['subsystem']}]")
+    print("=================================================================")
+    print(f" Recommended Command : {top_match['example']}")
+    print(f" Template Structure  : {top_match['command']}")
+    print(f" Summary             : {top_match['summary']}")
+    print("=================================================================\n")
+
+    if len(matches) > 1:
+        print("Related Commands:")
+        for idx, match in enumerate(matches[1:], 1):
+            print(f" [{idx}] {match['example']} - {match['summary']}")
+        print()
+
+    if args.exec:
+        dispatch_command(args.target, top_match['example'])
+    else:
+        try:
+            choice = input("Option: [e]xecute / [d]ispatch to dom0 / [c]opy / [a]bort -> ").strip().lower()
+            if choice in ['e', 'execute']:
+                dispatch_command("local", top_match['example'])
+            elif choice in ['d', 'dispatch']:
+                dispatch_command("dom0", top_match['example'])
+            elif choice in ['1', '2', '3', '4'] and (int(choice) < len(matches)):
+                selected = matches[int(choice)]
+                dispatch_command("local", selected['example'])
+            else:
+                print("[-] Execution cancelled.")
+        except (KeyboardInterrupt, EOFError):
+            print("\n[-] Cancelled.")
+
+if __name__ == "__main__":
+    main()

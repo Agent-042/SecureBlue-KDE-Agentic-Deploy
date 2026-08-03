@@ -1,0 +1,8 @@
+[org.kde.kdecoration2]
+# macOS-style stoplight buttons on the left.
+ButtonsOnLeft=close,minimize,maximize
+ButtonsOnRight=
+BorderSize=Normal
+
+[Compositing]
+OpenGLIsUnsafe=false

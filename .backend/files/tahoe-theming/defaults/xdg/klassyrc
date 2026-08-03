@@ -1,0 +1,12 @@
+[ButtonLayout]
+Preset=TrafficLights
+CornerRadius=12
+
+[Window]
+BorderSize=Normal
+DrawBackgroundGradient=false
+
+[Shadow]
+ShadowSize=35
+ShadowColor=0,0,0
+ShadowOpacity=0.4

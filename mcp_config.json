@@ -1,0 +1,192 @@
+{
+  "mcpServers": {
+    "notebook": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "git+https://github.com/gemini-cli-extensions/data-agent-kit-starter-pack.git",
+        "--mode=notebook"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "visualization": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "git+https://github.com/gemini-cli-extensions/data-agent-kit-starter-pack.git",
+        "--mode=visualization"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "bigquery": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "bigquery",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "spanner": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "spanner",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "alloydb-postgres-admin": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "alloydb-postgres-admin",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "alloydb-postgres": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "alloydb-postgres",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "cloud-sql-postgresql-admin": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "cloud-sql-postgres-admin",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "cloud-sql-postgresql": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "cloud-sql-postgres",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "knowledge_catalog": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "dataplex",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "dataproc": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "dataproc",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "serverless-spark": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "serverless-spark",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "bigtable": {
+      "command": "toolbox",
+      "args": [
+        "--prebuilt",
+        "bigtable",
+        "--stdio",
+        "--user-agent-metadata",
+        "datacloud.gemini-cli"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0385466726",
+        "GCP_PROJECT": "gen-lang-client-0385466726",
+        "GCP_REGION": "us-west1",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    }
+  }
+}

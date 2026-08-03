@@ -1,0 +1,20 @@
+# Ignore large binary executables
+node
+tmate
+ngrok
+kwallet*
+__pycache__/
+*.pyc
+*.so
+
+# Ignore SDK binaries and CLI downloads
+google-cloud-cli-linux-x86_64.tar.gz
+gcloud components install*
+google-cloud-sdk/
+Installation directory*
+
+# Ignore SDK binaries and CLI downloads
+google-cloud-cli-linux-x86_64.tar.gz
+gcloud components install*
+google-cloud-sdk/
+Installation directory*

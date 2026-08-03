@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: docs-readme/usr
+    destination: /usr

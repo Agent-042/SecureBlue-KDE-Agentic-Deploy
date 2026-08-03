@@ -1,0 +1,18 @@
+[Context]
+# Strip broad host access; keep Downloads and audio sockets.
+filesystems=!home;!host;xdg-download;xdg-run/pipewire-0;xdg-run/pulse
+# Remove camera/microphone/all device access.
+devices=!all
+# Prevent background execution / autostart.
+features=!background
+
+[Session Bus Policy]
+# Keep research browser secrets isolated from the host secret service.
+org.freedesktop.secrets=none
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
+
+[System Bus Policy]
+org.freedesktop.Avahi=none

@@ -1,0 +1,5 @@
+# Pre-seed /etc/skel with zero-config agent CLI templates pointing at local Ollama.
+type: files
+files:
+  - source: agent-stack-skel/skel
+    destination: /etc/skel

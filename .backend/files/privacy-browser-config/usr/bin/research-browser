@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# research-browser — isolated privacy browser launcher
+#
+# Launches the Mullvad Browser flatpak in a dedicated, sandboxed profile
+# that does not share cookies, certificates, or browsing state with the
+# host system or the enterprise Trivalent profile.
+#
+# If Mullvad Browser is unavailable, replace APP_ID with the Firefox
+# flatpak ID and copy /usr/share/doc/research-browser/firefox-fallback-user.js
+# into the target profile directory.
+
+set -euo pipefail
+
+APP_ID="net.mullvad.MullvadBrowser"
+PROFILE_DIR="${RESEARCH_BROWSER_PROFILE:-${HOME}/.var/app/${APP_ID}/data/research-browser}"
+
+# Ensure the dedicated profile directory exists before launch.
+mkdir -p "${PROFILE_DIR}"
+
+# Prevent leakage of enterprise proxy settings or host certificate bundles.
+unset -v HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
+unset -v http_proxy https_proxy all_proxy no_proxy
+unset -v SSL_CERT_FILE SSL_CERT_DIR CURL_CA_BUNDLE REQUESTS_CA_BUNDLE NODE_EXTRA_CA_CERTS
+
+# Prefer native Wayland and disable remote control via D-Bus for isolation.
+export MOZ_ENABLE_WAYLAND=1
+export MOZ_DBUS_REMOTE=0
+
+# Mullvad Browser ships with hardened defaults (anti-fingerprinting, no
+# telemetry). System DNS-over-TLS / systemd-resolved provides the hardened
+# DNS layer; do not override it here.
+exec flatpak run --branch=stable --arch=x86_64 "${APP_ID}" \
+  --profile "${PROFILE_DIR}" "$@"

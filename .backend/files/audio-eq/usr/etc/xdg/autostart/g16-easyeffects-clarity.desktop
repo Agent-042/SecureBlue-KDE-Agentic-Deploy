@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=G16 EasyEffects Speaker Clarity
+Comment=Start EasyEffects service and load the G16 Speaker Clarity preset
+Exec=/usr/bin/g16-easyeffects-autostart.sh
+Type=Application
+Terminal=false
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after-shell=true
+OnlyShowIn=KDE;GNOME;XFCE;

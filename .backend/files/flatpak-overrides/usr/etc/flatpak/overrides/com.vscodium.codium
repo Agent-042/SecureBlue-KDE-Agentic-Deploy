@@ -1,0 +1,21 @@
+[Context]
+# Code editor: allow network for extensions; strip device and background access.
+shared=network
+# Restrict to Documents and Downloads by default. Add 'home' only if you need
+# full home-directory access for code audits or repositories outside Documents.
+filesystems=!host;!home;xdg-documents;xdg-download
+# No arbitrary device access.
+devices=!all
+# Prevent background execution / autostart.
+features=!background
+
+[Session Bus Policy]
+# Keep editor secrets isolated from the host secret service.
+org.freedesktop.secrets=none
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
+
+[System Bus Policy]
+org.freedesktop.Avahi=none

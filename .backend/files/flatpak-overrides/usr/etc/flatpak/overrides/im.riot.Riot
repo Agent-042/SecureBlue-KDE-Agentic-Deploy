@@ -1,0 +1,21 @@
+[Context]
+# Matrix client: allow network; strip broad host/device access and background execution.
+shared=network
+# File transfers land in Downloads; block host-level access.
+filesystems=!host;!home;xdg-download
+# Video calls rely on the camera/mic xdg-desktop-portal rather than device=all.
+devices=!all
+# Prevent background execution / autostart.
+features=!background
+
+[Session Bus Policy]
+# Keep chat secrets isolated from the host secret service.
+org.freedesktop.secrets=none
+# Allow native notifications; block other desktop bus access.
+org.freedesktop.Notifications=talk
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
+
+[System Bus Policy]
+org.freedesktop.Avahi=none

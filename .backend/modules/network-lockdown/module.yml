@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: network-lockdown/usr
+    destination: /usr

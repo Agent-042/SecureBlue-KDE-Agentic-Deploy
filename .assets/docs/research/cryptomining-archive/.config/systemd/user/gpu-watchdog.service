@@ -1,0 +1,6 @@
+[Unit]
+Description=GPU utilization watchdog for alph-miner
+
+[Service]
+Type=oneshot
+ExecStart=%h/gpu_watchdog.sh

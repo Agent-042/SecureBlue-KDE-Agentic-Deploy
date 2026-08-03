@@ -1,0 +1,19 @@
+button.titlebutton, windowcontrols > button {
+    color: transparent;
+    min-width: 16px;
+    min-height: 16px;
+    border-radius: 100%;
+}
+windowcontrols > button {
+    padding: 0;
+    margin: 0 3px;
+}
+windowcontrols > button.close {
+    background: #ff5f57;
+}
+windowcontrols > button.minimize {
+    background: #febc2e;
+}
+windowcontrols > button.maximize {
+    background: #28c840;
+}

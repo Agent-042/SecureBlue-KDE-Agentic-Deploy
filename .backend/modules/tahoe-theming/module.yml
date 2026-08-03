@@ -1,0 +1,6 @@
+# macOS Tahoe-inspired system-wide theme for SecureBlue KDE Plasma 6.
+# Installs WhiteSur assets, system-wide XDG defaults, renamed .desktop
+# entries, and a lightweight first-login reset service.
+type: script
+scripts:
+  - install-tahoe-themes.sh

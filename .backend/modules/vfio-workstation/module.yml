@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: vfio-workstation/usr
+    destination: /usr

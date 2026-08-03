@@ -1,0 +1,22 @@
+[Context]
+# Audio DSP (EasyEffects): allow audio sockets and minimal PipeWire access,
+# but strip network, broad device access, and background execution.
+shared=!network
+sockets=pulseaudio
+# Minimal filesystem for the native PipeWire socket only.
+filesystems=!host;!home;xdg-run/pipewire-0
+# No arbitrary device access.
+devices=!all
+# Prevent background execution / autostart.
+features=!background
+
+[Session Bus Policy]
+# Audio DSP does not need desktop secrets or broad bus access.
+org.freedesktop.secrets=none
+org.freedesktop.Notifications=none
+org.kde.*=none
+org.gnome.*=none
+com.canonical.*=none
+
+[System Bus Policy]
+org.freedesktop.Avahi=none

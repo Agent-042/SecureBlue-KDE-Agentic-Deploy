@@ -1,0 +1,25 @@
+{
+  "policies": {
+    "_comment": "Fallback Firefox hardening policies used when Mullvad Browser is unavailable. These are applied system-wide only to a native Firefox install.",
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "DisableFirefoxAccounts": true,
+    "NoDefaultBookmarks": true,
+    "OfferToSaveLogins": false,
+    "PasswordManagerEnabled": false,
+    "DisableMasterPasswordCreation": true,
+    "DisableFormHistory": true,
+    "DNSOverHTTPS": {
+      "Enabled": true,
+      "ProviderURL": "https://dns.mullvad.net/dns-query"
+    },
+    "Proxy": {
+      "Mode": "none"
+    },
+    "Certificates": {
+      "ImportEnterpriseRoots": false,
+      "Install": []
+    }
+  }
+}

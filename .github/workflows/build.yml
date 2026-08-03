@@ -1,0 +1,59 @@
+name: Build SecureBlue-KDE-Agentic-Deploy Images
+
+on:
+  schedule:
+    # Rebuild weekly on Sundays at 00:00 UTC
+    - cron: '0 0 * * 0'
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '**.md'
+      - '.assets/docs/**'
+      - '.backend/swarm_ledger.json'
+      - 'push-live-status.sh'
+      - '.backend/scripts/legacy/**'
+      - '.github/**'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Push ${{ matrix.recipe }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        recipe:
+          - recipe.yml
+          - recipe-amd-workstation.yml
+          - recipe-intel-g16.yml
+    env:
+      # The cosign-generated signing key in COSIGN_PRIVATE_KEY has no password.
+      COSIGN_PASSWORD: ""
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push image
+        uses: blue-build/github-action@v1
+        env:
+          MACOS_ICONS_API_KEY: ${{ secrets.MACOS_ICONS_API_KEY }}
+        with:
+          recipe: ${{ matrix.recipe }}
+          working_directory: .backend
+          registry_token: ${{ github.token }}
+          cosign_private_key: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          pr_event_number: ${{ github.event.number }}

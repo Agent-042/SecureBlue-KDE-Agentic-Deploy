@@ -1,0 +1,4 @@
+type: files
+files:
+  - source: local-ai-amd-workstation/usr
+    destination: /usr

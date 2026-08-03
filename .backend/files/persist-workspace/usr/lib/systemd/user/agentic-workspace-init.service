@@ -1,0 +1,11 @@
+[Unit]
+Description=Bind the persistent Agentic-OS workspace into the user home
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/agentic-workspace-init.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
