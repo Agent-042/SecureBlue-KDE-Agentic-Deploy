@@ -62,7 +62,9 @@ echo "==========================================================================
 ATTEMPT=1
 until {
     update_proton_config
+    # Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
     rclone copy protondrive: "${DEST_FOLDER}" \
+        --fast-list \
         --transfers=16 \
         --checkers=16 \
         --drive-chunk-size=128M \

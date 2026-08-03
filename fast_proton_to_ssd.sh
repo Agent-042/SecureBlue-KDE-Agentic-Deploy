@@ -44,7 +44,9 @@ echo "[$(date -Iseconds)] Starting Resumable Proton -> SSD Downloader Engine..."
 while true; do
   refresh_proton_session
   echo "[$(date -Iseconds)] Streaming Proton Drive files to local NVMe SSD..."
+  # Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
   rclone copy protondrive: "$LOCAL_STAGE" \
+    --fast-list \
     --transfers=12 \
     --checkers=12 \
     --tpslimit=3 \

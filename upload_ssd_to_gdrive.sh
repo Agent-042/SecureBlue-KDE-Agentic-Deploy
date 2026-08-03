@@ -6,7 +6,9 @@ mkdir -p "$LOCAL_STAGE"
 
 echo "Starting local SSD to Google Drive upload ($LOCAL_STAGE -> gdrive:Proton_Drive_Migration)..."
 
+# Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
 exec rclone copy "$LOCAL_STAGE" gdrive:Proton_Drive_Migration \
+  --fast-list \
   --transfers=16 \
   --checkers=16 \
   --drive-chunk-size=128M \

@@ -50,7 +50,9 @@ trap cleanup SIGINT SIGTERM
 ATTEMPT=1
 
 # Fault-Recovery Loop: Loops until rclone exits with code 0
+# Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
 until rclone sync "${SRC_REMOTE}" "${DST_REMOTE}" \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --drive-chunk-size=128M \

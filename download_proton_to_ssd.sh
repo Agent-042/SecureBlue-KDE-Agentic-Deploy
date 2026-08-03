@@ -25,7 +25,9 @@ rclone config create protondrive protondrive username jack.derleth@protonmail.co
 echo "Starting secondary parallel download from Proton Drive to local SSD ($LOCAL_STAGE)..."
 
 # Run rclone copy from protondrive to local SSD
+# Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
 exec rclone copy protondrive: "$LOCAL_STAGE" \
+  --fast-list \
   --transfers=16 \
   --checkers=16 \
   --buffer-size=64M \

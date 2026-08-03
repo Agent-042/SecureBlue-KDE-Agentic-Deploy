@@ -11,7 +11,9 @@ mkdir -p "$LOCAL_STAGE"
 echo "[$(date -Iseconds)] Starting Max-Speed Resumable SSD -> Google Drive Uploader..."
 
 while true; do
+  # Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
   rclone copy "$LOCAL_STAGE" gdrive:Proton_Drive_Migration \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --drive-chunk-size=256M \

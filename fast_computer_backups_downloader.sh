@@ -15,7 +15,9 @@ LOG2="/var/log/fast_computer2_download.log"
 echo "[$(date -Iseconds)] Starting Parallel Extraction for Computer Backup 1 & 2..."
 
 # Launch Computer Backup 1 downloader
+# Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
 /root/rclone-custom copy proton_computer1: /var/tmp/Proton_Drive_Local_Staging/Computer_Backup_1 \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --tpslimit=12 \
@@ -33,7 +35,9 @@ echo "[$(date -Iseconds)] Starting Parallel Extraction for Computer Backup 1 & 2
 PID1=$!
 
 # Launch Computer Backup 2 downloader
+# Bolt ⚡: Added --fast-list to prevent N+1 query API bottlenecks and batch directory listings
 /root/rclone-custom copy proton_computer2: /var/tmp/Proton_Drive_Local_Staging/Computer_Backup_2 \
+    --fast-list \
     --transfers=16 \
     --checkers=16 \
     --tpslimit=12 \
