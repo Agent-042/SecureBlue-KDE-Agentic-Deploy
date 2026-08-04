@@ -9,6 +9,7 @@ import json
 import sqlite3
 import time
 import os
+import threading
 
 DB_PATH = "/tmp/omni_replay_buffer.db"
 LOG_JSONL = "/tmp/omni_telemetry.jsonl"
@@ -16,6 +17,8 @@ LOG_JSONL = "/tmp/omni_telemetry.jsonl"
 class TelemetryEngine:
     def __init__(self):
         self.init_sqlite()
+        # Thread synchronization lock to guarantee safe logging/commits from concurrent threads
+        self.lock = threading.Lock()
         # Create persistent JSONL append-only file handle for low I/O latency
         self.jsonl_file = open(LOG_JSONL, "a", encoding="utf-8")
 
@@ -53,17 +56,18 @@ class TelemetryEngine:
             "success": success
         }
         
-        # 1. Write to persistent JSONL stream and flush to minimize open/close I/O overhead
-        self.jsonl_file.write(json.dumps(event) + "\n")
-        self.jsonl_file.flush()
+        with self.lock:
+            # 1. Write to persistent JSONL stream and flush to minimize open/close I/O overhead
+            self.jsonl_file.write(json.dumps(event) + "\n")
+            self.jsonl_file.flush()
 
-        # 2. Store in persistent SQLite Replay Buffer (no reconnect overhead)
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
-        self.conn.commit()
+            # 2. Store in persistent SQLite Replay Buffer (no reconnect overhead)
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
+            self.conn.commit()
 
     def __del__(self):
         # Gracefully release resources upon engine destruction

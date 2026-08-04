@@ -1,0 +1,3 @@
+[submodule "SecureBlue-KDE-Agentic-Deploy"]
+	path = SecureBlue-KDE-Agentic-Deploy
+	url = https://github.com/Agent-042/SecureBlue-KDE-Agentic-Deploy.git
