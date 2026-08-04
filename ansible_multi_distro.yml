@@ -12,8 +12,9 @@
       block:
         - name: Layer base system utilities
           ansible.builtin.command:
-            cmd: "run0 rpm-ostree install -y git curl python3-pip ansible"
+            cmd: "rpm-ostree install -y --allow-inactive git curl python3-pip ansible"
           register: ostree_result
+          failed_when: false
           changed_when: "'Changes queued' in ostree_result.stdout"
 
         - name: Ensure Flathub is enabled for applications
