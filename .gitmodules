@@ -1,3 +1,7 @@
 [submodule "SecureBlue-KDE-Agentic-Deploy"]
 	path = SecureBlue-KDE-Agentic-Deploy
-	url = https://github.com/Agent-042/SecureBlue-KDE-Agentic-Deploy.git
+	url = ../SecureBlue-KDE-Agentic-Deploy.git
+
+[submodule "agentic-qubes-os"]
+	path = agentic-qubes-os
+	url = ../agentic-qubes-os.git
