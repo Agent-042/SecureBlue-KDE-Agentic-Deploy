@@ -9,7 +9,17 @@ import ctypes
 import os
 import time
 
-LIB_PATH = "/root/omni_pilot/libomni_core.so"
+# Resolve path to libomni_core.so:
+# 1. LIB_PATH environment variable
+# 2. Relative directory lookup
+# 3. Fallback to /root/omni_pilot/libomni_core.so
+LIB_PATH = os.environ.get("LIB_PATH")
+if not LIB_PATH:
+    rel_path = os.path.join(os.path.dirname(__file__), "libomni_core.so")
+    if os.path.exists(rel_path):
+        LIB_PATH = rel_path
+    else:
+        LIB_PATH = "/root/omni_pilot/libomni_core.so"
 
 class OmniFrameMetadata(ctypes.Structure):
     _fields_ = [

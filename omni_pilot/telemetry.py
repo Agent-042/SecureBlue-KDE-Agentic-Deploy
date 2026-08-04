@@ -3,6 +3,7 @@ omni_pilot/telemetry.py
 =======================
 Telemetry Logger & Continuous Replay Buffer (JSONL + SQLite).
 Records high-FPS session telemetry and distills successful execution paths.
+Optimized for high-frequency low-latency execution.
 """
 
 import json
@@ -15,7 +16,20 @@ LOG_JSONL = "/tmp/omni_telemetry.jsonl"
 
 class TelemetryEngine:
     def __init__(self):
+        # Initialize SQLite database schema
         self.init_sqlite()
+
+        # 1. Persistent SQLite connection with check_same_thread=False
+        # prevents regressions when shared/called across modules or threads.
+        self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        self.cursor = self.conn.cursor()
+
+        # Enable WAL mode and NORMAL synchronous configuration to optimize high-frequency logging
+        self.cursor.execute("PRAGMA journal_mode=WAL;")
+        self.cursor.execute("PRAGMA synchronous=NORMAL;")
+
+        # 2. Persistent JSONL file handle to avoid the overhead of reopening the file on every event
+        self.jsonl_file = open(LOG_JSONL, "a", encoding="utf-8")
 
     def init_sqlite(self):
         conn = sqlite3.connect(DB_PATH)
@@ -45,16 +59,30 @@ class TelemetryEngine:
             "success": success
         }
         
-        # 1. Write to JSONL
-        with open(LOG_JSONL, "a") as f:
-            f.write(json.dumps(event) + "\n")
+        # 1. Write to JSONL using persistent file handle
+        self.jsonl_file.write(json.dumps(event) + "\n")
+        self.jsonl_file.flush()
 
-        # 2. Store in SQLite Replay Buffer
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
+        # 2. Store in SQLite Replay Buffer using persistent connection
+        self.cursor.execute("""
             INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
             VALUES (?, ?, ?, ?, ?, ?)
         """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
-        conn.commit()
-        conn.close()
+        self.conn.commit()
+
+    def close(self):
+        """Clean up and close persistent file and DB handles."""
+        try:
+            if hasattr(self, "jsonl_file") and self.jsonl_file and not self.jsonl_file.closed:
+                self.jsonl_file.close()
+        except Exception:
+            pass
+
+        try:
+            if hasattr(self, "conn") and self.conn:
+                self.conn.close()
+        except Exception:
+            pass
+
+    def __del__(self):
+        self.close()
