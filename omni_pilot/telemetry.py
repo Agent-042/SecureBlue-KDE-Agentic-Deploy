@@ -16,10 +16,19 @@ LOG_JSONL = "/tmp/omni_telemetry.jsonl"
 class TelemetryEngine:
     def __init__(self):
         self.init_sqlite()
+        # Create persistent JSONL append-only file handle for low I/O latency
+        self.jsonl_file = open(LOG_JSONL, "a", encoding="utf-8")
 
     def init_sqlite(self):
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        # Create persistent SQLite connection with check_same_thread=False
+        # to prevent thread-safety regressions when shared across modules
+        self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+
+        # Enable Write-Ahead Logging (WAL) and synchronous normal mode for high-FPS performance
+        self.conn.execute("PRAGMA journal_mode=WAL;")
+        self.conn.execute("PRAGMA synchronous=NORMAL;")
+
+        cursor = self.conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS replay_buffer (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,8 +40,7 @@ class TelemetryEngine:
                 success INTEGER
             )
         """)
-        conn.commit()
-        conn.close()
+        self.conn.commit()
 
     def log_event(self, task_goal, state_snapshot, action_taken, latency_ms, success=True):
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -45,16 +53,27 @@ class TelemetryEngine:
             "success": success
         }
         
-        # 1. Write to JSONL
-        with open(LOG_JSONL, "a") as f:
-            f.write(json.dumps(event) + "\n")
+        # 1. Write to persistent JSONL stream and flush to minimize open/close I/O overhead
+        self.jsonl_file.write(json.dumps(event) + "\n")
+        self.jsonl_file.flush()
 
-        # 2. Store in SQLite Replay Buffer
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        # 2. Store in persistent SQLite Replay Buffer (no reconnect overhead)
+        cursor = self.conn.cursor()
         cursor.execute("""
             INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
             VALUES (?, ?, ?, ?, ?, ?)
         """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
-        conn.commit()
-        conn.close()
+        self.conn.commit()
+
+    def __del__(self):
+        # Gracefully release resources upon engine destruction
+        try:
+            if hasattr(self, 'jsonl_file') and self.jsonl_file:
+                self.jsonl_file.close()
+        except Exception:
+            pass
+        try:
+            if hasattr(self, 'conn') and self.conn:
+                self.conn.close()
+        except Exception:
+            pass

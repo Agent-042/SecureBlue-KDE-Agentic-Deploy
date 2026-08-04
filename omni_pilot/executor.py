@@ -8,8 +8,15 @@ with fallback to RFB 3.8 VNC and gui_pilot.py VM input injection.
 import ctypes
 import subprocess
 import time
+import os
 
-LIB_PATH = "/root/omni_pilot/libomni_core.so"
+LIB_PATH = os.environ.get("LIB_PATH")
+if not LIB_PATH:
+    _relative_path = os.path.join(os.path.dirname(__file__), "libomni_core.so")
+    if os.path.exists(_relative_path):
+        LIB_PATH = _relative_path
+    else:
+        LIB_PATH = "/root/omni_pilot/libomni_core.so"
 
 class OmniPoint(ctypes.Structure):
     _fields_ = [
