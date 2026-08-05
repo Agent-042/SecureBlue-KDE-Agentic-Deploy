@@ -9,18 +9,26 @@ import json
 import sqlite3
 import time
 import os
+import threading
+import atexit
 
 DB_PATH = "/tmp/omni_replay_buffer.db"
 LOG_JSONL = "/tmp/omni_telemetry.jsonl"
 
 class TelemetryEngine:
     def __init__(self):
+        # Thread lock for concurrent writes
+        self.lock = threading.Lock()
+
         # Persistent JSONL file handle
         self.jsonl_file = open(LOG_JSONL, "a")
 
         # Persistent SQLite connection
         self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         self.init_sqlite()
+
+        # Guarantee deterministic cleanup
+        atexit.register(self.close)
 
     def init_sqlite(self):
         cursor = self.conn.cursor()
@@ -53,17 +61,18 @@ class TelemetryEngine:
             "success": success
         }
         
-        # 1. Write to JSONL using persistent handle
-        self.jsonl_file.write(json.dumps(event) + "\n")
-        self.jsonl_file.flush()
+        with self.lock:
+            # 1. Write to JSONL using persistent handle
+            self.jsonl_file.write(json.dumps(event) + "\n")
+            self.jsonl_file.flush()
 
-        # 2. Store in SQLite Replay Buffer using persistent connection
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
-        self.conn.commit()
+            # 2. Store in SQLite Replay Buffer using persistent connection
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
+            self.conn.commit()
 
     def close(self):
         if hasattr(self, 'jsonl_file'):
