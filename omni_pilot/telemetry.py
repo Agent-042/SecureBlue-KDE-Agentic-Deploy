@@ -9,12 +9,15 @@ import json
 import sqlite3
 import time
 import os
+import threading
 
 DB_PATH = "/tmp/omni_replay_buffer.db"
 LOG_JSONL = "/tmp/omni_telemetry.jsonl"
 
 class TelemetryEngine:
     def __init__(self):
+        # Create a thread lock to prevent concurrent database or file write conflicts
+        self.lock = threading.Lock()
         self.init_sqlite()
         # Initialize persistent JSONL file handle to avoid repeated open/close system calls
         self.jsonl_file = open(LOG_JSONL, "a", encoding="utf-8")
@@ -52,17 +55,18 @@ class TelemetryEngine:
             "success": success
         }
         
-        # 1. Write to JSONL (using persistent file handle)
-        self.jsonl_file.write(json.dumps(event) + "\n")
-        self.jsonl_file.flush()
+        with self.lock:
+            # 1. Write to JSONL (using persistent file handle)
+            self.jsonl_file.write(json.dumps(event) + "\n")
+            self.jsonl_file.flush()
 
-        # 2. Store in SQLite Replay Buffer (using persistent connection)
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
-        self.conn.commit()
+            # 2. Store in SQLite Replay Buffer (using persistent connection)
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
+            self.conn.commit()
 
     def __del__(self):
         try:
