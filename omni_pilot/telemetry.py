@@ -10,7 +10,6 @@ import sqlite3
 import time
 import os
 import threading
-import atexit
 
 DB_PATH = "/tmp/omni_replay_buffer.db"
 LOG_JSONL = "/tmp/omni_telemetry.jsonl"
@@ -26,9 +25,6 @@ class TelemetryEngine:
         # Persistent SQLite connection
         self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         self.init_sqlite()
-
-        # Guarantee deterministic cleanup
-        atexit.register(self.close)
 
     def init_sqlite(self):
         cursor = self.conn.cursor()
