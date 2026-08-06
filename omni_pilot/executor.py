@@ -6,10 +6,26 @@ with fallback to RFB 3.8 VNC and gui_pilot.py VM input injection.
 """
 
 import ctypes
+import os
 import subprocess
 import time
 
-LIB_PATH = "/root/omni_pilot/libomni_core.so"
+def _resolve_lib_path():
+    # 1. check LIB_PATH env var
+    env_path = os.environ.get("LIB_PATH")
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    # 2. check relative lookup
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    rel_path = os.path.join(current_dir, "libomni_core.so")
+    if os.path.exists(rel_path):
+        return rel_path
+
+    # 3. fallback
+    return "/root/omni_pilot/libomni_core.so"
+
+LIB_PATH = _resolve_lib_path()
 
 class OmniPoint(ctypes.Structure):
     _fields_ = [
