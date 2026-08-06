@@ -9,7 +9,9 @@ import ctypes
 import subprocess
 import time
 
-LIB_PATH = "/root/omni_pilot/libomni_core.so"
+import os
+
+LIB_PATH = os.environ.get("LIB_PATH", "/root/omni_pilot/libomni_core.so")
 
 class OmniPoint(ctypes.Structure):
     _fields_ = [
