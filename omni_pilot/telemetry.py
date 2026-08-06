@@ -9,17 +9,22 @@ import json
 import sqlite3
 import time
 import os
+import threading
 
 DB_PATH = "/tmp/omni_replay_buffer.db"
 LOG_JSONL = "/tmp/omni_telemetry.jsonl"
 
 class TelemetryEngine:
     def __init__(self):
+        self._lock = threading.Lock()
+        self._conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        self._conn.execute("PRAGMA journal_mode=WAL")
+        self._conn.execute("PRAGMA synchronous=NORMAL")
+        self._file = open(LOG_JSONL, "a")
         self.init_sqlite()
 
     def init_sqlite(self):
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        cursor = self._conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS replay_buffer (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,8 +36,7 @@ class TelemetryEngine:
                 success INTEGER
             )
         """)
-        conn.commit()
-        conn.close()
+        self._conn.commit()
 
     def log_event(self, task_goal, state_snapshot, action_taken, latency_ms, success=True):
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -45,16 +49,32 @@ class TelemetryEngine:
             "success": success
         }
         
-        # 1. Write to JSONL
-        with open(LOG_JSONL, "a") as f:
-            f.write(json.dumps(event) + "\n")
+        event_str = json.dumps(event) + "\n"
+        state_str = json.dumps(state_snapshot)
+        action_str = json.dumps(action_taken)
+        success_int = 1 if success else 0
 
-        # 2. Store in SQLite Replay Buffer
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (timestamp, task_goal, json.dumps(state_snapshot), json.dumps(action_taken), latency_ms, 1 if success else 0))
-        conn.commit()
-        conn.close()
+        with self._lock:
+            # 1. Write to JSONL
+            self._file.write(event_str)
+            self._file.flush()
+
+            # 2. Store in SQLite Replay Buffer
+            self._conn.execute("""
+                INSERT INTO replay_buffer (timestamp_iso, task_goal, state_snapshot, action_taken, latency_ms, success)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (timestamp, task_goal, state_str, action_str, latency_ms, success_int))
+            self._conn.commit()
+
+    def close(self):
+        with self._lock:
+            if self._file and not self._file.closed:
+                self._file.close()
+            if self._conn:
+                self._conn.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except:
+            pass
