@@ -33,42 +33,6 @@
 
 ---
 
-## 2. Plain-Text Credentials & Key Inventory
-
-> [!IMPORTANT]
-> The following credentials and API keys are stored in plain text per your request for seamless context handoff between Antigravity CLI and Gemini CLI across Google Cloud Shell, remote nodes, and local instances:
-
-```env
-# ==============================================================================
-# GITHUB & GCP CREDENTIALS
-# ==============================================================================
-GITHUB_PAT=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
-GCP_PROJECT_ID=gen-lang-client-0385466726
-GCP_PROJECT_NUMBER=245296575460
-GCP_REGION=us-west1
-BIGQUERY_LOCATION=US
-VERTEX_AI_RAG_CORPUS_ID=projects/245296575460/locations/us-west1/ragCorpora/2305843009213693952
-GCP_SECRET_MANAGER_NAME=github-pat-agy
-
-# ==============================================================================
-# SYSTEM & ROUTER PASSWORDS
-# ==============================================================================
-OPENWRT_ROUTER_PASSWORD=Daddy-Cum-Zaddy!@#
-HOST_BACKSTAGE_PASSWORD=Lick-My-Ass!@#
-HONEYPOT_WIFI_WPA2_KEY=tag82358235
-
-# ==============================================================================
-# MULLVAD WIREGUARD VPN KEYS & ENDPOINTS
-# ==============================================================================
-MULLVAD_WG_PRIVATE_KEY=SKPpzGfUzIf+C4vtV4KO7e4ekkDOdemSDcpZAuSg+GU=
-MULLVAD_WG_PEER_PUBLIC_KEY=x6eE8E9i9Rk1hB4fJmJ2Q0kK1+E9R1G/84nC0G+XwWw=
-MULLVAD_WG_ENDPOINT=198.54.135.202:51820
-MULLVAD_WG_INTERNAL_IP=10.64.0.1/32
-MULLVAD_DNS_SERVER=10.64.0.1
-```
-
----
-
 ## 3. Co-Execution & Integration Handshake
 
 - **Shared Configuration Path**: `~/.gemini/`
