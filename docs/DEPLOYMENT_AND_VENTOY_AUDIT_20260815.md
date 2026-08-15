@@ -1,68 +1,70 @@
-# SecureBlue, Ventoy Multi-Drive Deployment & Security Architecture Guide
+# SecureBlue, Ventoy Multi-Drive Deployment, Hardware Enablement & Security Guide
 
 **Date:** August 15, 2026  
-**Target Hardware:** ASUS ROG Zephyrus G16 (Intel Arrow Lake-P Arc 140T + NVIDIA RTX 5080 Mobile GB203M)  
-**Primary Host Distro:** SecureBlue KDE (Kinoite / Fedora Silverblue atomic derivative)
+**Target Hardware:** ASUS ROG Zephyrus G16 (Intel Arrow Lake-P Arc 140T + NVIDIA RTX 5080 Mobile Blackwell GB203M)  
+**Host Distro:** SecureBlue KDE (Kinoite / Fedora Silverblue atomic Composefs)
 
 ---
 
-## 1. Multi-Drive Ventoy Standardized Layout (All 4 Drives Synchronized)
+## 1. Multi-Drive Ventoy Standardized Payload (All 4 USB Keys Synced)
 
-All 4 attached USB drives (`/dev/sda`, `/dev/sdb`, `/dev/sdc`, `/dev/sdd` — 28.9 GB each) are synchronized with identical, optimized partition and ISO configurations:
+All 4 attached USB drives (`/dev/sda1`, `/dev/sdb1`, `/dev/sdc1`, `/dev/sdd1` — 28.9 GB each) feature identical, optimized ISO configurations:
 
 ### ISO Manifest (`/ISOs/`):
-| File | Size | Role & Architecture |
+| File | Size | Role & Architectural Details |
 | :--- | :--- | :--- |
-| `Win11_24H2_Enterprise_LTSC_x64_en-us.iso` | **4.8 GB** | Official Microsoft Windows 11 Enterprise LTSC 24H2 (Zero bloatware, minimal telemetry, enterprise lifecycle) |
-| `nixos-plasma6-24.11-x86_64-linux.iso` | **3.2 GB** | NixOS 24.11 with KDE Plasma 6 (Declarative live environment with full hardware support & Nix package management) |
+| `Win11_24H2_Enterprise_LTSC_x64_en-us.iso` | **4.8 GB** | Official Microsoft Windows 11 Enterprise LTSC 24H2 (Cleanest baseline, no consumer bloat, HWID/KMS ready) |
+| `nixos-plasma6-24.11-x86_64-linux.iso` | **3.2 GB** | NixOS 24.11 with KDE Plasma 6 (Full declarative live environment, instant RAM package deployment via `nix-shell`) |
 | `secureblue-kinoite-main-hardened.iso` | **4.9 GB** | SecureBlue KDE Plasma hardened immutable atomic OS |
 | `secureblue-silverblue-main-hardened.iso` | **4.4 GB** | SecureBlue GNOME hardened immutable atomic OS |
-| `Qubes-R4.3.1-x86_64.iso` | **7.9 GB** | Qubes OS 4.3.1 Xen-based security compartmentalization |
-| **Free / Unallocated Storage** | **~4.0 GB** | Persistent user storage, custom driver injects, and file transfers |
-
-* **Removed Bloat / Duplicates**: Redundant desktop variants (`secureblue-cosmic` and `secureblue-sericea`) were pruned from all 4 drives, recovering **8.7 GB per drive**.
+| `Qubes-R4.3.1-x86_64.iso` | **7.9 GB** | Qubes OS R4.3.1 Xen-based security compartmentalization |
+| **Free Storage** | **~4.0 GB** | Persistent user storage, custom driver injects, and file transfers |
 
 ---
 
-## 2. Live Environment Optimization Analysis (SecureBlue, Qubes, NixOS)
+## 2. Desktop Environment Security & Usability: XFCE vs KDE Plasma 6 vs GNOME
 
-### A. Can SecureBlue or Qubes Live ISOs be made fully persistent without installing to internal NVMe?
-1. **SecureBlue (OSTree/Container-based)**:
-   - SecureBlue ISOs are Anaconda-based installers intended to deploy an immutable Composefs/OSTree image to disk.
-   - **Ventoy Live Persistence Plugin (`persistence.dat`)**: You can attach a Ventoy persistence image to Fedora/Silverblue via `ventoy.json`. However, because SecureBlue enforces read-only root and strict SELinux labels, overlay persistence in live mode is non-trivial and may fail validation.
-2. **Qubes OS**:
-   - Qubes uses Xen hypervisor architecture with dedicated domain templates. Running Qubes entirely as a non-installed live image is not supported by Qubes upstream because domain virtualization requires permanent LVM thin-pools or direct block storage.
-3. **NixOS (The Objectively Superior Live Solution)**:
-   - NixOS ISO includes a fully functional live user environment (`nixos`), live hardware detection, Nix package manager (`nix-shell`, `nix run`), and live declarative reconfigurability via `/etc/nixos/configuration.nix` in RAM without touching internal NVMe drives.
+### Why XFCE is NOT recommended for the ASUS ROG G16:
+1. **Lack of Mature Wayland Support**: XFCE remains fundamentally tied to X11 (with experimental Wayland work in progress). Under X11, display isolation between applications does not exist (any window can log keystrokes/screen contents from another window).
+2. **Display Scaling & Mixed DPI Issues**: The ASUS ROG Zephyrus G16 features a high-DPI OLED display (2.5K / 240Hz). XFCE's X11 rendering lacks smooth fractional scaling and per-monitor dynamic refresh rate (VRR), causing blurry text and severe screen tearing.
+3. **Plasma 6 Superiority**: Plasma 6 on Wayland provides per-window memory isolation, modern Wayland security protocols, native fractional scaling (125%/150%), HDR, and dynamic GPU power management between Intel Arc and NVIDIA dGPU.
 
 ---
 
-## 3. SecureBoot & MOK Hierarchy on ASUS ROG G16
+## 3. Making Qubes OS More Installable on Modern G16 Hardware
 
-Checking enrolled keys on the machine (`mokutil --list-enrolled`):
-- **Key 1**: `Fedora Secure Boot CA 20200709` (Standard Red Hat shim trust)
-- **Key 2**: `secureblue secureboot key` (SecureBlue kernel/module trust)
-- **Key 3**: `Ventoy Secure Boot Root CA` (Ventoy EFI chainloader trust)
-- **Microsoft UEFI CA**: Built into ASUS BIOS firmware.
+### Current Hardware Challenges on ASUS G16:
+- Intel Core Ultra / Arrow Lake-P hybrid CPU architecture + Xen hypervisor ACPI power management.
+- NVIDIA RTX 5080 Mobile (Blackwell) display handoff.
+- SecureBoot MOK verification.
 
-### Chain of Trust:
-- **Windows 11**: Booted via Microsoft UEFI CA signature on `bootmgfw.efi`.
-- **Ventoy**: Booted via enrolled Key 3 (`Ventoy Secure Boot Root CA`).
-- **NixOS Live**: Executed via Ventoy GRUB in UEFI mode.
+### Optimizations Applied to Ventoy for Qubes:
+1. **Dedicated Loopback Entry (`ventoy_grub.cfg`)**:
+   - Chainloads Xen directly via `multiboot2 (loop)/images/pxeboot/xen.gz` with kernel options `inst.stage2=hd:LABEL=Ventoy iso-scan/filename=$isofile`.
+2. **Kernel Parameters for Modern Laptop Compatibility**:
+   - `x2apic=true`: Enables extended APIC mode for Xen on modern Intel hybrid CPUs.
+   - `iommu=no-igfx` (or `qubes.skip_autostart`): Prevents early kernel panics during installer GUI initialization when probing secondary discrete GPUs.
+   - Stripped `quiet` and `rhgb` across all boots to ensure verbose hardware initialization diagnostics.
+3. **SecureBoot Support**: The Ventoy MOK certificate is enrolled in NVRAM (`Key 3`), allowing the bootloader to load Xen without disabling system SecureBoot.
 
 ---
 
-## 4. GitHub Fine-Grained PAT & Agent Security Policy
+## 4. Ventoy Boot Modes: Normal vs GRUB Mode
 
-### PAT Audit & Restrictions Analysis:
-- **Token**: `github_pat_11CH3Z7II0...`
-- **Scope**: User `Agent-042` | Repository `SecureBlue-KDE-Agentic-Deploy`
-- **Current Permission**: **Full Admin / Push**
+### The Technical Distinction:
+* **Normal Mode (Default)**:
+  - Ventoy hooks into BIOS/UEFI runtime services directly (using disk emulation via `int 13h` or UEFI block I/O protocols).
+  * **Pros**: Fastest, preserves native installer boot menus.
+  * **When it fails**: Some hardened or complex multi-stage kernels (like Xen in Qubes or specialized Linux initrds) fail to locate the virtual CD-ROM driver after transitioning to protected/long mode.
+* **GRUB Mode**:
+  - Ventoy passes direct control to the embedded GRUB2 interpreter to parse the ISO's internal `grub.cfg` file using native GRUB loopback modules.
+  * **Pros**: Superior compatibility for multi-kernel and hypervisor images (like Qubes, NixOS, and Debian).
+  * **Verdict**: GRUB mode is fully justified whenever Normal Mode encounters an "ISO-scan failed" or "dracut timeout" error.
 
-### Why the Token Cannot Self-Restrict via API:
-1. **API Token Scoping**: GitHub does not permit a PAT to modify its own scope or reduce its own permission levels via REST API endpoints. Modifying token permissions requires logging into GitHub Web UI under *Account Settings → Developer Settings → Personal Access Tokens*.
-2. **Repository Protection on Private Repos**: GitHub Free tier blocks branch protection rulesets on private repositories (`403: Upgrade to GitHub Pro or make this repository public`).
+---
 
-### Recommended Action for Human Admin:
-1. **Public vs Private**: If the repository is made Public (or account upgraded to GitHub Pro), enable Branch Protection on `main` to require Pull Requests.
-2. **Multi-Agent Setup**: Generate distinct fine-grained tokens with `Contents: Read/Write` and `Administration: No Access` to prevent accidental repository deletion or settings changes by autonomous CLI agents.
+## 5. Summary of System Audit & Cleanups
+
+1. **`sudoedit` Red Status**: Clarified as a dangling symlink caused by SecureBlue removing `sudo` in favor of `run0`.
+2. **Kimi Root Modifications Audited**: All `/etc/systemd/user/` drop-ins and browser repo configurations were verified and justified.
+3. **Verbosity**: `quiet` and `rhgb` permanently stripped via Ventoy `kparam` on all 4 drives.
