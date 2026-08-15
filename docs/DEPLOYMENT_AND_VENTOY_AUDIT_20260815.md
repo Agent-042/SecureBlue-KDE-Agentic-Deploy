@@ -1,70 +1,144 @@
 # SecureBlue, Ventoy Multi-Drive Deployment, Hardware Enablement & Security Guide
 
-**Date:** August 15, 2026  
-**Target Hardware:** ASUS ROG Zephyrus G16 (Intel Arrow Lake-P Arc 140T + NVIDIA RTX 5080 Mobile Blackwell GB203M)  
+**Date:** August 15, 2026
+**Target Hardware:** ASUS ROG Zephyrus G16 (Intel Arrow Lake-P Arc 140T + NVIDIA RTX 5080 Mobile Blackwell GB203M)
 **Host Distro:** SecureBlue KDE (Kinoite / Fedora Silverblue atomic Composefs)
+**Agentic Session:** Antigravity (Google DeepMind) — root terminal access, multi-session
 
 ---
 
-## 1. Multi-Drive Ventoy Standardized Payload (All 4 USB Keys Synced)
+## 1. Ventoy ISO Manifest (All 4 USB Keys — 28.9 GB each)
 
-All 4 attached USB drives (`/dev/sda1`, `/dev/sdb1`, `/dev/sdc1`, `/dev/sdd1` — 28.9 GB each) feature identical, optimized ISO configurations:
+All four USB drives (`/dev/sda1–sdd1`) are kept in sync with identical payloads.
 
-### ISO Manifest (`/ISOs/`):
-| File | Size | Role & Architectural Details |
-| :--- | :--- | :--- |
-| `Win11_24H2_Enterprise_LTSC_x64_en-us.iso` | **4.8 GB** | Official Microsoft Windows 11 Enterprise LTSC 24H2 (Cleanest baseline, no consumer bloat, HWID/KMS ready) |
-| `nixos-plasma6-24.11-x86_64-linux.iso` | **3.2 GB** | NixOS 24.11 with KDE Plasma 6 (Full declarative live environment, instant RAM package deployment via `nix-shell`) |
-| `secureblue-kinoite-main-hardened.iso` | **4.9 GB** | SecureBlue KDE Plasma hardened immutable atomic OS |
-| `secureblue-silverblue-main-hardened.iso` | **4.4 GB** | SecureBlue GNOME hardened immutable atomic OS |
-| `Qubes-R4.3.1-x86_64.iso` | **7.9 GB** | Qubes OS R4.3.1 Xen-based security compartmentalization |
-| **Free Storage** | **~4.0 GB** | Persistent user storage, custom driver injects, and file transfers |
+| File | Size | Boot Method | Role |
+|:-----|:-----|:-----------|:-----|
+| `Win11_24H2_Enterprise_LTSC_x64_en-us.iso` | 4.8 GB | **Normal Mode** (UEFI WinPE) | Windows 11 Enterprise LTSC 24H2 — official clean media, hardware bypass enabled |
+| `nixos-plasma6-24.11-x86_64-linux.iso` | 3.2 GB | **GRUB Mode** (loopback.cfg) | NixOS 24.11 KDE Plasma 6 — fully declarative, RAM-usable live OS |
+| `secureblue-kinoite-main-hardened.iso` | 4.9 GB | **GRUB Mode** (linux/initrd) | SecureBlue KDE Plasma 6 Hardened immutable atomic OS |
+| `secureblue-silverblue-main-hardened.iso` | 4.4 GB | **GRUB Mode** (linux/initrd) | SecureBlue GNOME Hardened immutable atomic OS |
+| `Qubes-R4.3.1-x86_64.iso` | 7.9 GB | **GRUB Mode** (multiboot2/Xen) | Qubes OS R4.3.1 Xen hypervisor — requires GRUB multiboot2 |
+| `tails-amd64-7.10.1.img` | 1.79 GB | **Normal Mode** (.img native) | Tails 7.10.1 anonymous live OS — persistence-capable |
 
----
+**Total used: ~27 GB | Free: ~2 GB per drive after Tails sync**
 
-## 2. Desktop Environment Security & Usability: XFCE vs KDE Plasma 6 vs GNOME
-
-### Why XFCE is NOT recommended for the ASUS ROG G16:
-1. **Lack of Mature Wayland Support**: XFCE remains fundamentally tied to X11 (with experimental Wayland work in progress). Under X11, display isolation between applications does not exist (any window can log keystrokes/screen contents from another window).
-2. **Display Scaling & Mixed DPI Issues**: The ASUS ROG Zephyrus G16 features a high-DPI OLED display (2.5K / 240Hz). XFCE's X11 rendering lacks smooth fractional scaling and per-monitor dynamic refresh rate (VRR), causing blurry text and severe screen tearing.
-3. **Plasma 6 Superiority**: Plasma 6 on Wayland provides per-window memory isolation, modern Wayland security protocols, native fractional scaling (125%/150%), HDR, and dynamic GPU power management between Intel Arc and NVIDIA dGPU.
+> Tails is distributed as a raw `.img` disk image (not ISO) — Ventoy handles it via native `img_pt` mode (Normal Mode). Do NOT attempt to GRUB-boot Tails.
 
 ---
 
-## 3. Making Qubes OS More Installable on Modern G16 Hardware
+## 2. Ventoy Configuration (ventoy.json key settings)
 
-### Current Hardware Challenges on ASUS G16:
-- Intel Core Ultra / Arrow Lake-P hybrid CPU architecture + Xen hypervisor ACPI power management.
-- NVIDIA RTX 5080 Mobile (Blackwell) display handoff.
-- SecureBoot MOK verification.
+```json
+"VTOY_DEFAULT_MENU_MODE": "2"   // GRUB mode is now the DEFAULT boot path
+"VTOY_SECONDARY_BOOT_MENU": "1" // Secondary menu still accessible for Normal Mode
+"VTOY_WIN11_BYPASS_CHECK": "1"  // Windows 11 TPM/CPU bypass enabled
+"VTOY_DEFAULT_HIGH_RESOLUTION": "1"
+"VTOY_GFX_MODE": "1920x1080;1600x1200;1366x768;1024x768"
+"VTOY_MENU_TIMEOUT": "15"       // 15s countdown to default selection
+```
 
-### Optimizations Applied to Ventoy for Qubes:
-1. **Dedicated Loopback Entry (`ventoy_grub.cfg`)**:
-   - Chainloads Xen directly via `multiboot2 (loop)/images/pxeboot/xen.gz` with kernel options `inst.stage2=hd:LABEL=Ventoy iso-scan/filename=$isofile`.
-2. **Kernel Parameters for Modern Laptop Compatibility**:
-   - `x2apic=true`: Enables extended APIC mode for Xen on modern Intel hybrid CPUs.
-   - `iommu=no-igfx` (or `qubes.skip_autostart`): Prevents early kernel panics during installer GUI initialization when probing secondary discrete GPUs.
-   - Stripped `quiet` and `rhgb` across all boots to ensure verbose hardware initialization diagnostics.
-3. **SecureBoot Support**: The Ventoy MOK certificate is enrolled in NVRAM (`Key 3`), allowing the bootloader to load Xen without disabling system SecureBoot.
-
----
-
-## 4. Ventoy Boot Modes: Normal vs GRUB Mode
-
-### The Technical Distinction:
-* **Normal Mode (Default)**:
-  - Ventoy hooks into BIOS/UEFI runtime services directly (using disk emulation via `int 13h` or UEFI block I/O protocols).
-  * **Pros**: Fastest, preserves native installer boot menus.
-  * **When it fails**: Some hardened or complex multi-stage kernels (like Xen in Qubes or specialized Linux initrds) fail to locate the virtual CD-ROM driver after transitioning to protected/long mode.
-* **GRUB Mode**:
-  - Ventoy passes direct control to the embedded GRUB2 interpreter to parse the ISO's internal `grub.cfg` file using native GRUB loopback modules.
-  * **Pros**: Superior compatibility for multi-kernel and hypervisor images (like Qubes, NixOS, and Debian).
-  * **Verdict**: GRUB mode is fully justified whenever Normal Mode encounters an "ISO-scan failed" or "dracut timeout" error.
+**kparam (global kernel flags stripped from all Linux ISOs):**
+- `-quiet` — removes quiet boot suppression → full verbose output enforced
+- `-rhgb` — removes Red Hat graphical boot → text console log visible at all times
 
 ---
 
-## 5. Summary of System Audit & Cleanups
+## 3. ventoy_grub.cfg — Boot Mode Architecture
 
-1. **`sudoedit` Red Status**: Clarified as a dangling symlink caused by SecureBlue removing `sudo` in favor of `run0`.
-2. **Kimi Root Modifications Audited**: All `/etc/systemd/user/` drop-ins and browser repo configurations were verified and justified.
-3. **Verbosity**: `quiet` and `rhgb` permanently stripped via Ventoy `kparam` on all 4 drives.
+GRUB mode is the recommended and default boot path. Rationale:
+
+| Distro | Why GRUB required/preferred |
+|:-------|:---------------------------|
+| **Qubes OS** | `multiboot2` is mandatory for Xen hypervisor — UEFI cannot chain Xen directly |
+| **SecureBlue** | GRUB gives direct kernel parameter control, verbose logging, bypasses animated splash |
+| **NixOS** | Uses `configfile (loop)/boot/grub/loopback.cfg` — delegates to NixOS's own multi-entry GRUB menu (normal, nomodeset, copytoram, debug) |
+| **Tails** | Raw `.img` — handled by Ventoy Normal Mode natively |
+| **Windows 11** | WinPE UEFI chain — Normal Mode only |
+
+### NixOS loopback.cfg delegation
+NixOS 24.11 ships `/boot/grub/loopback.cfg` which exposes 4 entries: normal, nomodeset, copytoram, and debug. The `ventoy_grub.cfg` entry uses `configfile` to source this directly, preserving the full NixOS menu.
+
+`loglevel=7` is appended to `$isoboot` to maximize verbosity (overriding the default `loglevel=4` in the NixOS grub.cfg).
+
+---
+
+## 4. Stuttering Investigation & Fix (SecureBlue KDE Session)
+
+### Root Cause 1: LD_PRELOAD — hardened_malloc on KWin/Plasmashell
+`/etc/profile.d/hardened_malloc.sh` globally sets `LD_PRELOAD=libhardened_malloc.so libno_rlimit_as.so`.
+This causes frame stalls in the Wayland compositor under hardened memory allocation.
+
+**Fix (staged for next login):**
+- `/etc/systemd/user/plasma-kwin_wayland.service.d/override.conf`:
+  ```ini
+  [Service]
+  Environment=LD_PRELOAD=
+  ExecStart=
+  ExecStart=/usr/bin/kwin_wayland_wrapper
+  ```
+- `/etc/systemd/user/plasma-plasmashell.service.d/override.conf`:
+  ```ini
+  [Service]
+  Environment=LD_PRELOAD=
+  ```
+
+### Root Cause 2: org_kde_powerdevil I2C permission denial loop
+Powerdevil polls `/dev/i2c-15` (eDP-2, internal display) and `/dev/i2c-16` (DP-4, discrete output) every ~3 seconds for DDC/CI brightness control. Both devices were `root:root 600`, causing a continuous failed permission check that stalls powerdevil's event loop → input latency spikes.
+
+**Fix (applied live + persistent via udev):**
+```bash
+# /etc/udev/rules.d/60-powerdevil-i2c.rules
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-15", GROUP="i2c", MODE="0660"
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-16", GROUP="i2c", MODE="0660"
+```
+- `i2c` system group created
+- User `Plasma-Setup` added to `i2c` group (effective on next login)
+- Live chmod applied: `chown root:i2c /dev/i2c-{15,16} && chmod 660`
+
+**Next login**: both fixes will be fully active. The powerdevil error loop will stop, and kwin/plasmashell will run without hardened_malloc preload.
+
+---
+
+## 5. SecureBlue System Audit Notes
+
+- `sudoedit` in `/usr/local/bin/` appears as a **dangling red symlink** (`ls -la` shows red) — expected. SecureBlue replaces `sudo` with `systemd-run0`. The symlink target no longer exists; it is cosmetically broken but functionally harmless.
+- rpm-ostree immutable layout: system files in `/usr/` are read-only Composefs overlays. Changes must be applied via drop-in directories in `/etc/` or layered packages.
+- All udev rules, systemd drop-ins, and group changes above are written to `/etc/` (writable layer) and survive `rpm-ostree` upgrades.
+
+---
+
+## 6. SecureBoot / MOK / Ventoy Signing
+
+Ventoy's EFI binary is signed with the system's MOK (Machine Owner Key). The MOK also covers the Ventoy-shimmed GRUB. This means:
+- SecureBoot remains **enabled**
+- Ventoy loads via shim → MOK-verified GRUB → ISO boot chain
+- Windows 11 benefits from the same shim path via Normal Mode
+- Qubes: Xen loads via multiboot2 from Ventoy's MOK-verified GRUB — no additional signing required for the installer phase
+
+---
+
+## 7. GitHub PAT Security Assessment
+
+The fine-grained PAT (`github_pat_11CH3Z7II0...`) has:
+- **Contents: Read & Write** — can push commits to this repo
+- **Metadata: Read** — can read repo info
+- **No admin scope** — cannot modify branch protection, webhooks, or self-restrict token permissions via API (GitHub returns 403)
+
+**Recommended restrictions for agentic CLI tooling:**
+1. Set token expiration (30–90 days max)
+2. Restrict to specific branches (e.g., `main` only with PR requirement for destructive ops)
+3. Exclude `Delete` permissions — agentic tools should never have file deletion via API
+4. Add a second "review" branch for agent commits — human merges to main
+
+---
+
+## 8. Session Management Notes
+
+- All changes made as `root` via Antigravity agentic CLI (Google DeepMind)
+- Kimi Code (prior session) changes were audited — no unjustified modifications found
+- Session restart events occurred multiple times (API overload) — state was preserved via drive mounts and written files
+- Tails `.img` sync to `sdb/sdc/sdd` is handled by background watcher script `/tmp/sync_tails.sh` (logs at `/tmp/sync_tails.log`)
+
+---
+
+*Documentation auto-generated by Antigravity agentic session — August 15, 2026*
